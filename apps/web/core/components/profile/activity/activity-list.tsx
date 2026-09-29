@@ -72,7 +72,7 @@ export const ActivityList = observer(function ActivityList(props: Props) {
                             : activityItem.actor_detail.display_name}
                         </div>
                         <p className="mt-0.5 text-11 text-secondary">
-                          Commented {calculateTimeAgo(activityItem.created_at)}
+                          评论于{calculateTimeAgo(activityItem.created_at)}
                         </p>
                       </div>
                       <div className="issue-comments-section p-0">
@@ -102,7 +102,7 @@ export const ActivityList = observer(function ActivityList(props: Props) {
               ) &&
               !activityItem.field ? (
                 <span>
-                  created <IssueLink activity={activityItem} />
+                  已创建 <IssueLink activity={activityItem} />
                 </span>
               ) : (
                 <ActivityMessage activity={activityItem} showIssue />
@@ -145,9 +145,9 @@ export const ActivityList = observer(function ActivityList(props: Props) {
                         <div className="min-w-0 flex-1 border-b border-subtle py-4">
                           <div className="text-13 break-words text-secondary">
                             {activityItem.field === "archived_at" && activityItem.new_value !== "restore" ? (
-                              <span className="text-gray font-medium">Plane</span>
+                              <span className="text-gray font-medium">星轴科技</span>
                             ) : activityItem.actor_detail.is_bot ? (
-                              <span className="text-gray font-medium">{activityItem.actor_detail.first_name} Bot</span>
+                              <span className="text-gray font-medium">{activityItem.actor_detail.first_name} 机器人</span>
                             ) : (
                               <Link
                                 href={`/${activityItem.workspace_detail?.slug}/profile/${activityItem.actor_detail.id}`}
@@ -155,7 +155,7 @@ export const ActivityList = observer(function ActivityList(props: Props) {
                               >
                                 <span className="text-gray font-medium">
                                   {currentUser?.id === activityItem.actor_detail.id
-                                    ? "You"
+                                    ? "你"
                                     : activityItem.actor_detail.display_name}
                                 </span>
                               </Link>

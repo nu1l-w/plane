@@ -73,7 +73,7 @@ export function TabNavigationVisibleItem({
                 className="flex cursor-pointer items-center gap-2 text-secondary transition-colors"
               >
                 <PinOff className="size-3 shrink-0" />
-                <span className="text-11">Hide in more menu</span>
+                <span className="text-11">移至“更多”菜单</span>
               </ContextMenu.Item>
             </ContextMenu.Content>
           </ContextMenu.Portal>

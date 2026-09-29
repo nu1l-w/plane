@@ -106,7 +106,7 @@ export const AuthRoot = observer(function AuthRoot(props: TAuthRoot) {
     return (
       <AuthContainer>
         <AuthHeaderBase
-          header="No authentication methods available"
+          header="没有可用的登录方式"
           subHeader="Please contact your administrator to enable authentication for your instance."
         />
       </AuthContainer>

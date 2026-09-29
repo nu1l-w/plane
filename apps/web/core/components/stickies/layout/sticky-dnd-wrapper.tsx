@@ -28,16 +28,14 @@ import { getInstructionFromPayload } from "./sticky.helpers";
 type Props = {
   stickyId: string;
   workspaceSlug: string;
-  itemWidth: string;
   isLastChild: boolean;
   isInFirstRow: boolean;
   isInLastRow: boolean;
   handleDrop: (self: DropTargetRecord, source: ElementDragPayload, location: DragLocationHistory) => void;
-  handleLayout: () => void;
 };
 
 export const StickyDNDWrapper = observer(function StickyDNDWrapper(props: Props) {
-  const { stickyId, workspaceSlug, itemWidth, isLastChild, handleDrop, handleLayout } = props;
+  const { stickyId, workspaceSlug, isLastChild, handleDrop } = props;
   // states
   const [isDragging, setIsDragging] = useState(false);
   const [_instruction, setInstruction] = useState<InstructionType | undefined>(undefined);
@@ -123,16 +121,12 @@ export const StickyDNDWrapper = observer(function StickyDNDWrapper(props: Props)
   return (
     <div
       className="box-border flex flex-col p-[8px]"
-      style={{
-        width: itemWidth,
-      }}
     >
       {/* {!isInFirstRow && <DropIndicator isVisible={instruction === "reorder-above"} />} */}
       <StickyNote
         key={stickyId || "new"}
         workspaceSlug={workspaceSlug}
         stickyId={stickyId}
-        handleLayout={handleLayout}
       />
       {/* {!isInLastRow && <DropIndicator isVisible={instruction === "reorder-below"} />} */}
     </div>

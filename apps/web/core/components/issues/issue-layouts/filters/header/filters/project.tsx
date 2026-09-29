@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { sortBy } from "lodash-es";
 import { observer } from "mobx-react";
 // ui
@@ -81,12 +81,12 @@ export const FilterProjects = observer(function FilterProjects(props: Props) {
                     className="ml-8 text-11 font-medium text-accent-primary"
                     onClick={handleViewToggle}
                   >
-                    {itemsToRender === sortedOptions.length ? "View less" : "View all"}
+                    {itemsToRender === sortedOptions.length ? "收起" : "查看全部"}
                   </button>
                 )}
               </>
             ) : (
-              <p className="text-11 text-placeholder italic">No matches found</p>
+              <p className="text-11 text-placeholder italic">没有匹配结果</p>
             )
           ) : (
             <Loader className="space-y-2">

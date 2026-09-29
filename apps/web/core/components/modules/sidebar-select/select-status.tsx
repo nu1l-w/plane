@@ -4,8 +4,6 @@
  * See the LICENSE file for details.
  */
 
-// react
-import React from "react";
 // react-hook-form
 import type { Control, UseFormWatch } from "react-hook-form";
 import { Controller } from "react-hook-form";
@@ -31,7 +29,7 @@ export function SidebarStatusSelect({ control, submitChanges, watch }: Props) {
     <div className="flex flex-wrap items-center py-2">
       <div className="flex items-center gap-x-2 text-13 sm:basis-1/2">
         <StatePropertyIcon className="h-4 w-4 flex-shrink-0" />
-        <p>Status</p>
+        <p>状态</p>
       </div>
       <div className="sm:basis-1/2">
         <Controller

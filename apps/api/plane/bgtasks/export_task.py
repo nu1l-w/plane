@@ -4,6 +4,7 @@
 
 # Python imports
 import io
+import os
 import zipfile
 from typing import List
 import boto3
@@ -45,6 +46,7 @@ def upload_to_s3(zip_file: io.BytesIO, workspace_id: UUID, token_id: str, slug: 
     """
     file_name = f"{workspace_id}/export-{slug}-{token_id[:6]}-{str(timezone.now().date())}.zip"
     expires_in = 7 * 24 * 60 * 60
+    public_endpoint = os.environ.get("AWS_S3_PUBLIC_ENDPOINT_URL")
 
     if settings.USE_MINIO:
         upload_s3 = boto3.client(
@@ -64,7 +66,7 @@ def upload_to_s3(zip_file: io.BytesIO, workspace_id: UUID, token_id: str, slug: 
         # Generate presigned url for the uploaded file with different base
         presign_s3 = boto3.client(
             "s3",
-            endpoint_url=(
+            endpoint_url=public_endpoint or (
                 f"{settings.AWS_S3_URL_PROTOCOL}//{str(settings.AWS_S3_CUSTOM_DOMAIN).replace('/uploads', '')}/"
             ),
             aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
@@ -104,8 +106,17 @@ def upload_to_s3(zip_file: io.BytesIO, workspace_id: UUID, token_id: str, slug: 
             ExtraArgs={"ContentType": "application/zip"},
         )
 
-        # Generate presigned url for the uploaded file
-        presigned_url = s3.generate_presigned_url(
+        # Background exports need browser-facing URLs too.
+        presign_s3 = s3
+        if public_endpoint:
+            presign_s3 = boto3.client(
+                "s3",
+                endpoint_url=public_endpoint,
+                aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+                aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+                config=Config(signature_version="s3v4"),
+            )
+        presigned_url = presign_s3.generate_presigned_url(
             "get_object",
             Params={"Bucket": settings.AWS_STORAGE_BUCKET_NAME, "Key": file_name},
             ExpiresIn=expires_in,

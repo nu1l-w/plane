@@ -5,7 +5,6 @@
  */
 
 import { observer } from "mobx-react";
-import { PlaneLockup } from "@plane/propel/icons";
 // assets
 import UserLoggedInImage from "@/app/assets/user-logged-in.svg?url";
 // components
@@ -23,7 +22,7 @@ export const UserLoggedIn = observer(function UserLoggedIn() {
   return (
     <div className="flex h-screen w-screen flex-col">
       <div className="relative flex w-full items-center justify-between gap-4 border-b border-subtle px-6 py-5">
-        <PlaneLockup className="h-6 w-auto text-primary" />
+        <span className="text-18 font-semibold text-primary">星轴科技</span>
         <UserAvatar />
       </div>
 
@@ -31,14 +30,11 @@ export const UserLoggedIn = observer(function UserLoggedIn() {
         <div className="text-center">
           <div className="mx-auto grid size-32 place-items-center rounded-full bg-layer-1 md:size-52">
             <div className="grid size-16 place-items-center md:size-32">
-              <img src={UserLoggedInImage} alt="User already logged in" className="h-full w-full object-cover" />
+              <img src={UserLoggedInImage} alt="用户已登录" className="h-full w-full object-cover" />
             </div>
           </div>
-          <h1 className="mt-8 text-18 font-semibold md:mt-12 md:text-24">Nice! Just one more step.</h1>
-          <p className="mt-2 text-13 md:mt-4 md:text-14">
-            Enter the public-share URL or link of the view or Page you are trying to see in the browser{"'"}s address
-            bar.
-          </p>
+          <h1 className="mt-8 text-18 font-semibold md:mt-12 md:text-24">登录成功，还差最后一步</h1>
+          <p className="mt-2 text-13 md:mt-4 md:text-14">请在浏览器地址栏中输入要访问的公开视图或页面链接。</p>
         </div>
       </div>
       <PoweredBy />

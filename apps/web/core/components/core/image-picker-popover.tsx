@@ -75,12 +75,12 @@ export const ImagePickerPopover = observer(function ImagePickerPopover(props: Pr
       },
       {
         key: "images",
-        title: "Images",
+        title: "图片",
         isEnabled: true,
       },
       {
         key: "upload",
-        title: "Upload",
+        title: "上传",
         isEnabled: true,
       },
     ],
@@ -140,9 +140,9 @@ export const ImagePickerPopover = observer(function ImagePickerPopover(props: Pr
           console.error("Error uploading user cover image:", error);
           setIsImageUploading(false);
           setToast({
-            message: error?.error ?? "The image could not be uploaded",
+            message: error?.error ?? "图片上传失败。",
             type: TOAST_TYPE.ERROR,
-            title: "Image not uploaded",
+            title: "上传失败",
           });
         });
     } else {
@@ -161,9 +161,9 @@ export const ImagePickerPopover = observer(function ImagePickerPopover(props: Pr
           console.error("Error uploading project cover image:", error);
           setIsImageUploading(false);
           setToast({
-            message: error?.error ?? "The image could not be uploaded",
+            message: error?.error ?? "图片上传失败。",
             type: TOAST_TYPE.ERROR,
-            title: "Image not uploaded",
+            title: "上传失败",
           });
         });
     }
@@ -233,13 +233,13 @@ export const ImagePickerPopover = observer(function ImagePickerPopover(props: Pr
                               value={value}
                               onChange={(e) => setFormData({ ...formData, search: e.target.value })}
                               ref={ref}
-                              placeholder="Search for images"
+                              placeholder="搜索图片"
                               className="w-full text-13"
                             />
                           )}
                         />
                         <Button variant="primary" size="xl" onClick={() => setSearchParams(formData.search)}>
-                          Search
+                          搜索
                         </Button>
                       </div>
                       {unsplashImages ? (
@@ -263,7 +263,7 @@ export const ImagePickerPopover = observer(function ImagePickerPopover(props: Pr
                             ))}
                           </div>
                         ) : (
-                          <p className="pt-7 text-center text-11 text-secondary">No images found.</p>
+                          <p className="pt-7 text-center text-11 text-secondary">没有找到图片。</p>
                         )
                       ) : (
                         <Loader className="grid grid-cols-4 gap-4">
@@ -290,7 +290,7 @@ export const ImagePickerPopover = observer(function ImagePickerPopover(props: Pr
                       >
                         <img
                           src={imageUrl}
-                          alt={`Cover image ${index + 1}`}
+                          alt={`封面图片 ${index + 1}`}
                           className="absolute top-0 left-0 h-full w-full cursor-pointer rounded-sm object-cover transition-opacity hover:opacity-80"
                         />
                       </div>
@@ -312,20 +312,20 @@ export const ImagePickerPopover = observer(function ImagePickerPopover(props: Pr
                           type="button"
                           className="absolute top-0 right-0 z-40 -translate-y-1/2 rounded-sm bg-surface-2 px-2 py-0.5 text-11 font-medium text-secondary"
                         >
-                          Edit
+                          编辑
                         </button>
                         {image !== null || (value && value !== "") ? (
                           <>
                             <img
                               src={image ? URL.createObjectURL(image) : getCoverImageDisplayURL(value, "")}
-                              alt="image"
+                              alt="图片"
                               className="h-full w-full rounded-lg object-cover"
                             />
                           </>
                         ) : (
                           <div>
                             <span className="mt-2 block text-13 font-medium text-secondary">
-                              {isDragActive ? "Drop image here to upload" : "Drag & drop image here"}
+                              {isDragActive ? "将图片放到这里上传" : "拖放图片到这里"}
                             </span>
                           </div>
                         )}
@@ -336,12 +336,12 @@ export const ImagePickerPopover = observer(function ImagePickerPopover(props: Pr
                     {fileRejections.length > 0 && (
                       <p className="text-13 text-danger-primary">
                         {fileRejections[0].errors[0].code === "file-too-large"
-                          ? "The image size cannot exceed 5 MB."
-                          : "Please upload a file in a valid format."}
+                          ? "图片大小不能超过 5 MB。"
+                          : "请上传支持的图片格式。"}
                       </p>
                     )}
 
-                    <p className="text-13 text-secondary">File formats supported- .jpeg, .jpg, .png, .webp</p>
+                    <p className="text-13 text-secondary">支持的文件格式：.jpeg、.jpg、.png、.webp</p>
 
                     <div className="flex h-12 items-start justify-end gap-2">
                       <Button
@@ -351,7 +351,7 @@ export const ImagePickerPopover = observer(function ImagePickerPopover(props: Pr
                           setImage(null);
                         }}
                       >
-                        Cancel
+                        取消
                       </Button>
                       <Button
                         variant="primary"
@@ -360,7 +360,7 @@ export const ImagePickerPopover = observer(function ImagePickerPopover(props: Pr
                         disabled={!image}
                         loading={isImageUploading}
                       >
-                        {isImageUploading ? "Uploading" : "Upload & Save"}
+                        {isImageUploading ? "上传中" : "上传并保存"}
                       </Button>
                     </div>
                   </div>

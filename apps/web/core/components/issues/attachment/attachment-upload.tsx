@@ -46,7 +46,7 @@ export const IssueAttachmentUpload = observer(function IssueAttachmentUpload(pro
   });
 
   const fileError =
-    fileRejections.length > 0 ? `Invalid file type or size (max ${maxFileSize / 1024 / 1024} MB)` : null;
+    fileRejections.length > 0 ? `文件类型无效或大小超过限制（最大 ${maxFileSize / 1024 / 1024} MB）` : null;
 
   return (
     <div
@@ -58,13 +58,13 @@ export const IssueAttachmentUpload = observer(function IssueAttachmentUpload(pro
       <input {...getInputProps()} />
       <span className="flex items-center gap-2">
         {isDragActive ? (
-          <p>Drop here...</p>
+          <p>拖放到此处...</p>
         ) : fileError ? (
           <p className="text-center text-danger-primary">{fileError}</p>
         ) : isLoading ? (
-          <p className="text-center">Uploading...</p>
+          <p className="text-center">正在上传...</p>
         ) : (
-          <p className="text-center">Click or drag a file here</p>
+          <p className="text-center">点击选择文件或拖放到此处</p>
         )}
       </span>
     </div>

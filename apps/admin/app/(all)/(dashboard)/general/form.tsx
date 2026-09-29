@@ -98,7 +98,7 @@ export const GeneralConfigurationForm = observer(function GeneralConfigurationFo
       </div>
 
       <div className="space-y-6">
-        <div className="border-b border-subtle pb-1.5 text-16 font-medium text-primary">Telemetry</div>
+        <div className="border-b border-subtle pb-1.5 text-16 font-medium text-primary">匿名使用数据</div>
         <div className="flex items-center gap-14">
           <div className="flex grow items-center gap-4">
             <div className="shrink-0">
@@ -107,18 +107,9 @@ export const GeneralConfigurationForm = observer(function GeneralConfigurationFo
               </div>
             </div>
             <div className="grow">
-              <div className="text-13 leading-5 font-medium text-primary">Let Plane collect anonymous usage data</div>
+              <div className="text-13 leading-5 font-medium text-primary">允许收集匿名使用情况数据</div>
               <div className="text-11 leading-5 font-regular text-tertiary">
-                No PII is collected.This anonymized data is used to understand how you use Plane and build new features
-                in line with{" "}
-                <a
-                  href="https://developers.plane.so/self-hosting/telemetry"
-                  target="_blank"
-                  className="text-accent-primary hover:underline"
-                  rel="noreferrer"
-                >
-                  our Telemetry Policy.
-                </a>
+                不收集个人身份信息。匿名数据仅用于了解系统使用情况并改进功能。
               </div>
             </div>
           </div>

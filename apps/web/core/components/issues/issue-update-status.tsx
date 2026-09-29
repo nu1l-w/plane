@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import React from "react";
 import { observer } from "mobx-react";
 import { RefreshCw } from "lucide-react";
 // types
@@ -27,7 +26,7 @@ export const NameDescriptionUpdateStatus = observer(function NameDescriptionUpda
         {isSubmitting !== "submitted" && isSubmitting !== "saved" && (
           <RefreshCw className="size-3.5 animate-spin stroke-tertiary" />
         )}
-        <span className="text-13 text-tertiary">{isSubmitting === "submitting" ? "Saving..." : "Saved"}</span>
+        <span className="text-13 text-tertiary">{isSubmitting === "submitting" ? "正在保存..." : "已保存"}</span>
       </div>
     </>
   );

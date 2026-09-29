@@ -58,7 +58,7 @@ export const LeaveProjectModal = observer(function LeaveProjectModal(props: ILea
 
     if (data) {
       if (data.projectName === project?.name) {
-        if (data.confirmLeave === "Leave Project") {
+        if (data.confirmLeave === "退出项目") {
           router.push(`/${workspaceSlug}/projects`);
           return leaveProject(workspaceSlug.toString(), project.id)
             .then(() => {
@@ -67,29 +67,29 @@ export const LeaveProjectModal = observer(function LeaveProjectModal(props: ILea
             .catch((_err) => {
               setToast({
                 type: TOAST_TYPE.ERROR,
-                title: "Error!",
-                message: "Something went wrong please try again later.",
+                title: "退出失败",
+                message: "发生错误，请稍后重试。",
               });
             });
         } else {
           setToast({
             type: TOAST_TYPE.ERROR,
-            title: "Error!",
-            message: "Please confirm leaving the project by typing the 'Leave Project'.",
+            title: "确认信息不正确",
+            message: "请输入“退出项目”以确认操作。",
           });
         }
       } else {
         setToast({
           type: TOAST_TYPE.ERROR,
-          title: "Error!",
-          message: "Please enter the project name as shown in the description.",
+          title: "项目名称不正确",
+          message: "请按提示输入完整的项目名称。",
         });
       }
     } else {
       setToast({
         type: TOAST_TYPE.ERROR,
-        title: "Error!",
-        message: "Please fill all fields.",
+        title: "信息不完整",
+        message: "请填写全部字段。",
       });
     }
   };
@@ -102,27 +102,26 @@ export const LeaveProjectModal = observer(function LeaveProjectModal(props: ILea
             <AlertTriangleIcon className="h-6 w-6 text-danger-primary" aria-hidden="true" />
           </span>
           <span className="flex items-center justify-start">
-            <h3 className="text-18 font-medium 2xl:text-20">Leave Project</h3>
+            <h3 className="text-18 font-medium 2xl:text-20">退出项目</h3>
           </span>
         </div>
 
         <span>
           <p className="text-13 leading-7 text-secondary">
-            Are you sure you want to leave the project -
-            <span className="font-medium text-primary">{` "${project?.name}" `}</span>? All of the work items associated
-            with you will become inaccessible.
+            确定要退出项目
+            <span className="font-medium text-primary">{`“${project?.name}”`}</span> 吗？退出后你将无法访问相关工作项。
           </p>
         </span>
 
         <div className="text-secondary">
           <p className="text-13 break-words">
-            Enter the project name <span className="font-medium text-primary">{project?.name}</span> to continue:
+            输入项目名称 <span className="font-medium text-primary">{project?.name}</span> 以继续：
           </p>
           <Controller
             control={control}
             name="projectName"
             rules={{
-              required: "Label title is required",
+              required: "请输入项目名称",
             }}
             render={({ field: { value, onChange, ref } }) => (
               <Input
@@ -133,7 +132,7 @@ export const LeaveProjectModal = observer(function LeaveProjectModal(props: ILea
                 onChange={onChange}
                 ref={ref}
                 hasError={Boolean(errors.projectName)}
-                placeholder="Enter project name"
+                placeholder="输入项目名称"
                 className="mt-2 w-full"
               />
             )}
@@ -142,7 +141,7 @@ export const LeaveProjectModal = observer(function LeaveProjectModal(props: ILea
 
         <div className="text-secondary">
           <p className="text-13">
-            To confirm, type <span className="font-medium text-primary">Leave Project</span> below:
+            如需确认，请在下方输入 <span className="font-medium text-primary">退出项目</span>：
           </p>
           <Controller
             control={control}
@@ -156,7 +155,7 @@ export const LeaveProjectModal = observer(function LeaveProjectModal(props: ILea
                 onChange={onChange}
                 ref={ref}
                 hasError={Boolean(errors.confirmLeave)}
-                placeholder="Enter 'leave project'"
+                placeholder="输入“退出项目”"
                 className="mt-2 w-full"
               />
             )}
@@ -164,10 +163,10 @@ export const LeaveProjectModal = observer(function LeaveProjectModal(props: ILea
         </div>
         <div className="flex justify-end gap-2">
           <Button variant="secondary" size="lg" onClick={handleClose}>
-            Cancel
+            取消
           </Button>
           <Button variant="error-fill" size="lg" type="submit" loading={isSubmitting}>
-            {isSubmitting ? "Leaving..." : "Leave Project"}
+            {isSubmitting ? "正在退出..." : "退出项目"}
           </Button>
         </div>
       </form>

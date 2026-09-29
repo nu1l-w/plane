@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { observer } from "mobx-react";
 import { MODULE_STATUS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
@@ -48,7 +48,7 @@ export const FilterStatus = observer(function FilterStatus(props: Props) {
               />
             ))
           ) : (
-            <p className="text-11 text-placeholder italic">No matches found</p>
+            <p className="text-11 text-placeholder italic">没有匹配结果</p>
           )}
         </div>
       )}

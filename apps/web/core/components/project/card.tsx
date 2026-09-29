@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import React, { useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { observer } from "mobx-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -78,18 +78,18 @@ export const ProjectCard = observer(function ProjectCard(props: Props) {
 
     const addToFavoritePromise = addProjectToFavorites(workspaceSlug.toString(), project.id);
     setPromiseToast(addToFavoritePromise, {
-      loading: "Adding project to favorites...",
+      loading: "正在将项目添加到收藏...",
       success: {
-        title: "Success!",
-        message: () => "Project added to favorites.",
+        title: "成功！",
+        message: () => "项目已添加到收藏。",
         actionItems: () => {
           if (!isFavoriteMenuOpen) toggleFavoriteMenu(true);
           return <></>;
         },
       },
       error: {
-        title: "Error!",
-        message: () => "Couldn't add the project to favorites. Please try again.",
+        title: "错误！",
+        message: () => "无法将项目添加到收藏。请重试。",
       },
     });
   };
@@ -99,14 +99,14 @@ export const ProjectCard = observer(function ProjectCard(props: Props) {
 
     const removeFromFavoritePromise = removeProjectFromFavorites(workspaceSlug.toString(), project.id);
     setPromiseToast(removeFromFavoritePromise, {
-      loading: "Removing project from favorites...",
+      loading: "正在从收藏中移除项目...",
       success: {
-        title: "Success!",
-        message: () => "Project removed from favorites.",
+        title: "成功！",
+        message: () => "项目已从收藏中移除。",
       },
       error: {
-        title: "Error!",
-        message: () => "Couldn't remove the project from favorites. Please try again.",
+        title: "错误！",
+        message: () => "无法从收藏中移除项目。请重试。",
       },
     });
   };
@@ -116,8 +116,8 @@ export const ProjectCard = observer(function ProjectCard(props: Props) {
     copyUrlToClipboard(projectLink).then(() =>
       setToast({
         type: TOAST_TYPE.INFO,
-        title: "Link Copied!",
-        message: "Project link copied to clipboard.",
+        title: "链接已复制！",
+        message: "项目链接已复制到剪贴板。",
       })
     );
   const handleOpenInNewTab = () => window.open(`/${projectLink}`, "_blank");
@@ -126,42 +126,42 @@ export const ProjectCard = observer(function ProjectCard(props: Props) {
     {
       key: "settings",
       action: () => router.push(`/${workspaceSlug}/settings/projects/${project.id}`),
-      title: "Settings",
+      title: "设置",
       icon: Settings,
       shouldRender: !isArchived && (hasAdminRole || hasMemberRole),
     },
     {
       key: "join",
       action: () => setJoinProjectModal(true),
-      title: "Join",
+      title: "加入",
       icon: UserPlus,
       shouldRender: !isMemberOfProject && !isArchived,
     },
     {
       key: "open-new-tab",
       action: handleOpenInNewTab,
-      title: "Open in new tab",
+      title: "在新标签页打开",
       icon: NewTabIcon,
       shouldRender: !isMemberOfProject && !isArchived,
     },
     {
       key: "copy-link",
       action: handleCopyText,
-      title: "Copy link",
+      title: "复制链接",
       icon: LinkIcon,
       shouldRender: !isArchived,
     },
     {
       key: "restore",
       action: () => setRestoreProject(true),
-      title: "Restore",
+      title: "恢复",
       icon: ArchiveRestoreIcon,
       shouldRender: isArchived && hasAdminRole,
     },
     {
       key: "delete",
       action: () => setDeleteProjectModal(true),
-      title: "Delete",
+      title: "删除",
       icon: TrashIcon,
       shouldRender: isArchived && hasAdminRole,
     },
@@ -274,15 +274,15 @@ export const ProjectCard = observer(function ProjectCard(props: Props) {
           <p className="line-clamp-2 text-13 break-words text-tertiary">
             {project.description && project.description.trim() !== ""
               ? project.description
-              : `Created on ${renderFormattedDate(project.created_at)}`}
+              : `创建于 ${renderFormattedDate(project.created_at)}`}
           </p>
           <div className="item-center flex justify-between">
             <div className="flex items-center justify-center gap-2">
               <Tooltip
                 isMobile={isMobile}
-                tooltipHeading="Members"
+                tooltipHeading="成员"
                 tooltipContent={
-                  project.members && project.members.length > 0 ? `${project.members.length} Members` : "No Member"
+                  project.members && project.members.length > 0 ? `${project.members.length} 名成员` : "暂无成员"
                 }
                 position="top"
               >
@@ -299,10 +299,10 @@ export const ProjectCard = observer(function ProjectCard(props: Props) {
                     </AvatarGroup>
                   </div>
                 ) : (
-                  <span className="text-13 text-placeholder italic">No Member Yet</span>
+                  <span className="text-13 text-placeholder italic">暂无成员</span>
                 )}
               </Tooltip>
-              {isArchived && <div className="text-11 font-medium text-placeholder">Archived</div>}
+              {isArchived && <div className="text-11 font-medium text-placeholder">已归档</div>}
             </div>
             {isArchived ? (
               hasAdminRole && (
@@ -317,7 +317,7 @@ export const ProjectCard = observer(function ProjectCard(props: Props) {
                   >
                     <div className="flex items-center gap-1.5">
                       <ArchiveRestoreIcon className="h-3.5 w-3.5" />
-                      Restore
+                      恢复
                     </div>
                   </div>
                   <div
@@ -348,7 +348,7 @@ export const ProjectCard = observer(function ProjectCard(props: Props) {
                   ) : (
                     <span className="flex items-center gap-1 text-13 text-placeholder">
                       <CheckIcon className="h-3.5 w-3.5" />
-                      Joined
+                      已加入
                     </span>
                   ))}
                 {!isMemberOfProject && (
@@ -362,7 +362,7 @@ export const ProjectCard = observer(function ProjectCard(props: Props) {
                         setJoinProjectModal(true);
                       }}
                     >
-                      Join
+                      加入
                     </Button>
                   </div>
                 )}

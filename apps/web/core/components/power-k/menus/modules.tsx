@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import React from "react";
 import { observer } from "mobx-react";
 // plane imports
 import { ModuleStatusIcon } from "@plane/propel/icons";
@@ -28,7 +27,7 @@ export const PowerKModulesMenu = observer(function PowerKModulesMenu({ modules, 
       getLabel={(module) => module.name}
       isSelected={(module) => !!value?.includes(module.id)}
       onSelect={onSelect}
-      emptyText="No modules found"
+      emptyText="没有找到模块"
     />
   );
 });

@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import React from "react";
 // plane imports
 import type { IWorkspace } from "@plane/types";
 // components
@@ -28,7 +27,7 @@ export function PowerKWorkspacesMenu({ workspaces, onSelect }: Props) {
       getValue={(workspace) => workspace.name}
       getLabel={(workspace) => workspace.name}
       onSelect={onSelect}
-      emptyText="No workspaces found"
+      emptyText="没有找到工作区"
     />
   );
 }

@@ -12,49 +12,49 @@ from .project import ProjectBaseModel
 from plane.db.mixins import SoftDeletionManager
 
 class StateGroup(models.TextChoices):
-    BACKLOG = "backlog", "Backlog"
-    UNSTARTED = "unstarted", "Unstarted"
-    STARTED = "started", "Started"
-    COMPLETED = "completed", "Completed"
-    CANCELLED = "cancelled", "Cancelled"
-    TRIAGE = "triage", "Triage"
+    BACKLOG = "backlog", "待办"
+    UNSTARTED = "unstarted", "未开始"
+    STARTED = "started", "进行中"
+    COMPLETED = "completed", "已完成"
+    CANCELLED = "cancelled", "已取消"
+    TRIAGE = "triage", "分诊"
 
 
 # Default states
 DEFAULT_STATES = [
     {
-        "name": "Backlog",
+        "name": "待办",
         "color": "#60646C",
         "sequence": 15000,
         "group": StateGroup.BACKLOG.value,
         "default": True,
     },
     {
-        "name": "Todo",
+        "name": "待办",
         "color": "#60646C",
         "sequence": 25000,
         "group": StateGroup.UNSTARTED.value,
     },
     {
-        "name": "In Progress",
+        "name": "进行中",
         "color": "#F59E0B",
         "sequence": 35000,
         "group": StateGroup.STARTED.value,
     },
     {
-        "name": "Done",
+        "name": "已完成",
         "color": "#46A758",
         "sequence": 45000,
         "group": StateGroup.COMPLETED.value,
     },
     {
-        "name": "Cancelled",
+        "name": "已取消",
         "color": "#9AA4BC",
         "sequence": 55000,
         "group": StateGroup.CANCELLED.value,
     },
     {
-        "name": "Triage",
+        "name": "分诊",
         "color": "#4E5355",
         "sequence": 65000,
         "group": StateGroup.TRIAGE.value,

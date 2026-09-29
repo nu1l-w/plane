@@ -23,13 +23,10 @@ export const PageOfflineBadge = observer(function PageOfflineBadge({ page }: Pro
   if (!page.isContentEditable || isOnline) return null;
 
   return (
-    <Tooltip
-      tooltipHeading="You are offline."
-      tooltipContent="You can continue making changes. They will be synced when you are back online."
-    >
+    <Tooltip tooltipHeading="You are offline." tooltipContent="你可以继续修改，恢复网络连接后系统会自动同步。">
       <div className="flex h-7 flex-shrink-0 items-center gap-2 rounded-full bg-layer-1 px-3 py-0.5 text-11 font-medium text-tertiary">
         <span className="size-1.5 flex-shrink-0 rounded-full bg-layer-1" />
-        <span>Offline</span>
+        <span>离线</span>
       </div>
     </Tooltip>
   );

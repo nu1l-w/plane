@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import React from "react";
 // components
 import { Logo } from "@plane/propel/emoji-icon-picker";
 // plane imports
@@ -30,7 +29,7 @@ export function PowerKProjectsMenu({ projects, onSelect }: Props) {
       getValue={(project) => project.name}
       getLabel={(project) => project.name}
       onSelect={onSelect}
-      emptyText="No projects found"
+      emptyText="没有找到项目"
     />
   );
 }

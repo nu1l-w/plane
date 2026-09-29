@@ -33,7 +33,7 @@ export const IssueCycleActivity = observer(function IssueCycleActivity(props: TI
       <>
         {activity.verb === "created" ? (
           <>
-            <span>added this work item to the cycle </span>
+            <span>已将此工作项添加到周期 </span>
             <a
               href={`/${activity.workspace_detail?.slug}/projects/${activity.project}/cycles/${activity.new_identifier}`}
               target="_blank"
@@ -45,7 +45,7 @@ export const IssueCycleActivity = observer(function IssueCycleActivity(props: TI
           </>
         ) : activity.verb === "updated" ? (
           <>
-            <span>set the cycle to </span>
+            <span>已将周期设置为 </span>
             <a
               href={`/${activity.workspace_detail?.slug}/projects/${activity.project}/cycles/${activity.new_identifier}`}
               target="_blank"
@@ -57,14 +57,14 @@ export const IssueCycleActivity = observer(function IssueCycleActivity(props: TI
           </>
         ) : (
           <>
-            <span>removed the work item from the cycle </span>
+            <span>已从周期中移除此工作项 </span>
             <a
               href={`/${activity.workspace_detail?.slug}/projects/${activity.project}/cycles/${activity.old_identifier}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 truncate font-medium text-primary hover:underline"
             >
-              <span className="truncate"> {activity.new_value}</span>
+              <span className="truncate"> {activity.old_value}</span>
             </a>
           </>
         )}

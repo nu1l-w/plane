@@ -42,7 +42,7 @@ export function ProfileStateDistribution({ stateDistribution, userProfile }: Pro
                   id: group.state_group,
                   key: group.state_group,
                   value: group.state_count,
-                  name: capitalizeFirstLetter(group.state_group),
+                  name: STATE_GROUPS[group.state_group]?.label ?? capitalizeFirstLetter(group.state_group),
                   color: STATE_GROUPS[group.state_group]?.color,
                 })) ?? []
               }
@@ -51,7 +51,7 @@ export function ProfileStateDistribution({ stateDistribution, userProfile }: Pro
                 fill: STATE_GROUPS[group.state_group]?.color,
               }))}
               showTooltip
-              tooltipLabel="Count"
+              tooltipLabel="数量"
               paddingAngle={5}
               cornerRadius={4}
               innerRadius="50%"

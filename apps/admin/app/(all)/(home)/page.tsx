@@ -45,6 +45,6 @@ function HomePage() {
 export default observer(HomePage);
 
 export const meta: Route.MetaFunction = () => [
-  { title: "Admin – Instance Setup & Sign-In" },
-  { name: "description", content: "Configure your Plane instance or sign in to the admin portal." },
+  { title: "星轴科技研发管理平台 - 管理后台登录" },
+  { name: "description", content: "配置星轴科技研发管理平台或登录管理后台。" },
 ];

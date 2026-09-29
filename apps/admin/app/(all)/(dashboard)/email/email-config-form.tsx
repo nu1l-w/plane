@@ -71,7 +71,7 @@ export function InstanceEmailForm(props: IInstanceEmailForm) {
     {
       key: "EMAIL_PORT",
       type: "text",
-      label: "Port",
+      label: "端口",
       placeholder: "8080",
       error: Boolean(errors.EMAIL_PORT),
       required: true,
@@ -79,10 +79,9 @@ export function InstanceEmailForm(props: IInstanceEmailForm) {
     {
       key: "EMAIL_FROM",
       type: "text",
-      label: "Sender's email address",
-      description:
-        "This is the email address your users will see when getting emails from this instance. You will need to verify this address.",
-      placeholder: "no-reply@projectplane.so",
+      label: "发件人邮箱",
+      description: "用户收到平台邮件时会看到此地址，请确保该邮箱已通过服务商验证。",
+      placeholder: "no-reply@company.com",
       error: Boolean(errors.EMAIL_FROM),
       required: true,
     },
@@ -92,16 +91,16 @@ export function InstanceEmailForm(props: IInstanceEmailForm) {
     {
       key: "EMAIL_HOST_USER",
       type: "text",
-      label: "Username",
-      placeholder: "getitdone@projectplane.so",
+      label: "用户名",
+      placeholder: "account@company.com",
       error: Boolean(errors.EMAIL_HOST_USER),
       required: false,
     },
     {
       key: "EMAIL_HOST_PASSWORD",
       type: "password",
-      label: "Password",
-      placeholder: "Password",
+      label: "密码",
+      placeholder: "请输入密码",
       error: Boolean(errors.EMAIL_HOST_PASSWORD),
       required: false,
     },

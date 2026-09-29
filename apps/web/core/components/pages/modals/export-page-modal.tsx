@@ -156,7 +156,7 @@ export function ExportPageModal(props: Props) {
       const blob = await pdf(<PDFDocument content={parsedPageContent} pageFormat={selectedPageFormat} />).toBlob();
       initiateDownload(blob, `${fileName}-${selectedPageFormat.toString().toLowerCase()}.pdf`);
     } catch (error) {
-      throw new Error(`Error in exporting as a PDF: ${error}`);
+      throw new Error(`Error in exporting as a PDF: ${error}`, { cause: error });
     }
   };
   // handle export as markdown
@@ -171,7 +171,7 @@ export function ExportPageModal(props: Props) {
       const blob = new Blob([parsedMarkdownContent], { type: "text/markdown" });
       initiateDownload(blob, `${fileName}.md`);
     } catch (error) {
-      throw new Error(`Error in exporting as markdown: ${error}`);
+      throw new Error(`Error in exporting as markdown: ${error}`, { cause: error });
     }
   };
   // handle export
@@ -206,10 +206,10 @@ export function ExportPageModal(props: Props) {
     <ModalCore isOpen={isOpen} handleClose={handleClose} position={EModalPosition.CENTER} width={EModalWidth.SM}>
       <div>
         <div className="space-y-5 p-5">
-          <h3 className="text-18 font-medium text-secondary">Export page</h3>
+          <h3 className="text-18 font-medium text-secondary">导出页面</h3>
           <div className="space-y-3">
             <div className="flex items-center justify-between gap-2">
-              <h6 className="flex-shrink-0 text-13 text-secondary">Export format</h6>
+              <h6 className="flex-shrink-0 text-13 text-secondary">导出格式</h6>
               <Controller
                 control={control}
                 name="export_format"
@@ -232,7 +232,7 @@ export function ExportPageModal(props: Props) {
               />
             </div>
             <div className="flex items-center justify-between gap-2">
-              <h6 className="flex-shrink-0 text-13 text-secondary">Include content</h6>
+              <h6 className="flex-shrink-0 text-13 text-secondary">包含内容</h6>
               <Controller
                 control={control}
                 name="content_variety"
@@ -256,7 +256,7 @@ export function ExportPageModal(props: Props) {
             </div>
             {isPDFSelected && (
               <div className="flex items-center justify-between gap-2">
-                <h6 className="flex-shrink-0 text-13 text-secondary">Page format</h6>
+                <h6 className="flex-shrink-0 text-13 text-secondary">页面格式</h6>
                 <Controller
                   control={control}
                   name="page_format"

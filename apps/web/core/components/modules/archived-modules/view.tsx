@@ -38,13 +38,11 @@ export const ArchivedModulesView = observer(function ArchivedModulesView(props: 
           <img
             src={archivedModulesSearchQuery.trim() === "" ? AllFiltersImage : NameFilterImage}
             className="mx-auto h-36 w-36 sm:h-48 sm:w-48"
-            alt="No matching modules"
+            alt="没有匹配的模块"
           />
-          <h5 className="mt-7 mb-1 text-18 font-medium">No matching modules</h5>
+          <h5 className="mt-7 mb-1 text-18 font-medium">没有匹配的模块</h5>
           <p className="text-14 text-placeholder">
-            {archivedModulesSearchQuery.trim() === ""
-              ? "Remove the filters to see all modules"
-              : "Remove the search criteria to see all modules"}
+            {archivedModulesSearchQuery.trim() === "" ? "清除筛选条件以查看全部模块" : "清除搜索条件以查看全部模块"}
           </p>
         </div>
       </div>

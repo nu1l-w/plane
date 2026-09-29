@@ -92,8 +92,8 @@ export const InboxIssueCreateRoot = observer(function InboxIssueCreateRoot(props
     } else {
       setToast({
         type: TOAST_TYPE.ERROR,
-        title: "Error!",
-        message: "Editor is still processing changes. Please wait before proceeding.",
+        title: "请稍候",
+        message: "编辑器仍在处理更改，请稍后再继续。",
       });
       event.preventDefault(); // Prevent default action if editor is not ready to discard
     }
@@ -124,8 +124,8 @@ export const InboxIssueCreateRoot = observer(function InboxIssueCreateRoot(props
     if (!descriptionEditorRef.current?.isEditorReadyToDiscard()) {
       setToast({
         type: TOAST_TYPE.ERROR,
-        title: "Error!",
-        message: "Editor is still processing changes. Please wait before proceeding.",
+        title: "请稍候",
+        message: "编辑器仍在处理更改，请稍后再继续。",
       });
       return;
     }
@@ -159,16 +159,16 @@ export const InboxIssueCreateRoot = observer(function InboxIssueCreateRoot(props
         }
         setToast({
           type: TOAST_TYPE.SUCCESS,
-          title: `Success!`,
-          message: "Work item created successfully.",
+          title: "创建成功",
+          message: "工作项已创建。",
         });
       })
       .catch((error) => {
         console.error(error);
         setToast({
           type: TOAST_TYPE.ERROR,
-          title: `Error!`,
-          message: "Some error occurred. Please try again.",
+          title: "创建失败",
+          message: "创建工作项时出现问题，请重试。",
         });
       });
     setFormSubmitting(false);
@@ -226,8 +226,8 @@ export const InboxIssueCreateRoot = observer(function InboxIssueCreateRoot(props
                   } else {
                     setToast({
                       type: TOAST_TYPE.ERROR,
-                      title: "Error!",
-                      message: "Editor is still processing changes. Please wait before proceeding.",
+                      title: "请稍候",
+                      message: "编辑器仍在处理更改，请稍后再继续。",
                     });
                   }
                 }}

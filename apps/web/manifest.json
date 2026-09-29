@@ -4,9 +4,9 @@
   "display": "standalone",
   "scope": "/",
   "start_url": "/",
-  "name": "Plane | Accelerate software development with peace.",
-  "short_name": "Plane",
-  "description": "Plane accelerated the software development by order of magnitude for agencies and product companies.",
+  "name": "星轴科技研发管理平台",
+  "short_name": "星轴科技",
+  "description": "星轴科技内部研发项目管理平台。",
   "icons": [
     {
       "src": "/icon-192x192.png",

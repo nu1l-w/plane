@@ -87,36 +87,47 @@ export const messages = (activity: TProjectActivity): { message: string | ReactN
   const workspaceDetail = store.workspaceRoot.getWorkspaceById(activity.workspace);
 
   const getBooleanActionText = (value: string | undefined) => {
-    if (value === "true") return "enabled";
-    if (value === "false") return "disabled";
+    if (value === "true") return "已启用";
+    if (value === "false") return "已禁用";
     return verb;
   };
 
   switch (activityType) {
     case "priority":
+      const priorityMap: Record<string, string> = {
+        urgent: "紧急",
+        high: "高",
+        medium: "中",
+        low: "低",
+        none: "无",
+      };
+      const translatedPriority =
+        newValue && priorityMap[newValue.toLowerCase()]
+          ? priorityMap[newValue.toLowerCase()]
+          : newValue || "无";
       return {
         message: (
           <>
-            set the priority to <span className="font-medium text-primary">{newValue || "none"}</span>
+            将优先级设置为 <span className="font-medium text-primary">{translatedPriority}</span>
           </>
         ),
       };
     case "archived_at":
       return {
-        message: newValue === "restore" ? "restored the project" : "archived the project",
-        customUserName: newValue === "archive" ? "Plane" : undefined,
+        message: newValue === "restore" ? "已恢复项目" : "已归档项目",
+        customUserName: newValue === "archive" ? "星轴科技" : undefined,
       };
     case "name":
       return {
         message: (
           <>
-            renamed the project to <span className="font-medium text-primary">{newValue}</span>
+            将项目重命名为 <span className="font-medium text-primary">{newValue}</span>
           </>
         ),
       };
     case "description":
       return {
-        message: newValue ? "updated the project description" : "removed the project description",
+        message: newValue ? "已更新项目描述" : "已移除项目描述",
       };
     case "start_date":
       return {
@@ -124,10 +135,10 @@ export const messages = (activity: TProjectActivity): { message: string | ReactN
           <>
             {newValue ? (
               <>
-                set the start date to <span className="font-medium text-primary">{newValue}</span>
+                将开始日期设置为 <span className="font-medium text-primary">{newValue}</span>
               </>
             ) : (
-              "removed the start date"
+              "已移除开始日期"
             )}
           </>
         ),
@@ -138,10 +149,10 @@ export const messages = (activity: TProjectActivity): { message: string | ReactN
           <>
             {newValue ? (
               <>
-                set the target date to <span className="font-medium text-primary">{newValue}</span>
+                将目标日期设置为 <span className="font-medium text-primary">{newValue}</span>
               </>
             ) : (
-              "removed the target date"
+              "已移除目标日期"
             )}
           </>
         ),
@@ -150,7 +161,7 @@ export const messages = (activity: TProjectActivity): { message: string | ReactN
       return {
         message: (
           <>
-            set the state to <span className="font-medium text-primary">{newValue || "none"}</span>
+            将状态设置为 <span className="font-medium text-primary">{newValue || "无"}</span>
           </>
         ),
       };
@@ -160,11 +171,11 @@ export const messages = (activity: TProjectActivity): { message: string | ReactN
           <>
             {newValue ? (
               <>
-                set the estimate point to <span className="font-medium text-primary">{newValue}</span>
+                将估时点设置为 <span className="font-medium text-primary">{newValue}</span>
               </>
             ) : (
               <>
-                removed the estimate point
+                已移除估时点
                 {oldValue && (
                   <>
                     {" "}
@@ -181,7 +192,7 @@ export const messages = (activity: TProjectActivity): { message: string | ReactN
         message: (
           <>
             <span>
-              {verb} this project {verb === "removed" ? "from" : "to"} the cycle{" "}
+              {verb === "removed" ? "已从周期" : "已将此项目添加到周期"} {" "}
             </span>
             {verb !== "removed" ? (
               <a
@@ -193,8 +204,9 @@ export const messages = (activity: TProjectActivity): { message: string | ReactN
                 {activity.new_value}
               </a>
             ) : (
-              <span className="font-medium text-primary">{activity.old_value || "Unknown cycle"}</span>
+              <span className="font-medium text-primary">{activity.old_value || "未知周期"}</span>
             )}
+            {verb === "removed" ? "中移除" : ""}
           </>
         ),
       };
@@ -203,11 +215,12 @@ export const messages = (activity: TProjectActivity): { message: string | ReactN
         message: (
           <>
             <span>
-              {verb} this project {verb === "removed" ? "from" : "to"} the module{" "}
+              {verb === "removed" ? "已从模块" : "已将此项目添加到模块"} {" "}
             </span>
             <span className="font-medium text-primary">
-              {verb === "removed" ? oldValue : newValue || "Unknown module"}
+              {verb === "removed" ? oldValue : newValue || "未知模块"}
             </span>
+            {verb === "removed" ? "中移除" : ""}
           </>
         ),
       };
@@ -215,33 +228,33 @@ export const messages = (activity: TProjectActivity): { message: string | ReactN
       return {
         message: (
           <>
-            {verb} the label{" "}
-            <span className="font-medium text-primary">{newValue || oldValue || "Untitled label"}</span>
+            {verb === "removed" ? "已移除标签" : "已添加标签"}{" "}
+            <span className="font-medium text-primary">{newValue || oldValue || "未命名标签"}</span>
           </>
         ),
       };
     case "inbox":
       return {
-        message: <>{newValue ? "enabled" : "disabled"} inbox</>,
+        message: <>{newValue ? "已启用" : "已禁用"} 收集</>,
       };
     case "page":
       return {
         message: (
           <>
-            {newValue ? "created" : "removed"} the project page{" "}
-            <span className="font-medium text-primary">{newValue || oldValue || "Untitled page"}</span>
+            {newValue ? "已创建" : "已移除"} 项目页面{" "}
+            <span className="font-medium text-primary">{newValue || oldValue || "未命名页面"}</span>
           </>
         ),
       };
     case "network":
       return {
-        message: <>{newValue ? "enabled" : "disabled"} network access</>,
+        message: <>{newValue ? "已启用" : "已禁用"} 网络访问</>,
       };
     case "identifier":
       return {
         message: (
           <>
-            updated project identifier to <span className="font-medium text-primary">{newValue || "none"}</span>
+            已将项目标识符更新为 <span className="font-medium text-primary">{newValue || "无"}</span>
           </>
         ),
       };
@@ -249,7 +262,7 @@ export const messages = (activity: TProjectActivity): { message: string | ReactN
       return {
         message: (
           <>
-            changed project timezone to <span className="font-medium text-primary">{newValue || "default"}</span>
+            已将项目时区更改为 <span className="font-medium text-primary">{newValue || "默认"}</span>
           </>
         ),
       };
@@ -261,29 +274,29 @@ export const messages = (activity: TProjectActivity): { message: string | ReactN
       return {
         message: (
           <>
-            {getBooleanActionText(newValue)} {activityType.replace(/_view$/, "").replace(/_/g, " ")} view
+            {getBooleanActionText(newValue)} {activityType.replace(/_view$/, "").replace(/_/g, " ")} 视图
           </>
         ),
       };
     case "is_project_updates_enabled":
       return {
-        message: <>{getBooleanActionText(newValue)} project updates</>,
+        message: <>{getBooleanActionText(newValue)} 项目更新</>,
       };
     case "is_epic_enabled":
       return {
-        message: <>{getBooleanActionText(newValue)} epics</>,
+        message: <>{getBooleanActionText(newValue)} 史诗</>,
       };
     case "is_workflow_enabled":
       return {
-        message: <>{getBooleanActionText(newValue)} custom workflow</>,
+        message: <>{getBooleanActionText(newValue)} 自定义工作流</>,
       };
     case "is_time_tracking_enabled":
       return {
-        message: <>{getBooleanActionText(newValue)} time tracking</>,
+        message: <>{getBooleanActionText(newValue)} 时间跟踪</>,
       };
     case "is_issue_type_enabled":
       return {
-        message: <>{getBooleanActionText(newValue)} work item types</>,
+        message: <>{getBooleanActionText(newValue)} 工作项类型</>,
       };
     default:
       return {

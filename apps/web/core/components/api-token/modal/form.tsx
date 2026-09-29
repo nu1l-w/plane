@@ -90,8 +90,8 @@ export function CreateApiTokenForm(props: Props) {
     if (!neverExpires && (!data.expired_at || (data.expired_at === "custom" && !customDate)))
       return setToast({
         type: TOAST_TYPE.ERROR,
-        title: "Error!",
-        message: "Please select an expiration date.",
+        title: "请选择有效期",
+        message: "请为 API Token 选择过期日期。",
       });
 
     const payload: Partial<IApiToken> = {
@@ -188,11 +188,7 @@ export function CreateApiTokenForm(props: Props) {
                           )}
                         >
                           <Calendar className="h-3 w-3" />
-                          {value === "custom"
-                            ? "Custom date"
-                            : selectedOption
-                              ? selectedOption.label
-                              : "Set expiration date"}
+                          {value === "custom" ? "自定义日期" : selectedOption ? selectedOption.label : "设置过期日期"}
                         </div>
                       }
                       value={value}
@@ -204,7 +200,7 @@ export function CreateApiTokenForm(props: Props) {
                           {option.label}
                         </CustomSelect.Option>
                       ))}
-                      <CustomSelect.Option value="custom">Custom</CustomSelect.Option>
+                      <CustomSelect.Option value="custom">自定义</CustomSelect.Option>
                     </CustomSelect>
                   );
                 }}
@@ -217,7 +213,7 @@ export function CreateApiTokenForm(props: Props) {
                     minDate={tomorrow}
                     icon={<Calendar className="h-3 w-3" />}
                     buttonVariant="border-with-text"
-                    placeholder="Set date"
+                    placeholder="设置日期"
                     disabled={neverExpires}
                   />
                 </div>
@@ -227,10 +223,10 @@ export function CreateApiTokenForm(props: Props) {
               <span className="text-11 text-placeholder">
                 {expiredAt === "custom"
                   ? customDate
-                    ? `Expires ${renderFormattedDate(customDateFormatted ?? "")} at ${renderFormattedTime(customDateFormatted ?? "")}`
+                    ? `有效期至 ${renderFormattedDate(customDateFormatted ?? "")} ${renderFormattedTime(customDateFormatted ?? "")}`
                     : null
                   : expiredAt
-                    ? `Expires ${renderFormattedDate(expiryDate ?? "")} at ${renderFormattedTime(expiryDate ?? "")}`
+                    ? `有效期至 ${renderFormattedDate(expiryDate ?? "")} ${renderFormattedTime(expiryDate ?? "")}`
                     : null}
               </span>
             )}

@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import React from "react";
 import { observer } from "mobx-react";
 // plane imports
 import type { IIssueLabel } from "@plane/types";
@@ -31,7 +30,7 @@ export const PowerKLabelsMenu = observer(function PowerKLabelsMenu({ labels, onS
       getLabel={(label) => label.name}
       isSelected={(label) => !!value?.includes(label.id)}
       onSelect={onSelect}
-      emptyText="No labels found"
+      emptyText="没有找到标签"
     />
   );
 });

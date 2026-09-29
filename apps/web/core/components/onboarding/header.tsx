@@ -6,7 +6,7 @@
 
 import { observer } from "mobx-react";
 // plane imports
-import { PlaneLockup, ChevronLeftIcon } from "@plane/propel/icons";
+import { ChevronLeftIcon } from "@plane/propel/icons";
 import { Tooltip } from "@plane/propel/tooltip";
 import type { TOnboardingStep } from "@plane/types";
 import { EOnboardingSteps } from "@plane/types";
@@ -83,7 +83,7 @@ export const OnboardingHeader = observer(function OnboardingHeader(props: Onboar
               <ChevronLeftIcon className="size-6 text-placeholder" />
             </button>
           )}
-          <PlaneLockup height={20} width={95} className="text-primary" />
+          <span className="text-18 font-semibold text-primary">星轴科技</span>
         </div>
         <SwitchAccountDropdown fullName={userName} />
       </div>

@@ -3,7 +3,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Updates on {{entity_type}}</title>
+    <title>{{entity_type}} 更新通知 - 星轴科技研发管理平台</title>
     <style type="text/css" emogrify="no"> html { font-family: system-ui; } p, h1, h2, h3, h4, ol, ul { margin: 0; } h-full { height: 100%; } a:hover { color: #3358d4 !important; } </style>
     <style> *[class="gmail-fix"] { display: none !important; } </style>
     <style type="text/css" emogrify="no"> @media (max-width: 600px) { .gmx-killpill { content: " \03D1"; } } </style>
@@ -15,7 +15,7 @@
         <table style="width: 600px" cellspacing="0">
           <tr>
             <td>
-              <div style="margin-left: 30px; margin-bottom: 20px; margin-top: 20px" > <img src="https://media.docs.plane.so/logo/new-logo-white.png" width="150" border="0" /> </div>
+              <div style="margin-left: 30px; margin-bottom: 20px; margin-top: 20px; font-size: 18px; font-weight: 600; color: #1f2d5c;">星轴科技研发管理平台</div>
             </td>
           </tr>
         </table>
@@ -26,7 +26,7 @@
           <table style="width: 100%">
             <tr>
               <td>
-                <p style="font-size: 1rem; color: #1f2d5c; font-weight: 600"> {{ issue.issue_identifier }} updates </p>
+                <p style="font-size: 1rem; color: #1f2d5c; font-weight: 600"> {{ issue.issue_identifier }} 更新 </p>
                 <p style="font-size: 1rem; font-weight: 500; color: #1f2d5c; line-height: 28px"> {{workspace}}/<a target="_blank" style="color: #1f2d5c; text-decoration: none;" href="{{project_url}}">{{project}}</a>/<a style="color: #1f2d5c; text-decoration: none;" target="_blank" href="{{issue_url}}">{{issue.issue_identifier}}</a>: {{ issue.name }} </p>
               </td>
             </tr>
@@ -224,7 +224,7 @@
           {% endif %} 
         </div>
         <a href="{{ issue_url }}" style="text-decoration: none;">
-          <div style=" max-width: min-content; white-space: nowrap; background-color: #3e63dd; padding: 10px 15px; border: 1px solid #2f4ba8; border-radius: 4px; margin-top: 15px; cursor: pointer; font-size: 0.8rem; color: white; " > View {{entity_type}} </div>
+          <div style=" max-width: min-content; white-space: nowrap; background-color: #3e63dd; padding: 10px 15px; border: 1px solid #2f4ba8; border-radius: 4px; margin-top: 15px; cursor: pointer; font-size: 0.8rem; color: white; " > 查看{{entity_type}} </div>
         </a>
       </div>
       <!-- Footer --> 
@@ -233,7 +233,6 @@
           <td>
             <div style="font-size: 0.8rem; color: #1c2024">
               This email was sent to <a href="mailto:{{receiver.email}}" style="color: #3a5bc7; font-weight: 500; text-decoration: none" >{{ receiver.email }}.</a > If you'd rather not receive this kind of email, <a href="{{ issue_url }}" style="color: #3a5bc7; text-decoration: none" >you can unsubscribe to the {{entity_type}}</a > or <a href="{{ user_preference }}" style="color: #3a5bc7; text-decoration: none" >manage your email preferences</a >. <!-- Github | LinkedIn | Twitter --> 
-              <div style="margin-top: 60px; float: right"> <a href="https://github.com/makeplane" target="_blank" style="margin-left: 10px; text-decoration: none" > <img src="https://creative-assets.mailinblue.com/editor/social-icons/rounded_colored/github_32px.png" width="25" height="25" border="0" style="display: inline-block" /> </a> <a href="https://www.linkedin.com/company/planepowers/" target="_blank" style="margin-left: 10px; text-decoration: none" > <img src="https://creative-assets.mailinblue.com/editor/social-icons/rounded_colored/linkedin_32px.png" width="25" height="25" border="0" style="display: inline-block" /> </a> <a href="https://x.com/planepowers" target="_blank" style="margin-left: 10px; text-decoration: none" > <img src="https://creative-assets.mailinblue.com/editor/social-icons/rounded_colored/twitter_32px.png" width="25" height="25" border="0" style="display: inline-block" /> </a> </div>
             </div>
           </td>
         </tr>

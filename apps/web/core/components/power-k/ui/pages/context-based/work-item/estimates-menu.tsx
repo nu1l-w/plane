@@ -66,7 +66,7 @@ export const PowerKWorkItemEstimatesMenu = observer(function PowerKWorkItemEstim
           );
         })
       ) : (
-        <div className="text-center">No estimate found</div>
+        <div className="text-center">没有找到估算值</div>
       )}
     </Command.Group>
   );

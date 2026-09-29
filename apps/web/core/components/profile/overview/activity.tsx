@@ -66,13 +66,13 @@ export const ProfileActivity = observer(function ProfileActivity() {
                 <div className="-mt-1 w-4/5 break-words">
                   <p className="inline text-13 text-secondary">
                     <span className="font-medium text-primary">
-                      {currentUser?.id === activity.actor_detail?.id ? "You" : activity.actor_detail?.display_name}{" "}
+                      {currentUser?.id === activity.actor_detail?.id ? "你" : activity.actor_detail?.display_name}{" "}
                     </span>
                     {activity.field ? (
                       <ActivityMessage activity={activity} showIssue />
                     ) : (
                       <span>
-                        created <IssueLink activity={activity} />
+                        已创建 <IssueLink activity={activity} />
                       </span>
                     )}
                   </p>

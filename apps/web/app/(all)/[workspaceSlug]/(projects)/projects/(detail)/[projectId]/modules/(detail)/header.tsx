@@ -206,11 +206,7 @@ export const ModuleIssuesHeader = observer(function ModuleIssuesHeader() {
               />
             </div>
             {moduleId && <WorkItemFiltersToggle entityType={EIssuesStoreType.MODULE} entityId={moduleId} />}
-            <FiltersDropdown
-              title="Display"
-              placement="bottom-end"
-              miniIcon={<SlidersHorizontal className="size-3.5" />}
-            >
+            <FiltersDropdown title="显示" placement="bottom-end" miniIcon={<SlidersHorizontal className="size-3.5" />}>
               <DisplayFiltersSelection
                 layoutDisplayFiltersOptions={
                   activeLayout ? ISSUE_DISPLAY_FILTERS_BY_PAGE.issues.layoutOptions[activeLayout] : undefined
@@ -229,7 +225,7 @@ export const ModuleIssuesHeader = observer(function ModuleIssuesHeader() {
           {canUserCreateIssue ? (
             <>
               <Button className="hidden md:block" onClick={() => setAnalyticsModal(true)} variant="secondary" size="lg">
-                <span className="hidden @4xl:flex">Analytics</span>
+                <span className="hidden @4xl:flex">分析</span>
                 <span className="@4xl:hidden">
                   <ChartNoAxesColumn className="size-3.5" />
                 </span>
@@ -243,7 +239,7 @@ export const ModuleIssuesHeader = observer(function ModuleIssuesHeader() {
                 }}
                 data-ph-element={WORK_ITEM_TRACKER_ELEMENTS.HEADER_ADD_BUTTON.MODULE}
               >
-                Add work item
+                添加工作项
               </Button>
             </>
           ) : (

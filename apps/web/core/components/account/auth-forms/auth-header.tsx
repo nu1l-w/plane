@@ -27,30 +27,30 @@ type TAuthHeader = {
 const Titles = {
   [EAuthModes.SIGN_IN]: {
     [EAuthSteps.EMAIL]: {
-      header: "Work in all dimensions.",
-      subHeader: "Welcome back to Plane.",
+      header: "让研发工作井然有序",
+      subHeader: "欢迎回到星轴科技研发管理平台",
     },
     [EAuthSteps.PASSWORD]: {
-      header: "Work in all dimensions.",
-      subHeader: "Welcome back to Plane.",
+      header: "让研发工作井然有序",
+      subHeader: "欢迎回到星轴科技研发管理平台",
     },
     [EAuthSteps.UNIQUE_CODE]: {
-      header: "Work in all dimensions.",
-      subHeader: "Welcome back to Plane.",
+      header: "让研发工作井然有序",
+      subHeader: "欢迎回到星轴科技研发管理平台",
     },
   },
   [EAuthModes.SIGN_UP]: {
     [EAuthSteps.EMAIL]: {
-      header: "Work in all dimensions.",
-      subHeader: "Create your Plane account.",
+      header: "让研发工作井然有序",
+      subHeader: "创建星轴科技研发管理平台账号",
     },
     [EAuthSteps.PASSWORD]: {
-      header: "Work in all dimensions.",
-      subHeader: "Create your Plane account.",
+      header: "让研发工作井然有序",
+      subHeader: "创建星轴科技研发管理平台账号",
     },
     [EAuthSteps.UNIQUE_CODE]: {
-      header: "Work in all dimensions.",
-      subHeader: "Create your Plane account.",
+      header: "让研发工作井然有序",
+      subHeader: "创建星轴科技研发管理平台账号",
     },
   },
 };
@@ -88,9 +88,7 @@ export const AuthHeader = observer(function AuthHeader(props: TAuthHeader) {
           </div>
         ),
         subHeader:
-          mode == EAuthModes.SIGN_UP
-            ? "Create an account to start managing work with your team."
-            : "Log in to start managing work with your team.",
+          mode == EAuthModes.SIGN_UP ? "创建账号，开始与团队协作管理研发工作。" : "登录后开始与团队协作管理研发工作。",
       };
     }
 

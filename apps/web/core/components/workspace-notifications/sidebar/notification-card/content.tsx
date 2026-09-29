@@ -47,60 +47,60 @@ export const BASE_NOTIFICATION_CONTENT_MAP: TNotificationContentMap = {
   duplicate: ({ verb }) => ({
     action:
       verb === "created"
-        ? "marked that this work item is a duplicate of"
-        : "marked that this work item is not a duplicate",
+        ? "已标记此工作项为"
+        : "已取消标记此工作项为重复项",
     value: null,
     showConnector: false,
   }),
   assignees: ({ newValue, oldValue }) => ({
-    action: newValue !== "" ? "added assignee" : "removed assignee",
+    action: newValue !== "" ? "已添加负责人" : "已移除负责人",
     value: newValue !== "" ? newValue : oldValue,
     showConnector: false,
   }),
   start_date: ({ newValue }) => ({
-    action: newValue !== "" ? "set start date" : "removed the start date",
+    action: newValue !== "" ? "已设置开始日期" : "已移除开始日期",
     value: renderFormattedDate(newValue),
     showConnector: false,
   }),
   target_date: ({ newValue }) => ({
-    action: newValue !== "" ? "set due date" : "removed the due date",
+    action: newValue !== "" ? "已设置截止日期" : "已移除截止日期",
     value: renderFormattedDate(newValue),
     showConnector: false,
   }),
   labels: ({ newValue, oldValue }) => ({
-    action: newValue !== "" ? "added label" : "removed label",
+    action: newValue !== "" ? "已添加标签" : "已移除标签",
     value: newValue !== "" ? newValue : oldValue,
     showConnector: false,
   }),
   parent: ({ newValue, oldValue }) => ({
-    action: newValue !== "" ? "added parent" : "removed parent",
+    action: newValue !== "" ? "已添加父项" : "已移除父项",
     value: newValue !== "" ? newValue : oldValue,
     showConnector: false,
   }),
   relates_to: () => ({
-    action: "marked that this work item is related to",
+    action: "已标记此工作项关联到",
     value: null,
     showConnector: true,
   }),
   comment: ({ newValue }, renderCommentBox?: boolean) => ({
-    action: "commented",
+    action: "已评论",
     value: renderCommentBox ? null : sanitizeCommentForNotification(newValue),
     showConnector: false,
   }),
   archived_at: ({ newValue }) => ({
-    action: newValue === "restore" ? "restored the work item" : "archived the work item",
+    action: newValue === "restore" ? "已恢复工作项" : "已归档工作项",
     value: null,
     showConnector: false,
   }),
   None: () => ({
     action: null,
-    value: "the work item and assigned it to you.",
+    value: "工作项并分配给您。",
     showConnector: false,
   }),
   // Fields below only define value - action falls through to default handler
   attachment: () => ({
     action: null,
-    value: "the work item",
+    value: "工作项",
     showConnector: true,
   }),
   description: ({ newValue }) => ({

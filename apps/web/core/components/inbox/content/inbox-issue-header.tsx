@@ -217,7 +217,7 @@ export const InboxIssueActionsHeader = observer(function InboxIssueActionsHeader
     else {
       setToast({
         type: TOAST_TYPE.ERROR,
-        title: "Permission denied",
+        title: "权限不足",
         message: errorMessage,
       });
     }
@@ -311,14 +311,14 @@ export const InboxIssueActionsHeader = observer(function InboxIssueActionsHeader
                 variant="secondary"
                 size="lg"
                 icon={ChevronUpIcon}
-                aria-label="Previous work item"
+                aria-label="上一个工作项"
                 onClick={() => handleInboxIssueNavigation("prev")}
               />
               <IconButton
                 variant="secondary"
                 size="lg"
                 icon={ChevronDownIcon}
-                aria-label="Next work item"
+                aria-label="下一个工作项"
                 onClick={() => handleInboxIssueNavigation("next")}
               />
             </div>

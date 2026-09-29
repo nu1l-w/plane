@@ -26,15 +26,15 @@ export const IssueInboxActivity = observer(function IssueInboxActivity(props: TI
   const getInboxActivityMessage = () => {
     switch (activity?.verb) {
       case "-1":
-        return "declined this work item from intake.";
+        return "已从收集中拒绝此工作项。";
       case "0":
-        return "snoozed this work item.";
+        return "已暂缓此工作项。";
       case "1":
-        return "accepted this work item from intake.";
+        return "已从收集中接受此工作项。";
       case "2":
-        return "declined this work item from intake by marking a duplicate work item.";
+        return "已通过标记重复工作项从收集中拒绝此工作项。";
       default:
-        return "updated intake work item status.";
+        return "已更新收集工作项状态。";
     }
   };
 

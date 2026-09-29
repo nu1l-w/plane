@@ -4,12 +4,10 @@
  * See the LICENSE file for details.
  */
 
-import React from "react";
-
 type Props = {
   emptyText?: string;
 };
 
-export function PowerKMenuEmptyState({ emptyText = "No results found" }: Props) {
+export function PowerKMenuEmptyState({ emptyText = "没有找到结果" }: Props) {
   return <div className="px-3 py-8 text-center text-13 text-tertiary">{emptyText}</div>;
 }

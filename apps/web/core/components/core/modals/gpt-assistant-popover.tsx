@@ -92,12 +92,12 @@ export function GptAssistantPopover(props: Props) {
     const error = err?.data?.error;
     const errorMessage =
       err?.status === 429
-        ? error || "You have reached the maximum number of requests of 50 requests per month per user."
-        : error || "Some error occurred. Please try again.";
+        ? error || "您已达到每月每用户 50 次请求的最大数量限制。"
+        : error || "发生错误，请重试。";
 
     setToast({
       type: TOAST_TYPE.ERROR,
-      title: "Error!",
+      title: "错误！",
       message: errorMessage,
     });
 
@@ -123,8 +123,8 @@ export function GptAssistantPopover(props: Props) {
   const handleInvalidTask = () => {
     setToast({
       type: TOAST_TYPE.ERROR,
-      title: "Error!",
-      message: "Please enter some task to get AI assistance.",
+      title: "错误！",
+      message: "请输入任务内容以获取 AI 协助。",
     });
   };
 
@@ -185,15 +185,15 @@ export function GptAssistantPopover(props: Props) {
         onClose();
       }}
     >
-      Use this response
+      使用此回复
     </Button>
   );
 
   const generateResponseButtonText = isSubmitting
-    ? "Generating response..."
+    ? "正在生成回复..."
     : response === ""
-      ? "Generate response"
-      : "Generate again";
+      ? "生成回复"
+      : "重新生成";
 
   return (
     <Popover as="div" className={`relative w-min text-left`}>
@@ -222,7 +222,7 @@ export function GptAssistantPopover(props: Props) {
           <div className="vertical-scroll-enable max-h-72 space-y-4 overflow-y-auto">
             {prompt && (
               <div className="text-13">
-                Content:
+                内容：
                 <RichTextEditor
                   editable={false}
                   id="ai-assistant-content"
@@ -237,7 +237,7 @@ export function GptAssistantPopover(props: Props) {
             )}
             {response !== "" && (
               <div className="page-block-section max-h-[8rem] text-13">
-                Response:
+                回复：
                 <RichTextEditor
                   editable={false}
                   id="ai-assistant-response"
@@ -251,8 +251,7 @@ export function GptAssistantPopover(props: Props) {
             )}
             {invalidResponse && (
               <div className="text-13 text-danger-primary">
-                No response could be generated. This may be due to insufficient content or task information. Please try
-                again.
+                无法生成回复。这可能是由于内容或任务信息不足。请重试。
               </div>
             )}
           </div>
@@ -268,7 +267,7 @@ export function GptAssistantPopover(props: Props) {
                 onChange={onChange}
                 ref={ref}
                 placeholder={`${
-                  prompt && prompt !== "" ? "Tell AI what action to perform on this content..." : "Ask AI anything..."
+                  prompt && prompt !== "" ? "告诉 AI 要对此内容执行什么操作..." : "向 AI 提问..."
                 }`}
                 className="w-full"
                 autoFocus
@@ -282,13 +281,13 @@ export function GptAssistantPopover(props: Props) {
               <>
                 <div className="flex items-start justify-center gap-2 text-13 text-accent-primary">
                   <AlertCircle className="h-4 w-4" />
-                  <p>By using this feature, you consent to sharing the message with a 3rd party service. </p>
+                  <p>使用此功能即表示您同意将消息分享给第三方服务。</p>
                 </div>
               </>
             )}
             <div className="flex items-center gap-2">
               <Button variant="secondary" onClick={onClose}>
-                Close
+                关闭
               </Button>
               <Button variant="primary" onClick={handleSubmit(handleAIResponse)} loading={isSubmitting}>
                 {generateResponseButtonText}

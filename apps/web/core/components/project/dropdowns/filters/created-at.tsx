@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { observer } from "mobx-react";
 // plane constants
 import { PROJECT_CREATED_AT_FILTER_OPTIONS } from "@plane/constants";
@@ -79,7 +79,7 @@ export const FilterCreatedDate = observer(function FilterCreatedDate(props: Prop
               />
             </>
           ) : (
-            <p className="text-11 text-placeholder italic">No matches found</p>
+            <p className="text-11 text-placeholder italic">没有匹配结果</p>
           )}
         </div>
       )}

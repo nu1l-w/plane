@@ -11,6 +11,7 @@ import { SPREADSHEET_SELECT_GROUP } from "@plane/constants";
 // ui
 import type { IIssueDisplayFilterOptions, IIssueDisplayProperties } from "@plane/types";
 // components
+import { useTranslation } from "@plane/i18n";
 import { cn } from "@plane/utils";
 import { MultipleSelectGroupAction } from "@/components/core/multiple-select";
 // hooks
@@ -39,6 +40,7 @@ export const SpreadsheetHeader = observer(function SpreadsheetHeader(props: Prop
     selectionHelpers,
     isEpic = false,
   } = props;
+  const { t } = useTranslation();
   // router
   const { projectId } = useParams();
   // derived values
@@ -71,7 +73,7 @@ export const SpreadsheetHeader = observer(function SpreadsheetHeader(props: Prop
                   />
                 </div>
               )}
-              <span className="text-13 font-medium">{`${isEpic ? "Epics" : "Work items"}`}</span>
+              <span className="text-13 font-medium">{`${isEpic ? t("common.epics") : t("common.work_items")}`}</span>
             </div>
           </div>
         </th>

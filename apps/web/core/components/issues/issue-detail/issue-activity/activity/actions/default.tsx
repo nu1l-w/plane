@@ -38,14 +38,15 @@ export const IssueDefaultActivity = observer(function IssueDefaultActivity(props
         {activity.verb === "created" ? (
           source && source !== EInboxIssueSource.IN_APP ? (
             <span>
-              created the work item via{" "}
-              <span className="font-medium">{capitalizeFirstLetter(source.toLowerCase() || "")}</span>.
+              通过{" "}
+              <span className="font-medium">{capitalizeFirstLetter(source.toLowerCase() || "")}</span>
+              创建了工作项。
             </span>
           ) : (
-            <span> created the work item.</span>
+            <span> 已创建工作项。</span>
           )
         ) : (
-          <span> deleted a work item.</span>
+          <span> 已删除一个工作项。</span>
         )}
       </>
     </IssueActivityBlockComponent>

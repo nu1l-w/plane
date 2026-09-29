@@ -12,18 +12,18 @@ export const getRelationActivityContent = (activity: TIssueActivity | undefined)
   switch (activity.field) {
     case "blocking":
       return activity.old_value === ""
-        ? `marked this work item is blocking work item `
-        : `removed the blocking work item `;
+        ? `已标记此工作项正在阻塞工作项 `
+        : `已移除阻塞工作项 `;
     case "blocked_by":
       return activity.old_value === ""
-        ? `marked this work item is being blocked by `
-        : `removed this work item being blocked by work item `;
+        ? `已标记此工作项被 `
+        : `已移除此工作项被工作项 `;
     case "duplicate":
       return activity.old_value === ""
-        ? `marked this work item as duplicate of `
-        : `removed this work item as a duplicate of `;
+        ? `已标记此工作项为`
+        : `已移除此工作项作为`;
     case "relates_to":
-      return activity.old_value === "" ? `marked that this work item relates to ` : `removed the relation from `;
+      return activity.old_value === "" ? `已标记此工作项关联到 ` : `已移除与`;
   }
 
   return;

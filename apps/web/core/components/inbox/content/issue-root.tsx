@@ -82,16 +82,16 @@ export const InboxIssueMainContent = observer(function InboxIssueMainContent(pro
         try {
           await removeIssue(workspaceSlug, projectId, _issueId);
           setToast({
-            title: "Success!",
+            title: "删除成功",
             type: TOAST_TYPE.SUCCESS,
-            message: "Work item deleted successfully",
+            message: "工作项已删除。",
           });
         } catch (error) {
           console.log("Error in deleting work item:", error);
           setToast({
-            title: "Error!",
+            title: "删除失败",
             type: TOAST_TYPE.ERROR,
-            message: "Work item delete failed",
+            message: "无法删除工作项。",
           });
         }
       },
@@ -100,9 +100,9 @@ export const InboxIssueMainContent = observer(function InboxIssueMainContent(pro
           await inboxIssue.updateIssue(data);
         } catch (_error) {
           setToast({
-            title: "Work item update failed",
+            title: "更新失败",
             type: TOAST_TYPE.ERROR,
-            message: "Work item update failed",
+            message: "无法更新工作项。",
           });
         }
       },

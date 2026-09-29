@@ -64,11 +64,11 @@ export const FilterDate = observer(function FilterDate(props: Props) {
           handleClose={() => setIsDateFilterModalOpen(false)}
           isOpen={isDateFilterModalOpen}
           onSelect={(val) => handleInboxIssueFilters(filterKey, val)}
-          title="Created date"
+          title="创建日期"
         />
       )}
       <FilterHeader
-        title={`${label || "Created date"}${appliedFiltersCount > 0 ? ` (${appliedFiltersCount})` : ""}`}
+        title={`${label || "创建日期"}${appliedFiltersCount > 0 ? ` (${appliedFiltersCount})` : ""}`}
         isPreviewEnabled={previewEnabled}
         handleIsPreviewEnabled={() => setPreviewEnabled(!previewEnabled)}
       />
@@ -88,12 +88,12 @@ export const FilterDate = observer(function FilterDate(props: Props) {
               <FilterOption
                 isChecked={isCustomDateSelected()}
                 onClick={handleCustomDate}
-                title="Custom"
+                title="自定义"
                 multiple={false}
               />
             </>
           ) : (
-            <p className="text-11 text-placeholder italic">No matches found</p>
+            <p className="text-11 text-placeholder italic">没有匹配结果</p>
           )}
         </div>
       )}

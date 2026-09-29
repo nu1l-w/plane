@@ -59,10 +59,7 @@ export const RoleSetupStep = observer(function RoleSetupStep({ handleStepChange 
       role: formData.role,
     };
     try {
-      await Promise.all([
-        updateUserProfile(profileUpdatePayload),
-        // totalSteps > 2 && stepChange({ profile_complete: true }),
-      ]);
+      [await updateUserProfile(profileUpdatePayload)];
       setToast({
         type: TOAST_TYPE.SUCCESS,
         title: "Success",
@@ -92,10 +89,10 @@ export const RoleSetupStep = observer(function RoleSetupStep({ handleStepChange 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-10">
       {/* Header */}
-      <CommonOnboardingHeader title="What's your role?" description="Let's set up Plane for how you work." />
+      <CommonOnboardingHeader title="你的岗位是什么？" description="我们将根据你的工作方式完成平台设置。" />
       {/* Role Selection */}
       <div className="flex flex-col gap-3">
-        <p className="text-body-sm-semibold text-placeholder">Select one</p>
+        <p className="text-body-sm-semibold text-placeholder">请选择一项</p>
         <Controller
           control={control}
           name="role"

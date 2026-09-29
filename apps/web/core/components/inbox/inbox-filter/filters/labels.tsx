@@ -49,7 +49,7 @@ export const FilterLabels = observer(function FilterLabels(props: Props) {
   return (
     <>
       <FilterHeader
-        title={`Label${appliedFiltersCount > 0 ? ` (${appliedFiltersCount})` : ""}`}
+        title={`标签${appliedFiltersCount > 0 ? ` (${appliedFiltersCount})` : ""}`}
         isPreviewEnabled={previewEnabled}
         handleIsPreviewEnabled={() => setPreviewEnabled(!previewEnabled)}
       />
@@ -73,12 +73,12 @@ export const FilterLabels = observer(function FilterLabels(props: Props) {
                     className="ml-8 text-11 font-medium text-accent-primary"
                     onClick={handleViewToggle}
                   >
-                    {itemsToRender === filteredOptions.length ? "View less" : "View all"}
+                    {itemsToRender === filteredOptions.length ? "收起" : "查看全部"}
                   </button>
                 )}
               </>
             ) : (
-              <p className="text-11 text-placeholder italic">No matches found</p>
+              <p className="text-11 text-placeholder italic">没有匹配结果</p>
             )
           ) : (
             <Loader className="space-y-2">

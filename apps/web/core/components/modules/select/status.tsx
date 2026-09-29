@@ -4,8 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import React from "react";
-
 // react hook form
 import type { FieldError, Control } from "react-hook-form";
 import { Controller } from "react-hook-form";
@@ -46,7 +44,7 @@ export function ModuleStatusSelect({ control, error, tabIndex }: Props) {
                   <StatePropertyIcon className={`h-3 w-3 ${error ? "text-danger-primary" : "text-secondary"}`} />
                 )}
                 {(selectedValue && t(selectedValue?.i18n_label)) ?? (
-                  <span className={`${error ? "text-danger-primary" : "text-secondary"}`}>Status</span>
+                  <span className={`${error ? "text-danger-primary" : "text-secondary"}`}>状态</span>
                 )}
               </div>
             }

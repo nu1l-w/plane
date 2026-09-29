@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import React, { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { LockIcon, ChevronDownIcon } from "@plane/propel/icons";
 import { PasswordInput, PasswordStrengthIndicator } from "@plane/ui";
 import { cn } from "@plane/utils";
@@ -87,7 +87,7 @@ export function SetPasswordRoot({ onPasswordChange, onConfirmPasswordChange, dis
       >
         <div className="flex items-center gap-1 text-tertiary">
           <LockIcon className="size-3" />
-          <span className="font-medium">Set a password</span>
+          <span className="font-medium">设置密码</span>
           <span>{`(Optional)`}</span>
         </div>
         <div className="flex items-center gap-2 text-placeholder">
@@ -102,7 +102,7 @@ export function SetPasswordRoot({ onPasswordChange, onConfirmPasswordChange, dis
             id="password"
             value={passwordState.password}
             onChange={(value) => handlePasswordChange("password", value)}
-            placeholder="Set a password"
+            placeholder="设置密码"
             className="transition-all duration-200"
           />
           {passwordState.password.length > 0 && <PasswordStrengthIndicator password={passwordState.password} />}
@@ -120,10 +120,10 @@ export function SetPasswordRoot({ onPasswordChange, onConfirmPasswordChange, dis
               id="confirm-password"
               value={passwordState.confirmPassword}
               onChange={(value) => handlePasswordChange("confirmPassword", value)}
-              placeholder="Confirm password"
+              placeholder="确认密码"
               className="transition-all duration-200"
             />
-            {hasPasswordMismatch && <p className="mt-1 text-11 text-danger-primary">Passwords do not match</p>}
+            {hasPasswordMismatch && <p className="mt-1 text-11 text-danger-primary">两次输入的密码不一致</p>}
             {isPasswordValid && <p className="mt-1 text-11 text-success-primary">✓ Passwords match</p>}
           </div>
         </div>

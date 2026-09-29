@@ -72,7 +72,7 @@ export function IssueLink({ activity }: { activity: IIssueActivity }) {
         </a>
       ) : (
         <span className="inline-flex items-center gap-1 font-medium whitespace-nowrap text-primary">
-          {" a work item"}{" "}
+          {" 一个工作项"}{" "}
         </span>
       )}
     </Tooltip>
@@ -118,20 +118,20 @@ const LabelPill = observer(function LabelPill({ labelId, workspaceSlug }: { labe
 
 const inboxActivityMessage = {
   declined: {
-    showIssue: "declined work item",
-    noIssue: "declined this work item from intake.",
+    showIssue: "已拒绝工作项",
+    noIssue: "已从收集中拒绝此工作项。",
   },
   snoozed: {
-    showIssue: "snoozed work item",
-    noIssue: "snoozed this work item.",
+    showIssue: "已暂缓工作项",
+    noIssue: "已暂缓此工作项。",
   },
   accepted: {
-    showIssue: "accepted work item",
-    noIssue: "accepted this work item from intake.",
+    showIssue: "已接受工作项",
+    noIssue: "已从收集中接受此工作项。",
   },
   markedDuplicate: {
-    showIssue: "declined work item",
-    noIssue: "declined this work item from intake by marking a duplicate work item.",
+    showIssue: "已拒绝工作项",
+    noIssue: "已通过标记重复工作项从收集中拒绝此工作项。",
   },
 };
 
@@ -146,7 +146,7 @@ const getInboxUserActivityMessage = (activity: IIssueActivity, showIssue: boolea
     case "2":
       return showIssue ? inboxActivityMessage.markedDuplicate.showIssue : inboxActivityMessage.markedDuplicate.noIssue;
     default:
-      return "updated intake work item status.";
+      return "已更新收集工作项状态。";
   }
 };
 
@@ -161,11 +161,11 @@ const activityDetails: {
       if (activity.old_value === "")
         return (
           <>
-            added a new assignee <UserLink activity={activity} />
+            已添加新负责人 <UserLink activity={activity} />
             {showIssue && (
               <>
                 {" "}
-                to <IssueLink activity={activity} />
+                到 <IssueLink activity={activity} />
               </>
             )}
           </>
@@ -173,11 +173,11 @@ const activityDetails: {
       else
         return (
           <>
-            removed the assignee <UserLink activity={activity} />
+            已移除负责人 <UserLink activity={activity} />
             {showIssue && (
               <>
                 {" "}
-                from <IssueLink activity={activity} />
+                从 <IssueLink activity={activity} />
               </>
             )}
           </>
@@ -190,13 +190,13 @@ const activityDetails: {
       if (activity.new_value === "restore")
         return (
           <>
-            restored <IssueLink activity={activity} />
+            已恢复 <IssueLink activity={activity} />
           </>
         );
       else
         return (
           <>
-            archived <IssueLink activity={activity} />
+            已归档 <IssueLink activity={activity} />
           </>
         );
     },
@@ -207,11 +207,11 @@ const activityDetails: {
       if (activity.verb === "created")
         return (
           <>
-            uploaded a new attachment
+            已上传新附件
             {showIssue && (
               <>
                 {" "}
-                to <IssueLink activity={activity} />
+                到 <IssueLink activity={activity} />
               </>
             )}
           </>
@@ -219,11 +219,11 @@ const activityDetails: {
       else
         return (
           <>
-            removed an attachment
+            已移除附件
             {showIssue && (
               <>
                 {" "}
-                from <IssueLink activity={activity} />
+                从 <IssueLink activity={activity} />
               </>
             )}
           </>
@@ -234,11 +234,11 @@ const activityDetails: {
   description: {
     message: (activity, showIssue) => (
       <>
-        updated the description
+        已更新描述
         {showIssue && (
           <>
             {" "}
-            of <IssueLink activity={activity} />
+            的 <IssueLink activity={activity} />
           </>
         )}
       </>
@@ -250,11 +250,11 @@ const activityDetails: {
       if (!activity.new_value)
         return (
           <>
-            removed the estimate point
+            已移除估时点
             {showIssue && (
               <>
                 {" "}
-                from <IssueLink activity={activity} />
+                从 <IssueLink activity={activity} />
               </>
             )}
           </>
@@ -262,11 +262,11 @@ const activityDetails: {
       else
         return (
           <>
-            set the estimate point to {activity.new_value}
+            已将估时点设置为 {activity.new_value}
             {showIssue && (
               <>
                 {" "}
-                for <IssueLink activity={activity} />
+                的 <IssueLink activity={activity} />
               </>
             )}
           </>
@@ -279,19 +279,19 @@ const activityDetails: {
       if (activity.verb === "created")
         return (
           <>
-            created <IssueLink activity={activity} />
+            已创建 <IssueLink activity={activity} />
           </>
         );
       else if (activity.verb === "converted")
         return (
           <>
-            converted <IssueLink activity={activity} /> to an epic
+            已将 <IssueLink activity={activity} /> 转换为史诗
           </>
         );
       else
         return (
           <>
-            deleted <IssueLink activity={activity} />
+            已删除 <IssueLink activity={activity} />
           </>
         );
     },
@@ -302,19 +302,19 @@ const activityDetails: {
       if (activity.verb === "created")
         return (
           <>
-            created <IssueLink activity={activity} />
+            已创建 <IssueLink activity={activity} />
           </>
         );
       else if (activity.verb === "converted")
         return (
           <>
-            converted <IssueLink activity={activity} /> to a work item
+            已将 <IssueLink activity={activity} /> 转换为工作项
           </>
         );
       else
         return (
           <>
-            deleted <IssueLink activity={activity} />
+            已删除 <IssueLink activity={activity} />
           </>
         );
     },
@@ -325,7 +325,7 @@ const activityDetails: {
       if (activity.old_value === "")
         return (
           <span className="overflow-hidden">
-            added a new label{" "}
+            已添加新标签{" "}
             <span className="inline-flex items-center gap-2 rounded-full border border-strong px-2 py-0.5 text-11">
               <LabelPill labelId={activity.new_identifier ?? ""} workspaceSlug={workspaceSlug} />
               <span className="line-clamp-1 flex-shrink font-medium break-all text-primary">{activity.new_value}</span>
@@ -333,7 +333,7 @@ const activityDetails: {
             {showIssue && (
               <span className="">
                 {" "}
-                to <IssueLink activity={activity} />
+                到 <IssueLink activity={activity} />
               </span>
             )}
           </span>
@@ -341,7 +341,7 @@ const activityDetails: {
       else
         return (
           <>
-            removed the label{" "}
+            已移除标签{" "}
             <span className="inline-flex items-center gap-2 rounded-full border border-strong px-2 py-0.5 text-11">
               <LabelPill labelId={activity.old_identifier ?? ""} workspaceSlug={workspaceSlug} />
               <span className="line-clamp-1 flex-shrink font-medium break-all text-primary">{activity.old_value}</span>
@@ -349,7 +349,7 @@ const activityDetails: {
             {showIssue && (
               <span>
                 {" "}
-                from <IssueLink activity={activity} />
+                从 <IssueLink activity={activity} />
               </span>
             )}
           </>
@@ -362,19 +362,19 @@ const activityDetails: {
       if (activity.verb === "created")
         return (
           <>
-            added this{" "}
+            已添加此{" "}
             <a
               href={`${activity.new_value}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
             >
-              link
+              链接
             </a>
             {showIssue && (
               <>
                 {" "}
-                to <IssueLink activity={activity} />
+                到 <IssueLink activity={activity} />
               </>
             )}
           </>
@@ -382,19 +382,19 @@ const activityDetails: {
       else if (activity.verb === "updated")
         return (
           <>
-            updated the{" "}
+            已更新{" "}
             <a
               href={`${activity.old_value}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
             >
-              link
+              链接
             </a>
             {showIssue && (
               <>
                 {" "}
-                from <IssueLink activity={activity} />
+                从 <IssueLink activity={activity} />
               </>
             )}
           </>
@@ -402,19 +402,19 @@ const activityDetails: {
       else
         return (
           <>
-            removed this{" "}
+            已移除{" "}
             <a
               href={`${activity.old_value}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
             >
-              link
+              链接
             </a>
             {showIssue && (
               <>
                 {" "}
-                from <IssueLink activity={activity} />
+                从 <IssueLink activity={activity} />
               </>
             )}
           </>
@@ -428,8 +428,8 @@ const activityDetails: {
         return (
           <>
             <span className="flex-shrink-0">
-              added {showIssue ? <IssueLink activity={activity} /> : "this work item"}{" "}
-              <span className="whitespace-nowrap">to the cycle</span>{" "}
+              已添加 {showIssue ? <IssueLink activity={activity} /> : "此工作项"}{" "}
+              <span className="whitespace-nowrap">到周期</span>{" "}
             </span>
             <a
               href={`/${workspaceSlug}/projects/${activity.project}/cycles/${activity.new_identifier}`}
@@ -444,7 +444,7 @@ const activityDetails: {
       else if (activity.verb === "updated")
         return (
           <>
-            <span className="flex-shrink-0 whitespace-nowrap">set the cycle to </span>
+            <span className="flex-shrink-0 whitespace-nowrap">已将周期设置为 </span>
             <a
               href={`/${workspaceSlug}/projects/${activity.project}/cycles/${activity.new_identifier}`}
               target="_blank"
@@ -458,7 +458,7 @@ const activityDetails: {
       else
         return (
           <>
-            removed <IssueLink activity={activity} /> from the cycle{" "}
+            已从周期中移除 <IssueLink activity={activity} />{" "}
             <a
               href={`/${workspaceSlug}/projects/${activity.project}/cycles/${activity.old_identifier}`}
               target="_blank"
@@ -477,7 +477,7 @@ const activityDetails: {
       if (activity.verb === "created")
         return (
           <>
-            added {showIssue ? <IssueLink activity={activity} /> : "this work item"} to the module{" "}
+            已添加 {showIssue ? <IssueLink activity={activity} /> : "此工作项"} 到模块{" "}
             <a
               href={`/${workspaceSlug}/projects/${activity.project}/modules/${activity.new_identifier}`}
               target="_blank"
@@ -491,7 +491,7 @@ const activityDetails: {
       else if (activity.verb === "updated")
         return (
           <>
-            set the module to{" "}
+            已将模块设置为{" "}
             <a
               href={`/${workspaceSlug}/projects/${activity.project}/modules/${activity.new_identifier}`}
               target="_blank"
@@ -505,7 +505,7 @@ const activityDetails: {
       else
         return (
           <>
-            removed <IssueLink activity={activity} /> from the module{" "}
+            已从模块中移除 <IssueLink activity={activity} />{" "}
             <a
               href={`/${workspaceSlug}/projects/${activity.project}/modules/${activity.old_identifier}`}
               target="_blank"
@@ -522,11 +522,11 @@ const activityDetails: {
   name: {
     message: (activity, showIssue) => (
       <>
-        set the title to <span className="break-all">{activity.new_value}</span>
+        已将标题设置为 <span className="break-all">{activity.new_value}</span>
         {showIssue && (
           <>
             {" "}
-            of <IssueLink activity={activity} />
+            的 <IssueLink activity={activity} />
           </>
         )}
       </>
@@ -538,11 +538,11 @@ const activityDetails: {
       if (!activity.new_value)
         return (
           <>
-            removed the parent <span className="font-medium whitespace-nowrap text-primary">{activity.old_value}</span>
+            已移除父项 <span className="font-medium whitespace-nowrap text-primary">{activity.old_value}</span>
             {showIssue && (
               <>
                 {" "}
-                from <IssueLink activity={activity} />
+                从 <IssueLink activity={activity} />
               </>
             )}
           </>
@@ -550,11 +550,11 @@ const activityDetails: {
       else
         return (
           <>
-            set the parent to <span className="font-medium whitespace-nowrap text-primary">{activity.new_value}</span>
+            已将父项设置为 <span className="font-medium whitespace-nowrap text-primary">{activity.new_value}</span>
             {showIssue && (
               <>
                 {" "}
-                for <IssueLink activity={activity} />
+                的 <IssueLink activity={activity} />
               </>
             )}
           </>
@@ -563,20 +563,31 @@ const activityDetails: {
     icon: <UsersIcon className="h-3 w-3 !text-secondary" aria-hidden="true" />,
   },
   priority: {
-    message: (activity, showIssue) => (
-      <>
-        set the priority to{" "}
-        <span className="font-medium text-primary">
-          {activity.new_value ? capitalizeFirstLetter(activity.new_value) : "None"}
-        </span>
-        {showIssue && (
-          <>
-            {" "}
-            for <IssueLink activity={activity} />
-          </>
-        )}
-      </>
-    ),
+    message: (activity, showIssue) => {
+      const priorityMap: Record<string, string> = {
+        urgent: "紧急",
+        high: "高",
+        medium: "中",
+        low: "低",
+        none: "无",
+      };
+      const translatedPriority =
+        activity.new_value && priorityMap[activity.new_value.toLowerCase()]
+          ? priorityMap[activity.new_value.toLowerCase()]
+          : activity.new_value || "无";
+      return (
+        <>
+          已将优先级设置为{" "}
+          <span className="font-medium text-primary">{translatedPriority}</span>
+          {showIssue && (
+            <>
+              {" "}
+              的 <IssueLink activity={activity} />
+            </>
+          )}
+        </>
+      );
+    },
     icon: <SignalMediumIcon size={12} className="text-secondary" aria-hidden="true" />,
   },
   relates_to: {
@@ -584,72 +595,72 @@ const activityDetails: {
       if (activity.old_value === "")
         return (
           <>
-            marked that {showIssue ? <IssueLink activity={activity} /> : "this work item"} relates to{" "}
-            <span className="font-medium whitespace-nowrap text-primary">{activity.new_value}</span>.
+            已标记 {showIssue ? <IssueLink activity={activity} /> : "此工作项"} 关联到{" "}
+            <span className="font-medium whitespace-nowrap text-primary">{activity.new_value}</span>。
           </>
         );
       else
         return (
           <>
-            removed the relation from{" "}
-            <span className="font-medium whitespace-nowrap text-primary">{activity.old_value}</span>.
+            已移除与{" "}
+            <span className="font-medium whitespace-nowrap text-primary">{activity.old_value}</span> 的关联。
           </>
         );
     },
-    icon: <RelatedIcon height="12" width="12" className="text-secondary" />,
+    icon: <RelatedIcon height={12} width={12} className="text-secondary" />,
   },
   blocking: {
     message: (activity, showIssue) => {
       if (activity.old_value === "")
         return (
           <>
-            marked {showIssue ? <IssueLink activity={activity} /> : "this work item"} is blocking work item{" "}
-            <span className="font-medium whitespace-nowrap text-primary">{activity.new_value}</span>.
+            已标记 {showIssue ? <IssueLink activity={activity} /> : "此工作项"} 正在阻塞工作项{" "}
+            <span className="font-medium whitespace-nowrap text-primary">{activity.new_value}</span>。
           </>
         );
       else
         return (
           <>
-            removed the blocking work item{" "}
-            <span className="font-medium whitespace-nowrap text-primary">{activity.old_value}</span>.
+            已移除阻塞工作项{" "}
+            <span className="font-medium whitespace-nowrap text-primary">{activity.old_value}</span>。
           </>
         );
     },
-    icon: <BlockerIcon height="12" width="12" className="text-secondary" />,
+    icon: <BlockerIcon height={12} width={12} className="text-secondary" />,
   },
   blocked_by: {
     message: (activity, showIssue) => {
       if (activity.old_value === "")
         return (
           <>
-            marked {showIssue ? <IssueLink activity={activity} /> : "this work item"} is being blocked by{" "}
-            <span className="font-medium whitespace-nowrap text-primary">{activity.new_value}</span>.
+            已标记 {showIssue ? <IssueLink activity={activity} /> : "此工作项"} 被{" "}
+            <span className="font-medium whitespace-nowrap text-primary">{activity.new_value}</span> 阻塞。
           </>
         );
       else
         return (
           <>
-            removed {showIssue ? <IssueLink activity={activity} /> : "this work item"} being blocked by work item{" "}
-            <span className="font-medium whitespace-nowrap text-primary">{activity.old_value}</span>.
+            已移除 {showIssue ? <IssueLink activity={activity} /> : "此工作项"} 被工作项{" "}
+            <span className="font-medium whitespace-nowrap text-primary">{activity.old_value}</span> 阻塞的关系。
           </>
         );
     },
-    icon: <BlockedIcon height="12" width="12" className="text-secondary" />,
+    icon: <BlockedIcon height={12} width={12} className="text-secondary" />,
   },
   duplicate: {
     message: (activity, showIssue) => {
       if (activity.old_value === "")
         return (
           <>
-            marked {showIssue ? <IssueLink activity={activity} /> : "this work item"} as duplicate of{" "}
-            <span className="font-medium whitespace-nowrap text-primary">{activity.new_value}</span>.
+            已标记 {showIssue ? <IssueLink activity={activity} /> : "此工作项"} 为{" "}
+            <span className="font-medium whitespace-nowrap text-primary">{activity.new_value}</span> 的重复项。
           </>
         );
       else
         return (
           <>
-            removed {showIssue ? <IssueLink activity={activity} /> : "this work item"} as a duplicate of{" "}
-            <span className="font-medium whitespace-nowrap text-primary">{activity.old_value}</span>.
+            已移除 {showIssue ? <IssueLink activity={activity} /> : "此工作项"} 作为{" "}
+            <span className="font-medium whitespace-nowrap text-primary">{activity.old_value}</span> 重复项的标记。
           </>
         );
     },
@@ -658,11 +669,11 @@ const activityDetails: {
   state: {
     message: (activity, showIssue) => (
       <>
-        set the state to <span className="font-medium break-all text-primary">{activity.new_value}</span>
+        已将状态设置为 <span className="font-medium break-all text-primary">{activity.new_value}</span>
         {showIssue && (
           <>
             {" "}
-            for <IssueLink activity={activity} />
+            的 <IssueLink activity={activity} />
           </>
         )}
       </>
@@ -674,11 +685,11 @@ const activityDetails: {
       if (!activity.new_value)
         return (
           <>
-            removed the start date
+            已移除开始日期
             {showIssue && (
               <>
                 {" "}
-                from <IssueLink activity={activity} />
+                从 <IssueLink activity={activity} />
               </>
             )}
           </>
@@ -686,14 +697,14 @@ const activityDetails: {
       else
         return (
           <>
-            set the start date to{" "}
+            已将开始日期设置为{" "}
             <span className="font-medium whitespace-nowrap text-primary">
               {renderFormattedDate(activity.new_value)}
             </span>
             {showIssue && (
               <>
                 {" "}
-                for <IssueLink activity={activity} />
+                的 <IssueLink activity={activity} />
               </>
             )}
           </>
@@ -706,11 +717,11 @@ const activityDetails: {
       if (!activity.new_value)
         return (
           <>
-            removed the due date
+            已移除截止日期
             {showIssue && (
               <>
                 {" "}
-                from <IssueLink activity={activity} />
+                从 <IssueLink activity={activity} />
               </>
             )}
           </>
@@ -718,7 +729,7 @@ const activityDetails: {
       else
         return (
           <>
-            set the due date to{" "}
+            已将截止日期设置为{" "}
             <span className="font-medium whitespace-nowrap text-primary">
               {renderFormattedDate(activity.new_value)}
             </span>
@@ -742,7 +753,7 @@ const activityDetails: {
             <IssueLink activity={activity} />
           </>
         )}
-        {activity.verb === "2" && ` from intake by marking a duplicate work item.`}
+        {activity.verb === "2" && ` 从收集中通过标记重复工作项。`}
       </>
     ),
     icon: <IntakeIcon className="size-3 text-secondary" aria-hidden="true" />,

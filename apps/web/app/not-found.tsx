@@ -26,7 +26,7 @@ function PageNotFound() {
             <img src={Image404} className="h-full w-full object-contain" alt="404- Page not found" />
           </div>
           <div className="space-y-2">
-            <h3 className="text-16 font-semibold">Oops! Something went wrong.</h3>
+            <h3 className="text-16 font-semibold">页面不存在或暂时无法访问</h3>
             <p className="text-13 text-secondary">
               Sorry, the page you are looking for cannot be found. It may have been removed, had its name changed, or is
               temporarily unavailable.

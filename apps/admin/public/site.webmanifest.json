@@ -1,7 +1,7 @@
 {
-  "name": "Plane God Mode",
-  "short_name": "Plane God Mode",
-  "description": "Plane helps you plan your issues, cycles, and product modules.",
+  "name": "星轴科技研发管理平台 - 管理后台",
+  "short_name": "星轴科技后台",
+  "description": "星轴科技内部研发项目管理平台管理后台",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#f9fafb",

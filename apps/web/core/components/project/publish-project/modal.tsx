@@ -180,7 +180,7 @@ export const PublishProjectModal = observer(function PublishProjectModal(props: 
     <ModalCore isOpen={isOpen} handleClose={handleClose} width={EModalWidth.XXL}>
       <form onSubmit={handleSubmit(handleFormSubmit)}>
         <div className="flex items-center justify-between gap-2 p-5">
-          <h5 className="text-18 font-medium text-secondary">Publish project</h5>
+          <h5 className="text-18 font-medium text-secondary">发布项目</h5>
           {isProjectPublished && (
             <Button
               variant="error-fill"
@@ -243,7 +243,7 @@ export const PublishProjectModal = observer(function PublishProjectModal(props: 
             )}
             <div className="space-y-4">
               <div className="relative flex items-center justify-between gap-2">
-                <div className="text-13">Views</div>
+                <div className="text-13">视图</div>
                 <Controller
                   control={control}
                   name="view_props"
@@ -278,7 +278,7 @@ export const PublishProjectModal = observer(function PublishProjectModal(props: 
                 />
               </div>
               <div className="relative flex items-center justify-between gap-2">
-                <div className="text-13">Allow comments</div>
+                <div className="text-13">允许评论</div>
                 <Controller
                   control={control}
                   name="is_comments_enabled"
@@ -288,7 +288,7 @@ export const PublishProjectModal = observer(function PublishProjectModal(props: 
                 />
               </div>
               <div className="relative flex items-center justify-between gap-2">
-                <div className="text-13">Allow reactions</div>
+                <div className="text-13">允许回应</div>
                 <Controller
                   control={control}
                   name="is_reactions_enabled"
@@ -298,7 +298,7 @@ export const PublishProjectModal = observer(function PublishProjectModal(props: 
                 />
               </div>
               <div className="relative flex items-center justify-between gap-2">
-                <div className="text-13">Allow voting</div>
+                <div className="text-13">允许投票</div>
                 <Controller
                   control={control}
                   name="is_votes_enabled"
@@ -315,7 +315,7 @@ export const PublishProjectModal = observer(function PublishProjectModal(props: 
         <div className="relative mt-4 flex items-center justify-between border-t border-subtle px-5 py-4">
           <div className="flex items-center gap-1 text-13 text-placeholder">
             <GlobeIcon className="size-3.5" />
-            <div className="text-13">Anyone with the link can access</div>
+            <div className="text-13">任何获得链接的人都可以访问</div>
           </div>
           {!fetchSettingsLoader && (
             <div className="relative flex items-center gap-2">

@@ -45,8 +45,8 @@ export function CreateApiTokenModal(props: Props) {
     const csvData = {
       Title: data.label,
       Description: data.description,
-      Expiry: data.expired_at ? (renderFormattedDate(data.expired_at)?.replace(",", " ") ?? "") : "Never expires",
-      "Secret key": data.token ?? "",
+      有效期: data.expired_at ? (renderFormattedDate(data.expired_at)?.replace(",", " ") ?? "") : "永不过期",
+      密钥: data.token ?? "",
     };
 
     csvDownload(csvData, `secret-key-${Date.now()}`);
@@ -73,7 +73,7 @@ export function CreateApiTokenModal(props: Props) {
       .catch((err) => {
         setToast({
           type: TOAST_TYPE.ERROR,
-          title: "Error!",
+          title: "创建失败",
           message: err.message || err.detail,
         });
 

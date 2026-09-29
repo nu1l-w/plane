@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import React from "react";
 import { observer } from "mobx-react";
 // plane imports
 import { ContrastIcon } from "@plane/propel/icons";
@@ -28,7 +27,7 @@ export const PowerKCyclesMenu = observer(function PowerKCyclesMenu({ cycles, onS
       getLabel={(cycle) => cycle.name}
       isSelected={(cycle) => value === cycle.id}
       onSelect={onSelect}
-      emptyText="No cycles found"
+      emptyText="没有找到周期"
     />
   );
 });

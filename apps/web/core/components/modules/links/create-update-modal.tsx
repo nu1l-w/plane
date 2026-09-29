@@ -96,7 +96,7 @@ export function CreateUpdateModuleLinkModal(props: Props) {
                 control={control}
                 name="url"
                 rules={{
-                  required: "URL is required",
+                  required: "请输入 URL",
                 }}
                 render={({ field: { value, onChange, ref } }) => (
                   <Input
@@ -106,7 +106,7 @@ export function CreateUpdateModuleLinkModal(props: Props) {
                     onChange={onChange}
                     ref={ref}
                     hasError={Boolean(errors.url)}
-                    placeholder="Type or paste a URL"
+                    placeholder="输入或粘贴 URL"
                     className="w-full"
                   />
                 )}
@@ -114,8 +114,8 @@ export function CreateUpdateModuleLinkModal(props: Props) {
             </div>
             <div>
               <label htmlFor="title" className="mb-2 text-secondary">
-                Display title
-                <span className="block text-10">Optional</span>
+                显示标题
+                <span className="block text-10">可选</span>
               </label>
               <Controller
                 control={control}
@@ -128,7 +128,7 @@ export function CreateUpdateModuleLinkModal(props: Props) {
                     onChange={onChange}
                     ref={ref}
                     hasError={Boolean(errors.title)}
-                    placeholder="What you'd like to see this link as"
+                    placeholder="输入此链接的显示名称"
                     className="w-full"
                   />
                 )}
@@ -138,10 +138,10 @@ export function CreateUpdateModuleLinkModal(props: Props) {
         </div>
         <div className="flex items-center justify-end gap-2 border-t-[0.5px] border-subtle px-5 py-4">
           <Button variant="secondary" size="lg" onClick={onClose}>
-            Cancel
+            取消
           </Button>
           <Button variant="primary" size="lg" type="submit" loading={isSubmitting}>
-            {data ? (isSubmitting ? "Updating link" : "Update link") : isSubmitting ? "Adding link" : "Add link"}
+            {data ? (isSubmitting ? "正在更新链接" : "更新链接") : isSubmitting ? "正在添加链接" : "添加链接"}
           </Button>
         </div>
       </form>

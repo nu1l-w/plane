@@ -8,7 +8,7 @@ import { useState } from "react";
 import { observer } from "mobx-react";
 // plane imports
 import { Button } from "@plane/propel/button";
-import { CloseIcon, PlaneLockup } from "@plane/propel/icons";
+import { CloseIcon } from "@plane/propel/icons";
 // assets
 import CyclesTour from "@/app/assets/onboarding/cycles.webp?url";
 import IssuesTour from "@/app/assets/onboarding/issues.webp?url";
@@ -37,42 +37,39 @@ const TOUR_STEPS: {
 }[] = [
   {
     key: "work-items",
-    title: "Plan with work items",
-    description:
-      "The work item is the building block of the Plane. Most concepts in Plane are either associated with work items and their properties.",
+    title: "使用工作项进行规划",
+    description: "工作项是研发管理的基本单元，需求、任务和缺陷都可以通过工作项及其属性进行管理。",
     image: IssuesTour,
     nextStep: "cycles",
   },
   {
     key: "cycles",
-    title: "Move with cycles",
-    description:
-      "Cycles help you and your team to progress faster, similar to the sprints commonly used in agile development.",
+    title: "使用周期推进工作",
+    description: "周期类似敏捷开发中的迭代，可帮助团队聚焦阶段目标并持续推进。",
     image: CyclesTour,
     prevStep: "work-items",
     nextStep: "modules",
   },
   {
     key: "modules",
-    title: "Break into modules",
-    description: "Modules break your big thing into Projects or Features, to help you organize better.",
+    title: "使用模块拆分范围",
+    description: "模块可将大型项目按产品能力或功能范围拆分，便于组织和跟踪。",
     image: ModulesTour,
     prevStep: "cycles",
     nextStep: "views",
   },
   {
     key: "views",
-    title: "Views",
-    description:
-      "Create custom filters to display only the work items that matter to you. Save and share your filters in just a few clicks.",
+    title: "视图",
+    description: "通过自定义筛选只显示关注的工作项，并可保存和共享筛选条件。",
     image: ViewsTour,
     prevStep: "modules",
     nextStep: "pages",
   },
   {
     key: "pages",
-    title: "Document with pages",
-    description: "Use Pages to quickly jot down work items when you're in a meeting or starting a day.",
+    title: "使用页面记录内容",
+    description: "使用页面记录会议内容、研发计划和日常事项。",
     image: PagesTour,
     prevStep: "views",
   },
@@ -95,15 +92,14 @@ export const TourRoot = observer(function TourRoot(props: TOnboardingTourProps) 
         <div className="w-4/5 overflow-hidden rounded-[10px] bg-surface-1 md:w-1/2 lg:w-2/5">
           <div className="h-full overflow-hidden">
             <div className="grid h-64 place-items-center bg-accent-primary">
-              <PlaneLockup className="h-10 w-auto text-on-color" />
+              <span className="text-24 font-semibold text-on-color">星轴科技</span>
             </div>
             <div className="flex flex-col overflow-y-auto p-6">
               <h3 className="font-semibold sm:text-18">
-                Welcome to Plane, {currentUser?.first_name} {currentUser?.last_name}
+                欢迎使用星轴科技研发管理平台，{currentUser?.first_name} {currentUser?.last_name}
               </h3>
               <p className="mt-3 text-13 text-secondary">
-                We{"'"}re glad that you decided to try out Plane. You can now manage your projects with ease. Get
-                started by creating a project.
+                你可以在这里统一管理项目、工作项、周期和模块。先从创建一个项目开始。
               </p>
               <div className="flex h-full items-end">
                 <div className="mt-12 flex items-center gap-6">

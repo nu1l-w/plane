@@ -14,6 +14,19 @@ import { cn } from "@plane/utils";
 // hooks
 import { useProjectState } from "@/hooks/store/use-project-state";
 
+const STATE_NAME_MAP: Record<string, string> = {
+  Backlog: "待办",
+  Todo: "未开始",
+  "In Progress": "进行中",
+  Done: "已完成",
+  Cancelled: "已取消",
+};
+
+const getStateDisplayName = (name: string | undefined): string => {
+  if (!name) return "";
+  return STATE_NAME_MAP[name] ?? name;
+};
+
 export type TReadonlyStateProps = {
   className?: string;
   iconSize?: string;
@@ -68,7 +81,7 @@ export const ReadonlyState = observer(function ReadonlyState(props: TReadonlySta
           color={state?.color}
         />
       )}
-      <span className="flex-grow truncate">{state?.name ?? placeholder ?? t("common.none")}</span>
+      <span className="flex-grow truncate">{getStateDisplayName(state?.name) ?? placeholder ?? t("common.none")}</span>
     </div>
   );
 });

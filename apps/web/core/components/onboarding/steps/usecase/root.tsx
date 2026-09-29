@@ -50,10 +50,7 @@ export const UseCaseSetupStep = observer(function UseCaseSetupStep({ handleStepC
       use_case: formData.use_case && formData.use_case.length > 0 ? formData.use_case.join(". ") : undefined,
     };
     try {
-      await Promise.all([
-        updateUserProfile(profileUpdatePayload),
-        // totalSteps > 2 && stepChange({ profile_complete: true }),
-      ]);
+      [await updateUserProfile(profileUpdatePayload)];
       setToast({
         type: TOAST_TYPE.SUCCESS,
         title: "Success",
@@ -86,11 +83,11 @@ export const UseCaseSetupStep = observer(function UseCaseSetupStep({ handleStepC
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-10">
       {/* Header */}
-      <CommonOnboardingHeader title="What brings you to Plane?" description="Tell us your goals and team size." />
+      <CommonOnboardingHeader title="你希望如何使用研发管理平台？" description="请告诉我们你的目标和团队规模。" />
 
       {/* Use Case Selection */}
       <div className="flex flex-col gap-3">
-        <p className="text-body-sm-semibold text-placeholder">Select one or more</p>
+        <p className="text-body-sm-semibold text-placeholder">请选择一项或多项</p>
 
         <Controller
           control={control}

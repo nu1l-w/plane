@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import React from "react";
 import { observer } from "mobx-react";
 import { Layers } from "lucide-react";
 // plane imports
@@ -26,7 +25,7 @@ export const PowerKViewsMenu = observer(function PowerKViewsMenu({ views, onSele
       getValue={(view) => view.name}
       getLabel={(view) => view.name}
       onSelect={onSelect}
-      emptyText="No views found"
+      emptyText="没有找到视图"
     />
   );
 });

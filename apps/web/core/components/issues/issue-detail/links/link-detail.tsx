@@ -110,11 +110,12 @@ export function IssueLinkDetail(props: TIssueLinkDetail) {
 
         <div className="px-5">
           <p className="mt-0.5 stroke-[1.5] text-11 text-tertiary">
-            Added {calculateTimeAgo(linkDetail.created_at)}
+            添加于{calculateTimeAgo(linkDetail.created_at)}
             <br />
             {createdByDetails && (
               <>
-                by {createdByDetails?.is_bot ? createdByDetails?.first_name + " Bot" : createdByDetails?.display_name}
+                操作人：
+                {createdByDetails?.is_bot ? createdByDetails?.first_name + " 机器人" : createdByDetails?.display_name}
               </>
             )}
           </p>

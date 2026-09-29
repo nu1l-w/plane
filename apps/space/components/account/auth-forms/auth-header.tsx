@@ -22,12 +22,12 @@ type TAuthHeaderDetails = {
 
 const Titles: TAuthHeaderDetails = {
   [EAuthModes.SIGN_IN]: {
-    header: "Sign in to upvote or comment",
-    subHeader: "Contribute in nudging the features you want to get built.",
+    header: "登录后参与互动",
+    subHeader: "对工作项投票、评论并提供反馈。",
   },
   [EAuthModes.SIGN_UP]: {
-    header: "View, comment, and do more",
-    subHeader: "Sign up or log in to work with Plane work items and Pages.",
+    header: "查看、评论和参与协作",
+    subHeader: "注册或登录星轴科技研发管理平台。",
   },
 };
 
@@ -40,8 +40,8 @@ export function AuthHeader(props: TAuthHeader) {
     }
 
     return {
-      header: "Comment or react to work items",
-      subHeader: "Use plane to add your valuable inputs to features.",
+      header: "评论工作项或参与互动",
+      subHeader: "为产品功能提供有价值的反馈。",
     };
   };
 

@@ -36,7 +36,7 @@ export const Stickies = observer(function Stickies(props: TProps) {
         {/* Title */}
         <div className="flex items-center gap-2 text-secondary">
           <RecentStickyIcon className="size-5 flex-shrink-0 rotate-90" />
-          <p className="text-18 font-medium">Your stickies</p>
+          <p className="text-18 font-medium">我的便签</p>
         </div>
         {/* actions */}
         <div className="flex gap-2">
@@ -49,13 +49,13 @@ export const Stickies = observer(function Stickies(props: TProps) {
             className="my-auto flex gap-1 text-13 font-medium text-accent-primary"
             disabled={creatingSticky}
           >
-            <PlusIcon className="my-auto size-4" /> <span>Add sticky</span>
+            <PlusIcon className="my-auto size-4" /> <span>添加便签</span>
             {creatingSticky && (
               <div className="ml-2 flex items-center justify-center">
                 <div
                   className={`h-4 w-4 animate-spin rounded-full border-2 border-accent-strong border-t-transparent`}
                   role="status"
-                  aria-label="loading"
+                  aria-label="加载中"
                 />
               </div>
             )}
@@ -63,6 +63,7 @@ export const Stickies = observer(function Stickies(props: TProps) {
           {handleClose && (
             <button
               type="button"
+              aria-label="关闭"
               onClick={handleClose}
               className="my-auto grid flex-shrink-0 place-items-center rounded-sm p-1 text-tertiary transition-colors hover:bg-layer-1 hover:text-primary"
             >

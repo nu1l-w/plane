@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { observer } from "mobx-react";
 import { Ellipsis } from "lucide-react";
 import { Disclosure, Transition } from "@headlessui/react";
@@ -109,11 +109,7 @@ export const SidebarMenuItems = observer(function SidebarMenuItems() {
             type="button"
             className="flex w-full items-center gap-1 text-left text-13 font-semibold whitespace-nowrap text-placeholder"
             onClick={() => toggleListDisclosure(!isWorkspaceMenuOpen)}
-            aria-label={t(
-              isWorkspaceMenuOpen
-                ? "aria_labels.app_sidebar.close_workspace_menu"
-                : "aria_labels.app_sidebar.open_workspace_menu"
-            )}
+            aria-label={isWorkspaceMenuOpen ? "关闭工作区菜单" : "打开工作区菜单"}
           >
             <span className="text-13 font-semibold">{t("common.workspace")}</span>
           </Disclosure.Button>
@@ -123,11 +119,7 @@ export const SidebarMenuItems = observer(function SidebarMenuItems() {
               type="button"
               className="flex-shrink-0 rounded-sm p-0.5 hover:bg-layer-1"
               onClick={() => toggleListDisclosure(!isWorkspaceMenuOpen)}
-              aria-label={t(
-                isWorkspaceMenuOpen
-                  ? "aria_labels.app_sidebar.close_workspace_menu"
-                  : "aria_labels.app_sidebar.open_workspace_menu"
-              )}
+              aria-label={isWorkspaceMenuOpen ? "关闭工作区菜单" : "打开工作区菜单"}
             >
               <ChevronRightIcon
                 className={cn("size-3 flex-shrink-0 transition-all", {
@@ -163,14 +155,10 @@ export const SidebarMenuItems = observer(function SidebarMenuItems() {
                     onClick={() => toggleExtendedSidebar()}
                     className="flex flex-grow items-center gap-1.5 text-13 font-medium text-tertiary"
                     id="extended-sidebar-toggle"
-                    aria-label={t(
-                      isExtendedSidebarOpened
-                        ? "aria_labels.app_sidebar.close_extended_sidebar"
-                        : "aria_labels.app_sidebar.open_extended_sidebar"
-                    )}
+                    aria-label={isExtendedSidebarOpened ? "关闭扩展侧边栏" : "打开扩展侧边栏"}
                   >
                     <Ellipsis className="size-4 flex-shrink-0" />
-                    <span>{isExtendedSidebarOpened ? "Hide" : "More"}</span>
+                    <span>{isExtendedSidebarOpened ? "收起" : "更多"}</span>
                   </button>
                 </SidebarNavItem>
               </>

@@ -13,24 +13,6 @@ import maintenanceModeLightModeImage from "@/app/assets/instance/maintenance-mod
 // layouts
 import DefaultLayout from "@/layouts/default-layout";
 
-const linkMap = [
-  {
-    key: "mail_to",
-    label: "Contact Support",
-    value: "mailto:support@plane.so",
-  },
-  {
-    key: "status",
-    label: "Status Page",
-    value: "https://status.plane.so/",
-  },
-  {
-    key: "twitter_handle",
-    label: "@planepowers",
-    value: "https://x.com/planepowers",
-  },
-];
-
 // Production Error Component
 interface ProdErrorComponentProps {
   onGoHome: () => void;
@@ -57,31 +39,15 @@ export function ProdErrorComponent({ onGoHome }: ProdErrorComponentProps) {
         </div>
         <div className="relative mt-4 flex w-full flex-col gap-4">
           <div className="flex flex-col gap-2.5">
-            <h1 className="text-left text-18 font-semibold text-primary">&#x1F6A7; Looks like something went wrong!</h1>
+            <h1 className="text-left text-18 font-semibold text-primary">系统暂时遇到问题</h1>
             <span className="text-left text-14 font-medium text-secondary">
-              We track these errors automatically and working on getting things back up and running. If the problem
-              persists feel free to contact us. In the meantime, try refreshing.
+              我们正在处理这个问题。请稍后刷新页面重试；如果问题持续存在，请联系星轴科技内部系统管理员。
             </span>
-          </div>
-
-          <div className="mt-1 flex items-center justify-start gap-6">
-            {linkMap.map((link) => (
-              <div key={link.key}>
-                <a
-                  href={link.value}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-13 text-accent-primary hover:underline"
-                >
-                  {link.label}
-                </a>
-              </div>
-            ))}
           </div>
 
           <div className="flex items-center justify-start gap-6">
             <Button variant="primary" size="lg" onClick={onGoHome}>
-              Go to home
+              返回首页
             </Button>
           </div>
         </div>

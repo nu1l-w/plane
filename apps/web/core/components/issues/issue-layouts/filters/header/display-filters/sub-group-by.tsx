@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { observer } from "mobx-react";
 import { ISSUE_GROUP_BY_OPTIONS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
@@ -34,7 +34,7 @@ export const FilterSubGroupBy = observer(function FilterSubGroupBy(props: Props)
   return (
     <>
       <FilterHeader
-        title="Sub-group by"
+        title="子分组依据"
         isPreviewEnabled={previewEnabled}
         handleIsPreviewEnabled={() => setPreviewEnabled(!previewEnabled)}
       />
@@ -47,7 +47,7 @@ export const FilterSubGroupBy = observer(function FilterSubGroupBy(props: Props)
             return (
               <FilterOption
                 key={subGroupBy?.key}
-                isChecked={selectedSubGroupBy === subGroupBy?.key ? true : false}
+                isChecked={selectedSubGroupBy === subGroupBy?.key}
                 onClick={() => handleUpdate(subGroupBy.key)}
                 title={t(subGroupBy.titleTranslationKey)}
                 multiple={false}

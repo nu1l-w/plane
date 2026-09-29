@@ -62,6 +62,19 @@ class S3Storage(S3Boto3Storage):
                 config=boto3.session.Config(signature_version="s3v4"),
             )
 
+        # Sign browser URLs separately when storage is on a private Docker network.
+        public_endpoint = os.environ.get("AWS_S3_PUBLIC_ENDPOINT_URL")
+        self.presign_client = self.s3_client
+        if public_endpoint:
+            self.presign_client = boto3.client(
+                "s3",
+                aws_access_key_id=self.aws_access_key_id,
+                aws_secret_access_key=self.aws_secret_access_key,
+                region_name=self.aws_region,
+                endpoint_url=public_endpoint,
+                config=boto3.session.Config(signature_version="s3v4"),
+            )
+
     def generate_presigned_post(self, object_name, file_type, file_size, expiration=None):
         """Generate a presigned URL to upload an S3 object"""
         if expiration is None:
@@ -84,7 +97,7 @@ class S3Storage(S3Boto3Storage):
         # Generate the presigned POST URL
         try:
             # Generate a presigned URL for the S3 object
-            response = self.s3_client.generate_presigned_post(
+            response = self.presign_client.generate_presigned_post(
                 Bucket=self.aws_storage_bucket_name,
                 Key=object_name,
                 Fields=fields,
@@ -122,7 +135,7 @@ class S3Storage(S3Boto3Storage):
             expiration = self.signed_url_expiration
         content_disposition = self._get_content_disposition(disposition, filename)
         try:
-            response = self.s3_client.generate_presigned_url(
+            response = self.presign_client.generate_presigned_url(
                 "get_object",
                 Params={
                     "Bucket": self.aws_storage_bucket_name,

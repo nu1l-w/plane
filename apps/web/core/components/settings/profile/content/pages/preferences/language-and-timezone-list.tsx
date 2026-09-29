@@ -32,14 +32,14 @@ export const ProfileSettingsLanguageAndTimezonePreferencesList = observer(
       try {
         await updateCurrentUser({ user_timezone: value });
         setToast({
-          title: "Success!",
-          message: "Timezone updated successfully",
+          title: "更新成功",
+          message: "时区已更新。",
           type: TOAST_TYPE.SUCCESS,
         });
       } catch (_error) {
         setToast({
-          title: "Error!",
-          message: "Failed to update timezone",
+          title: "更新失败",
+          message: "无法更新时区。",
           type: TOAST_TYPE.ERROR,
         });
       }
@@ -49,14 +49,14 @@ export const ProfileSettingsLanguageAndTimezonePreferencesList = observer(
       try {
         await updateUserProfile({ language: value });
         setToast({
-          title: "Success!",
-          message: "Language updated successfully",
+          title: "更新成功",
+          message: "语言已更新。",
           type: TOAST_TYPE.SUCCESS,
         });
       } catch (_error) {
         setToast({
-          title: "Error!",
-          message: "Failed to update language",
+          title: "更新失败",
+          message: "无法更新语言。",
           type: TOAST_TYPE.ERROR,
         });
       }
@@ -81,7 +81,7 @@ export const ProfileSettingsLanguageAndTimezonePreferencesList = observer(
           control={
             <CustomSelect
               value={profile?.language}
-              label={profile?.language ? getLanguageLabel(profile?.language) : "Select a language"}
+              label={profile?.language ? getLanguageLabel(profile?.language) : "选择语言"}
               onChange={handleLanguageChange}
               buttonClassName="border border-subtle-1"
               className="rounded-md"
@@ -98,8 +98,8 @@ export const ProfileSettingsLanguageAndTimezonePreferencesList = observer(
         />
         <StartOfWeekPreference
           option={{
-            title: "First day of the week",
-            description: "This will change how all calendars in your app look.",
+            title: "每周起始日",
+            description: "此设置会影响平台内所有日历的显示方式。",
           }}
         />
       </div>

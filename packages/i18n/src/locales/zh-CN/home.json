@@ -5,23 +5,23 @@
       "not_right_now": "暂时不要",
       "create_project": {
         "title": "创建项目",
-        "description": "在Plane中，大多数事情都从项目开始。",
+        "description": "研发工作从创建项目开始。",
         "cta": "开始使用"
       },
       "invite_team": {
-        "title": "邀请您的团队",
-        "description": "与同事一起构建、发布和管理。",
-        "cta": "邀请他们加入"
+        "title": "邀请团队成员",
+        "description": "与同事共同规划、开发、测试和交付。",
+        "cta": "邀请成员"
       },
       "configure_workspace": {
-        "title": "设置您的工作区",
+        "title": "设置工作区",
         "description": "开启或关闭功能，或进行更多设置。",
-        "cta": "配置此工作区"
+        "cta": "配置工作区"
       },
       "personalize_account": {
-        "title": "让Plane更适合您",
-        "description": "选择您的头像、颜色等。",
-        "cta": "立即个性化"
+        "title": "完善个人设置",
+        "description": "设置头像、主题颜色和个人偏好。",
+        "cta": "前往设置"
       },
       "widgets": {
         "title": "没有小部件看起来很安静，开启它们吧",
@@ -53,7 +53,7 @@
       }
     },
     "new_at_plane": {
-      "title": "Plane新功能"
+      "title": "平台新功能"
     },
     "quick_tutorial": {
       "title": "快速教程"
@@ -64,7 +64,7 @@
     },
     "manage_widgets": "管理小部件",
     "title": "首页",
-    "star_us_on_github": "在GitHub上为我们加星",
+    "star_us_on_github": "GitHub",
     "business_trial_banner": {
       "title": "您的14天Business计划试用已开始！",
       "description": "探索所有Business功能。准备好后，选择订阅。不会自动收费。",

@@ -72,14 +72,14 @@ export const HeaderGroupByCard = observer(function HeaderGroupByCard(props: IHea
 
       setToast({
         type: TOAST_TYPE.SUCCESS,
-        title: "Success!",
-        message: "Work items added to the cycle successfully.",
+        title: "成功！",
+        message: "工作项已成功添加到周期。",
       });
     } catch (_error) {
       setToast({
         type: TOAST_TYPE.ERROR,
-        title: "Error!",
-        message: "Selected work items could not be added to the cycle. Please try again.",
+        title: "错误！",
+        message: "所选工作项无法添加到周期。请重试。",
       });
     }
   };
@@ -163,14 +163,14 @@ export const HeaderGroupByCard = observer(function HeaderGroupByCard(props: IHea
                   setIsOpen(true);
                 }}
               >
-                <span className="flex items-center justify-start gap-2">Create work item</span>
+                <span className="flex items-center justify-start gap-2">创建工作项</span>
               </CustomMenu.MenuItem>
               <CustomMenu.MenuItem
                 onClick={() => {
                   setOpenExistingIssueListModal(true);
                 }}
               >
-                <span className="flex items-center justify-start gap-2">Add an existing work item</span>
+                <span className="flex items-center justify-start gap-2">添加现有工作项</span>
               </CustomMenu.MenuItem>
             </CustomMenu>
           ) : (

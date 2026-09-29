@@ -1,3 +1,13 @@
+x-local-storage-env: &local-storage-env
+  # Direct S3 access: containers use Docker DNS; signed URLs use the browser address.
+  USE_MINIO: "0"
+  AWS_REGION: ${AWS_REGION:-us-east-1}
+  AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+  AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+  AWS_S3_BUCKET_NAME: ${AWS_S3_BUCKET_NAME:-uploads}
+  AWS_S3_ENDPOINT_URL: http://plane-minio:9000
+  AWS_S3_PUBLIC_ENDPOINT_URL: ${AWS_S3_PUBLIC_ENDPOINT_URL:-http://localhost:9000}
+
 services:
   plane-redis:
     image: valkey/valkey:7.2.11-alpine
@@ -24,19 +34,17 @@ services:
       RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_VHOST}
 
   plane-minio:
-    image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
+    image: ${MINIO_IMAGE:-pgsty/minio:RELEASE.2026-08-04T00-00-00Z}
     restart: unless-stopped
     networks:
       - dev_env
-    entrypoint: >
-      /bin/sh -c "
-      mkdir -p /export/${AWS_S3_BUCKET_NAME} &&
-      minio server /export --console-address ':9090' &
-      sleep 5 &&
-      mc alias set myminio http://localhost:9000 ${AWS_ACCESS_KEY_ID} ${AWS_SECRET_ACCESS_KEY} &&
-      mc mb myminio/${AWS_S3_BUCKET_NAME} -p || true
-      && tail -f /dev/null
-      "
+    command: server /export --console-address ":9090"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 5s
     volumes:
       - uploads:/export
     env_file:
@@ -44,9 +52,26 @@ services:
     environment:
       MINIO_ROOT_USER: ${AWS_ACCESS_KEY_ID}
       MINIO_ROOT_PASSWORD: ${AWS_SECRET_ACCESS_KEY}
+      MINIO_API_CORS_ALLOW_ORIGIN: "http://localhost:3000,http://localhost:3001,http://localhost:3002"
     ports:
-      - "9000:9000"
-      - "9090:9090"
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9090:9090"
+
+  minio-init:
+    image: ${MINIO_IMAGE:-pgsty/minio:RELEASE.2026-08-04T00-00-00Z}
+    restart: "no"
+    networks:
+      - dev_env
+    depends_on:
+      plane-minio:
+        condition: service_healthy
+    environment:
+      <<: *local-storage-env
+    entrypoint: ["/bin/sh", "-ec"]
+    command:
+      - |
+        mc alias set local http://plane-minio:9000 "$$AWS_ACCESS_KEY_ID" "$$AWS_SECRET_ACCESS_KEY"
+        mc mb --ignore-existing "local/$$AWS_S3_BUCKET_NAME"
 
   plane-db:
     image: postgres:15.7-alpine
@@ -77,10 +102,17 @@ services:
     command: ./bin/docker-entrypoint-api-local.sh
     env_file:
       - ./apps/api/.env
+    environment:
+      <<: *local-storage-env
     depends_on:
-      - plane-db
-      - plane-redis
-      - plane-mq
+      plane-db:
+        condition: service_started
+      plane-redis:
+        condition: service_started
+      plane-mq:
+        condition: service_started
+      minio-init:
+        condition: service_completed_successfully
     ports:
       - "8000:8000"
 
@@ -98,6 +130,8 @@ services:
     command: ./bin/docker-entrypoint-worker.sh
     env_file:
       - ./apps/api/.env
+    environment:
+      <<: *local-storage-env
     depends_on:
       - api
       - plane-db
@@ -117,6 +151,8 @@ services:
     command: ./bin/docker-entrypoint-beat.sh
     env_file:
       - ./apps/api/.env
+    environment:
+      <<: *local-storage-env
     depends_on:
       - api
       - plane-db
@@ -136,6 +172,8 @@ services:
     command: ./bin/docker-entrypoint-migrator.sh --settings=plane.settings.local
     env_file:
       - ./apps/api/.env
+    environment:
+      <<: *local-storage-env
     depends_on:
       - plane-db
       - plane-redis

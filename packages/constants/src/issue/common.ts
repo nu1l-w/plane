@@ -13,7 +13,7 @@ import type {
   EIssuesStoreType,
 } from "@plane/types";
 
-export const ALL_ISSUES = "All Issues";
+export const ALL_ISSUES = "所有工作项";
 
 export type TIssuePriorities = "urgent" | "high" | "medium" | "low" | "none";
 
@@ -70,23 +70,23 @@ export const ISSUE_PRIORITIES: {
 }[] = [
   {
     key: "urgent",
-    title: "Urgent",
+    title: "紧急",
   },
   {
     key: "high",
-    title: "High",
+    title: "高",
   },
   {
     key: "medium",
-    title: "Medium",
+    title: "中",
   },
   {
     key: "low",
-    title: "Low",
+    title: "低",
   },
   {
     key: "none",
-    title: "None",
+    title: "无",
   },
 ];
 
@@ -248,25 +248,25 @@ export const SPREADSHEET_PROPERTY_DETAILS: {
   created_on: {
     i18n_title: "common.sort.created_on",
     ascendingOrderKey: "-created_at",
-    ascendingOrderTitle: "New",
+    ascendingOrderTitle: "新",
     descendingOrderKey: "created_at",
-    descendingOrderTitle: "Old",
+    descendingOrderTitle: "旧",
     icon: "CalendarDays",
   },
   due_date: {
     i18n_title: "common.order_by.due_date",
     ascendingOrderKey: "-target_date",
-    ascendingOrderTitle: "New",
+    ascendingOrderTitle: "新",
     descendingOrderKey: "target_date",
-    descendingOrderTitle: "Old",
+    descendingOrderTitle: "旧",
     icon: "DueDatePropertyIcon",
   },
   estimate: {
     i18n_title: "common.estimate",
     ascendingOrderKey: "estimate_point__key",
-    ascendingOrderTitle: "Low",
+    ascendingOrderTitle: "低",
     descendingOrderKey: "-estimate_point__key",
-    descendingOrderTitle: "High",
+    descendingOrderTitle: "高",
     icon: "EstimatePropertyIcon",
   },
   labels: {
@@ -296,17 +296,17 @@ export const SPREADSHEET_PROPERTY_DETAILS: {
   priority: {
     i18n_title: "common.priority",
     ascendingOrderKey: "priority",
-    ascendingOrderTitle: "None",
+    ascendingOrderTitle: "无",
     descendingOrderKey: "-priority",
-    descendingOrderTitle: "Urgent",
+    descendingOrderTitle: "紧急",
     icon: "PriorityPropertyIcon",
   },
   start_date: {
     i18n_title: "common.order_by.start_date",
     ascendingOrderKey: "-start_date",
-    ascendingOrderTitle: "New",
+    ascendingOrderTitle: "新",
     descendingOrderKey: "start_date",
-    descendingOrderTitle: "Old",
+    descendingOrderTitle: "旧",
     icon: "StartDatePropertyIcon",
   },
   state: {
@@ -320,33 +320,33 @@ export const SPREADSHEET_PROPERTY_DETAILS: {
   updated_on: {
     i18n_title: "common.sort.updated_on",
     ascendingOrderKey: "-updated_at",
-    ascendingOrderTitle: "New",
+    ascendingOrderTitle: "新",
     descendingOrderKey: "updated_at",
-    descendingOrderTitle: "Old",
+    descendingOrderTitle: "旧",
     icon: "CalendarDays",
   },
   link: {
     i18n_title: "common.link",
     ascendingOrderKey: "-link_count",
-    ascendingOrderTitle: "Most",
+    ascendingOrderTitle: "最多",
     descendingOrderKey: "link_count",
-    descendingOrderTitle: "Least",
+    descendingOrderTitle: "最少",
     icon: "Link2",
   },
   attachment_count: {
     i18n_title: "common.attachment",
     ascendingOrderKey: "-attachment_count",
-    ascendingOrderTitle: "Most",
+    ascendingOrderTitle: "最多",
     descendingOrderKey: "attachment_count",
-    descendingOrderTitle: "Least",
+    descendingOrderTitle: "最少",
     icon: "Paperclip",
   },
   sub_issue_count: {
     i18n_title: "issue.display.properties.sub_issue",
     ascendingOrderKey: "-sub_issues_count",
-    ascendingOrderTitle: "Most",
+    ascendingOrderTitle: "最多",
     descendingOrderKey: "sub_issues_count",
-    descendingOrderTitle: "Least",
+    descendingOrderTitle: "最少",
     icon: "LayersIcon",
   },
 };

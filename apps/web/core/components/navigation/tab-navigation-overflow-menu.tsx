@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import React from "react";
 import { Link } from "react-router";
 import { MoreHorizontal, Pin } from "lucide-react";
 // plane imports
@@ -67,7 +66,7 @@ export function TabNavigationOverflowMenu({ overflowItems, isActive, tabPreferen
                       onShow(item.key);
                     }}
                     className="invisible rounded-sm p-1 text-tertiary transition-colors group-hover/menu-item:visible hover:text-primary"
-                    title="Show"
+                    title="显示"
                   >
                     <Pin className="size-3" />
                   </button>

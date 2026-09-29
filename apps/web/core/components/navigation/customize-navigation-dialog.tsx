@@ -188,8 +188,7 @@ export const CustomizeNavigationDialog = observer(function CustomizeNavigationDi
           <div>
             <h2 className="text-18 font-semibold text-primary">{t("customize_navigation")}</h2>
             <p className="mt-1 text-13 text-tertiary">
-              Selected items will always stay visible in your sidebar. You can still find the others anytime from the
-              More menu. These changes are personal to you and won&apos;t affect anyone else on your workspace.
+              选中的项目会始终显示在侧边栏中，其他项目仍可随时从“更多”菜单访问。这些设置仅对你生效，不会影响工作区中的其他成员。
             </p>
           </div>
           <button
@@ -281,9 +280,7 @@ export const CustomizeNavigationDialog = observer(function CustomizeNavigationDi
                     />
                     <div className="flex-1">
                       <div className="text-13 text-primary">{t("accordion_navigation_control")}</div>
-                      <div className="text-11 text-secondary">
-                        Feature tabs will appear as nested items under project and acts as accordion.
-                      </div>
+                      <div className="text-11 text-secondary">功能入口将作为项目下的嵌套菜单显示，并可折叠展开。</div>
                     </div>
                   </label>
 
@@ -299,9 +296,7 @@ export const CustomizeNavigationDialog = observer(function CustomizeNavigationDi
                     />
                     <div className="flex-1">
                       <div className="text-13 text-primary">{t("horizontal_navigation_bar")}</div>
-                      <div className="text-11 text-secondary">
-                        Feature tabs will appear as horizontal tabs inside a project.
-                      </div>
+                      <div className="text-11 text-secondary">功能入口将在项目内部以横向标签页显示。</div>
                     </div>
                   </label>
                 </div>
@@ -339,7 +334,7 @@ export const CustomizeNavigationDialog = observer(function CustomizeNavigationDi
                           />
                         </div>
                         {parseInt(projectCountInput) < 1 && projectCountInput !== "" && (
-                          <span className="pl-0.5 text-11 text-danger-primary">Minimum value is 1</span>
+                          <span className="pl-0.5 text-11 text-danger-primary">最小值为 1</span>
                         )}
                       </div>
                     </div>

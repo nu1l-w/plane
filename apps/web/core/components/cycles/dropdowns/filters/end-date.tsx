@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { observer } from "mobx-react";
 // plane imports
 import { DATE_AFTER_FILTER_OPTIONS } from "@plane/constants";
@@ -49,11 +49,11 @@ export const FilterEndDate = observer(function FilterEndDate(props: Props) {
           handleClose={() => setIsDateFilterModalOpen(false)}
           isOpen={isDateFilterModalOpen}
           onSelect={(val) => handleUpdate(val)}
-          title="Due date"
+          title="截止日期"
         />
       )}
       <FilterHeader
-        title={`Due date${appliedFiltersCount > 0 ? ` (${appliedFiltersCount})` : ""}`}
+        title={`截止日期${appliedFiltersCount > 0 ? ` (${appliedFiltersCount})` : ""}`}
         isPreviewEnabled={previewEnabled}
         handleIsPreviewEnabled={() => setPreviewEnabled(!previewEnabled)}
       />
@@ -70,10 +70,10 @@ export const FilterEndDate = observer(function FilterEndDate(props: Props) {
                   multiple
                 />
               ))}
-              <FilterOption isChecked={isCustomDateSelected()} onClick={handleCustomDate} title="Custom" multiple />
+              <FilterOption isChecked={isCustomDateSelected()} onClick={handleCustomDate} title="自定义" multiple />
             </>
           ) : (
-            <p className="text-11 text-placeholder italic">No matches found</p>
+            <p className="text-11 text-placeholder italic">没有匹配结果</p>
           )}
         </div>
       )}

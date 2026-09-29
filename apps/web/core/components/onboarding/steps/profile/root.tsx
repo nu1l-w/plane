@@ -147,7 +147,7 @@ export const ProfileSetupStep = observer(function ProfileSetupStep({ handleStepC
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-10">
       {/* Header */}
-      <CommonOnboardingHeader title="Create your profile." description="This is how you will appear in Plane." />
+      <CommonOnboardingHeader title="完善个人资料" description="这些信息将展示给工作区中的其他成员。" />
 
       {/* Profile Picture Section */}
       <Controller
@@ -230,7 +230,7 @@ export const ProfileSetupStep = observer(function ProfileSetupStep({ handleStepC
                     "border-danger-strong": errors.first_name,
                   }
                 )}
-                placeholder="Enter your full name"
+                placeholder="输入姓名"
                 autoComplete="on"
               />
             )}

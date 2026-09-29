@@ -7,7 +7,7 @@
 import { observer } from "mobx-react";
 import { useSearchParams } from "next/navigation";
 import useSWR from "swr";
-import { Boxes, Share2, Star, User2 } from "lucide-react";
+import { Boxes, User2 } from "lucide-react";
 import { CheckIcon, CloseIcon } from "@plane/propel/icons";
 // components
 import { LogoSpinner } from "@/components/common/logo-spinner";
@@ -81,42 +81,36 @@ function WorkspaceInvitationPage() {
         {invitationDetail && !invitationDetail.responded_at ? (
           error ? (
             <div className="shadow-2xl flex w-full flex-col space-y-4 rounded-sm border border-subtle bg-surface-1 px-4 py-8 text-center md:w-1/3">
-              <h2 className="text-18 uppercase">INVITATION NOT FOUND</h2>
+              <h2 className="text-18">未找到邀请</h2>
             </div>
           ) : (
             <EmptySpace
               title={`You have been invited to ${invitationDetail.workspace.name}`}
-              description="Your workspace is where you'll create projects, collaborate on your work items, and organize different streams of work in your Plane account."
+              description="工作区用于创建项目、协作处理工作项，并组织不同的研发工作流。"
             >
-              <EmptySpaceItem Icon={CheckIcon} title="Accept" action={handleAccept} />
-              <EmptySpaceItem Icon={CloseIcon} title="Ignore" action={handleReject} />
+              <EmptySpaceItem Icon={CheckIcon} title="接受邀请" action={handleAccept} />
+              <EmptySpaceItem Icon={CloseIcon} title="忽略邀请" action={handleReject} />
             </EmptySpace>
           )
         ) : error || invitationDetail?.responded_at ? (
           invitationDetail?.accepted ? (
             <EmptySpace
               title={`You are already a member of ${invitationDetail.workspace.name}`}
-              description="Your workspace is where you'll create projects, collaborate on your work items, and organize different streams of work in your Plane account."
+              description="工作区用于创建项目、协作处理工作项，并组织不同的研发工作流。"
             >
-              <EmptySpaceItem Icon={Boxes} title="Continue to home" href="/" />
+              <EmptySpaceItem Icon={Boxes} title="返回首页" href="/" />
             </EmptySpace>
           ) : (
             <EmptySpace
-              title="This invitation link is not active anymore."
-              description="Your workspace is where you'll create projects, collaborate on your work items, and organize different streams of work in your Plane account."
+              title="此邀请链接已失效"
+              description="工作区用于创建项目、协作处理工作项，并组织不同的研发工作流。"
               link={{ text: "Or start from an empty project", href: "/" }}
             >
               {!currentUser ? (
-                <EmptySpaceItem Icon={User2} title="Sign in to continue" href="/" />
+                <EmptySpaceItem Icon={User2} title="登录后继续" href="/" />
               ) : (
-                <EmptySpaceItem Icon={Boxes} title="Continue to home" href="/" />
+                <EmptySpaceItem Icon={Boxes} title="返回首页" href="/" />
               )}
-              <EmptySpaceItem Icon={Star} title="Star us on GitHub" href="https://github.com/makeplane" />
-              <EmptySpaceItem
-                Icon={Share2}
-                title="Join our community of active creators"
-                href="https://forum.plane.so"
-              />
             </EmptySpace>
           )
         ) : (

@@ -67,7 +67,7 @@ export function WorkspaceJoinInvitesStep(props: Props) {
 
   return invitations && invitations.length > 0 ? (
     <div className="flex flex-col gap-10">
-      <CommonOnboardingHeader title="Join invites or create a workspace" description="All your work — unified." />
+      <CommonOnboardingHeader title="加入邀请或创建工作区" description="集中管理团队的所有研发工作。" />
       <div className="flex flex-col gap-3">
         {invitations &&
           invitations.length > 0 &&
@@ -120,6 +120,6 @@ export function WorkspaceJoinInvitesStep(props: Props) {
       </div>
     </div>
   ) : (
-    <div>No Invitations found</div>
+    <div>暂无邀请</div>
   );
 }

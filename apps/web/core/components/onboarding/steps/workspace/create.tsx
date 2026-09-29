@@ -132,7 +132,7 @@ export const WorkspaceCreateStep = observer(function WorkspaceCreateStep({
         void handleSubmit(handleCreateWorkspace)(e);
       }}
     >
-      <CommonOnboardingHeader title="Create your workspace" description="All your work — unified." />
+      <CommonOnboardingHeader title="创建工作区" description="集中管理团队的所有研发工作。" />
       <div className="flex flex-col gap-8">
         <div className="flex flex-col gap-2">
           <label
@@ -166,7 +166,7 @@ export const WorkspaceCreateStep = observer(function WorkspaceCreateStep({
                       shouldValidate: true,
                     });
                   }}
-                  placeholder="Enter workspace name"
+                  placeholder="输入工作区名称"
                   ref={ref}
                   className={cn(
                     "w-full rounded-md border border-strong bg-surface-1 px-3 py-2 text-secondary transition-all duration-200 placeholder:text-placeholder focus:border-transparent focus:ring-2 focus:ring-accent-strong focus:outline-none",

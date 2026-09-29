@@ -32,7 +32,7 @@ export const AppSidebar = observer(function AppSidebar() {
   const isFavoriteEmpty = isEmpty(groupedFavorites);
 
   return (
-    <SidebarWrapper title="Projects" quickActions={<SidebarQuickActions />}>
+    <SidebarWrapper title="项目" quickActions={<SidebarQuickActions />}>
       <SidebarMenuItems />
       {/* Favorites Menu */}
       {canPerformWorkspaceMemberActions && !isFavoriteEmpty && <SidebarFavoritesMenu />}
