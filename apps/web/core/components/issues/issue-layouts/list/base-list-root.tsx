@@ -87,7 +87,7 @@ export const BaseListRoot = observer(function BaseListRoot(props: IBaseListRoot)
     issuesFilter?.issueFilters?.kanbanFilters || ({ group_by: [], sub_group_by: [] } as TIssueKanbanFilters);
 
   useEffect(() => {
-    fetchIssues("init-loader", { canGroup: true, perPageCount: group_by ? 50 : 100 }, viewId);
+    fetchIssues("init-loader", { canGroup: !!group_by, perPageCount: group_by ? 50 : 100 }, viewId);
   }, [fetchIssues, storeType, group_by, viewId]);
 
   const groupedIssueIds = issues?.groupedIssueIds as TGroupedIssues | undefined;
@@ -99,9 +99,11 @@ export const BaseListRoot = observer(function BaseListRoot(props: IBaseListRoot)
   const { enableInlineEditing, enableQuickAdd, enableIssueCreation } = issues?.viewFlags || {};
 
   const canEditProperties = useCallback(
-    (projectId: string | undefined) => {
+    (projectIdForPermission: string | undefined) => {
       const isEditingAllowedBasedOnProject =
-        canEditPropertiesBasedOnProject && projectId ? canEditPropertiesBasedOnProject(projectId) : isEditingAllowed;
+        canEditPropertiesBasedOnProject && projectIdForPermission
+          ? canEditPropertiesBasedOnProject(projectIdForPermission)
+          : isEditingAllowed;
 
       return !!enableInlineEditing && isEditingAllowedBasedOnProject;
     },
@@ -138,14 +140,14 @@ export const BaseListRoot = observer(function BaseListRoot(props: IBaseListRoot)
   const handleCollapsedGroups = useCallback(
     (value: string) => {
       if (workspaceSlug) {
-        let collapsedGroups = issuesFilter?.issueFilters?.kanbanFilters?.group_by || [];
-        if (collapsedGroups.includes(value)) {
-          collapsedGroups = collapsedGroups.filter((_value) => _value != value);
+        let currentCollapsedGroups = issuesFilter?.issueFilters?.kanbanFilters?.group_by || [];
+        if (currentCollapsedGroups.includes(value)) {
+          currentCollapsedGroups = currentCollapsedGroups.filter((_value) => _value != value);
         } else {
-          collapsedGroups.push(value);
+          currentCollapsedGroups.push(value);
         }
         updateFilters(projectId?.toString() ?? "", EIssueFilterType.KANBAN_FILTERS, {
-          group_by: collapsedGroups,
+          group_by: currentCollapsedGroups,
         } as TIssueKanbanFilters);
       }
     },
