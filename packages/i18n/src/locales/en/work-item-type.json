@@ -3,7 +3,7 @@
     "label": "Work item Types",
     "label_lowercase": "work item types",
     "settings": {
-      "description": "Customize and add your own properties to tailor it to your team's needs.",
+      "description": "Configure work item categories and the default type for a project. Custom fields are not available yet.",
       "cant_delete_default_message": "This work item type cannot be deleted because it's set as the default for this project",
       "set_as_default": "Set as default",
       "cant_set_default_inactive_message": "Activate this type before setting it as default",

@@ -6,6 +6,7 @@
 
 import type { ICycle } from "./cycle";
 import type { TIssue } from "./issues/issue";
+export type { TProjectWorkItemType, TWorkItemType } from "./issues/issue-type";
 import type { IModule } from "./module";
 import type { IProjectLite } from "./project";
 import type { TStateGroups } from "./state";

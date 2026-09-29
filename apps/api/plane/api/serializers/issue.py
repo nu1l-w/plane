@@ -23,6 +23,7 @@ from plane.db.models import (
     IssueRelation,
     Label,
     ProjectMember,
+    ProjectIssueType,
     State,
     User,
     EstimatePoint,
@@ -123,9 +124,9 @@ class IssueSerializer(BaseSerializer):
         # Validate labels are from project
         if data.get("labels", []):
             valid_label_ids = set(
-                Label.objects.filter(
-                    project_id=self.context.get("project_id"), id__in=data["labels"]
-                ).values_list("id", flat=True)
+                Label.objects.filter(project_id=self.context.get("project_id"), id__in=data["labels"]).values_list(
+                    "id", flat=True
+                )
             )
             invalid_label_ids = set(data["labels"]) - valid_label_ids
             if invalid_label_ids:
@@ -160,6 +161,20 @@ class IssueSerializer(BaseSerializer):
         ):
             raise serializers.ValidationError("Estimate point is not valid please pass a valid estimate_point_id")
 
+        issue_type = data.get("type")
+        project_id = self.context.get("project_id") or getattr(self.instance, "project_id", None)
+        if (
+            issue_type
+            and project_id
+            and not ProjectIssueType.objects.filter(
+                project_id=project_id,
+                workspace_id=self.context.get("workspace_id", getattr(self.instance, "workspace_id", None)),
+                issue_type=issue_type,
+                issue_type__is_active=True,
+            ).exists()
+        ):
+            raise serializers.ValidationError({"type_id": "Work item type is not enabled for this project."})
+
         return data
 
     def create(self, validated_data):
@@ -173,9 +188,17 @@ class IssueSerializer(BaseSerializer):
         issue_type = validated_data.pop("type", None)
 
         if not issue_type:
-            # Get default issue type
-            issue_type = IssueType.objects.filter(project_issue_types__project_id=project_id, is_default=True).first()
-            issue_type = issue_type
+            project_issue_type = (
+                ProjectIssueType.objects.filter(
+                    project_id=project_id,
+                    workspace_id=workspace_id,
+                    is_default=True,
+                    issue_type__is_active=True,
+                )
+                .select_related("issue_type")
+                .first()
+            )
+            issue_type = project_issue_type.issue_type if project_issue_type else None
 
         issue = Issue.objects.create(**validated_data, project_id=project_id, type=issue_type)
 

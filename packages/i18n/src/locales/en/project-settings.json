@@ -320,7 +320,7 @@
     },
     "work_item_types": {
       "heading": "Work item Types",
-      "description": "Create and customize different types of work items with unique properties"
+      "description": "Configure work item categories for this project and choose a default type."
     },
     "features": {
       "cycles": {

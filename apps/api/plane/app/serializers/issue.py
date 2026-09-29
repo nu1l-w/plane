@@ -20,6 +20,7 @@ from .workspace import WorkspaceLiteSerializer
 from plane.db.models import (
     User,
     Issue,
+    IssueType,
     IssueActivity,
     IssueComment,
     ProjectUserProperty,
@@ -41,6 +42,7 @@ from plane.db.models import (
     IssueVersion,
     IssueDescriptionVersion,
     ProjectMember,
+    ProjectIssueType,
     EstimatePoint,
 )
 from plane.utils.content_validator import (
@@ -81,6 +83,12 @@ class IssueProjectLiteSerializer(BaseSerializer):
 ## Find a better approach to save manytomany?
 class IssueCreateSerializer(BaseSerializer):
     # ids
+    type_id = serializers.PrimaryKeyRelatedField(
+        source="type",
+        queryset=IssueType.objects.all(),
+        required=False,
+        allow_null=True,
+    )
     state_id = serializers.PrimaryKeyRelatedField(
         source="state", queryset=State.all_state_objects.all(), required=False, allow_null=True
     )
@@ -115,6 +123,8 @@ class IssueCreateSerializer(BaseSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
+        data.pop("type", None)
+        data["type_id"] = instance.type_id
         assignee_ids = self.initial_data.get("assignee_ids")
         data["assignee_ids"] = assignee_ids if assignee_ids else []
         label_ids = self.initial_data.get("label_ids")
@@ -194,6 +204,20 @@ class IssueCreateSerializer(BaseSerializer):
         ):
             raise serializers.ValidationError("Estimate point is not valid please pass a valid estimate_point_id")
 
+        issue_type = attrs.get("type")
+        project_id = self.context.get("project_id") or getattr(self.instance, "project_id", None)
+        workspace_id = self.context.get("workspace_id") or getattr(self.instance, "workspace_id", None)
+        if issue_type and project_id:
+            project_type = ProjectIssueType.objects.filter(
+                project_id=project_id,
+                workspace_id=workspace_id,
+                issue_type=issue_type,
+            ).first()
+            if not project_type or (
+                not issue_type.is_active and issue_type.id != getattr(self.instance, "type_id", None)
+            ):
+                raise serializers.ValidationError({"type_id": "Work item type is not enabled for this project."})
+
         return attrs
 
     def create(self, validated_data):
@@ -203,6 +227,20 @@ class IssueCreateSerializer(BaseSerializer):
         project_id = self.context["project_id"]
         workspace_id = self.context["workspace_id"]
         default_assignee_id = self.context["default_assignee_id"]
+
+        if "type" not in validated_data:
+            project_type = (
+                ProjectIssueType.objects.filter(
+                    project_id=project_id,
+                    workspace_id=workspace_id,
+                    is_default=True,
+                    issue_type__is_active=True,
+                )
+                .select_related("issue_type")
+                .first()
+            )
+            if project_type:
+                validated_data["type"] = project_type.issue_type
 
         # Create Issue
         issue = Issue.objects.create(**validated_data, project_id=project_id)
@@ -770,6 +808,7 @@ class IssueIntakeSerializer(DynamicBaseSerializer):
 class IssueSerializer(DynamicBaseSerializer):
     # ids
     cycle_id = serializers.PrimaryKeyRelatedField(read_only=True)
+    type_id = serializers.UUIDField(read_only=True)
     module_ids = serializers.ListField(child=serializers.UUIDField(), required=False)
 
     # Many to many
@@ -796,6 +835,7 @@ class IssueSerializer(DynamicBaseSerializer):
             "sequence_id",
             "project_id",
             "parent_id",
+            "type_id",
             "cycle_id",
             "module_ids",
             "label_ids",
@@ -853,6 +893,7 @@ class IssueListDetailSerializer(serializers.Serializer):
             "sequence_id": instance.sequence_id,
             "project_id": instance.project_id,
             "parent_id": instance.parent_id,
+            "type_id": instance.type_id,
             "created_at": instance.created_at,
             "updated_at": instance.updated_at,
             "created_by": instance.created_by_id,

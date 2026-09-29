@@ -24,6 +24,7 @@ import { MemberDropdown } from "@/components/dropdowns/member/dropdown";
 import { ModuleDropdown } from "@/components/dropdowns/module/dropdown";
 import { PriorityDropdown } from "@/components/dropdowns/priority";
 import { StateDropdown } from "@/components/dropdowns/state/dropdown";
+import { WorkItemTypeDropdown } from "@/components/dropdowns/work-item-type";
 import { ParentIssuesListModal } from "@/components/issues/parent-issues-list-modal";
 import { IssueLabelSelect } from "@/components/issues/select";
 import { IssueIdentifier } from "@/components/issues/issue-detail/issue-identifier";
@@ -85,6 +86,24 @@ export const IssueDefaultProperties = observer(function IssueDefaultProperties(p
 
   return (
     <div className="flex flex-wrap items-center gap-2">
+      {projectDetails?.is_issue_type_enabled && (
+        <Controller
+          control={control}
+          name="type_id"
+          render={({ field: { value, onChange } }) => (
+            <WorkItemTypeDropdown
+              workspaceSlug={workspaceSlug}
+              projectId={projectId}
+              value={value}
+              onChange={(issueTypeId) => {
+                onChange(issueTypeId);
+                handleFormChange();
+              }}
+              applyDefault={!id}
+            />
+          )}
+        />
+      )}
       <Controller
         control={control}
         name="state_id"
