@@ -11,11 +11,15 @@ import { APIService } from "@/services/api.service";
 // types
 
 export type TDashboardRisk = "overdue" | "due_soon" | "stale" | "high_priority_unassigned";
+export type TDashboardDetail = "total" | "backlog" | "unstarted" | "in_progress" | "completed" | "cancelled";
+export type TDashboardPriority = "urgent" | "high" | "medium" | "low" | "none";
 export interface IWorkspaceDashboardFilters {
   project_id?: string;
   assignee_id?: string;
   created_range?: string;
+  priority?: TDashboardPriority;
   risk?: TDashboardRisk;
+  detail?: TDashboardDetail;
   page?: number;
 }
 
@@ -65,6 +69,9 @@ export interface IWorkspaceDashboardOverview {
   risk_items: IDashboardRiskItem[];
   risk_total: number;
   risk_page: number;
+  detail_items: IDashboardRiskItem[];
+  detail_total: number;
+  detail_page: number;
 }
 
 export class DashboardService extends APIService {

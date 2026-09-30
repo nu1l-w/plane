@@ -155,6 +155,30 @@ class TestWorkspaceDashboardOverview:
         assert unassigned.data["summary"]["total"] == 1
         assert unassigned.data["summary"]["high_priority_unassigned"] == 1
 
+    def test_priority_filter_and_detail_drilldown_are_scoped(self, session_client, workspace, create_user):
+        project = Project.objects.create(name="Details", identifier="DTL", workspace=workspace)
+        ProjectMember.objects.create(project=project, workspace=workspace, member=create_user, role=20)
+        started = State.objects.create(name="Started", color="#aaa", group="started", project=project)
+        completed = State.objects.create(name="Completed", color="#bbb", group="completed", project=project)
+        completed_high = Issue.objects.create(
+            name="High completed", project=project, state=completed, priority="high"
+        )
+        Issue.objects.create(name="Low completed", project=project, state=completed, priority="low")
+        Issue.objects.create(name="High in progress", project=project, state=started, priority="high")
+        url = f"/api/workspaces/{workspace.slug}/dashboard-overview/"
+
+        response = session_client.get(url, {"priority": "high", "detail": "completed"})
+        in_progress = session_client.get(url, {"priority": "high", "detail": "in_progress"})
+
+        assert response.status_code == 200
+        assert response.data["summary"]["total"] == 2
+        assert response.data["detail_total"] == 1
+        assert response.data["detail_page"] == 1
+        assert [item["id"] for item in response.data["detail_items"]] == [completed_high.id]
+        assert in_progress.status_code == 200
+        assert in_progress.data["detail_total"] == 1
+        assert in_progress.data["detail_items"][0]["name"] == "High in progress"
+
     def test_created_range_and_risks_are_filtered_and_paginated(self, session_client, workspace, create_user):
         project = Project.objects.create(name="Time", identifier="TME", workspace=workspace)
         ProjectMember.objects.create(project=project, workspace=workspace, member=create_user, role=20)
@@ -196,6 +220,9 @@ class TestWorkspaceDashboardOverview:
         assert session_client.get(url, {"assignee_id": "invalid"}).status_code == 400
         assert session_client.get(url, {"created_range": "all_time"}).status_code == 400
         assert session_client.get(url, {"risk": "private"}).status_code == 400
+        assert session_client.get(url, {"priority": "critical"}).status_code == 400
+        assert session_client.get(url, {"detail": "private"}).status_code == 400
+        assert session_client.get(url, {"risk": "stale", "detail": "total"}).status_code == 400
         assert session_client.get(url, {"page": "0"}).status_code == 400
         response = session_client.get(url, {"project_id": str(hidden.id)})
         assert response.status_code == 200

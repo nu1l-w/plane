@@ -76,8 +76,8 @@ export const GeneralProfileSettingsForm = observer(function GeneralProfileSettin
       display_name: user.display_name || "",
       email: user.email || "",
       role: profile.role || "Product / Project Manager",
-      language: profile.language || "en",
-      user_timezone: user.user_timezone || "Asia/Kolkata",
+      language: profile.language || "zh-CN",
+      user_timezone: user.user_timezone || "Asia/Shanghai",
     },
   });
   // derived values
@@ -230,9 +230,7 @@ export const GeneralProfileSettingsForm = observer(function GeneralProfileSettin
                         <img
                           src={getFileURL(userAvatar)}
                           className="absolute top-0 left-0 h-full w-full rounded-lg object-cover"
-                          onClick={() => setIsImageUploadModalOpen(true)}
                           alt={currentUser?.display_name}
-                          role="button"
                         />
                       </div>
                     )}

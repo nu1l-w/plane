@@ -12,7 +12,7 @@ import scrollIntoView from "smooth-scroll-into-view-if-needed";
 import type { FC } from "react";
 import { CalendarDays, LayersIcon, Paperclip } from "lucide-react";
 // plane types
-import { EIconSize, ISSUE_PRIORITIES, STATE_GROUPS } from "@plane/constants";
+import { ALL_ISSUES, EIconSize, ISSUE_PRIORITIES, STATE_GROUPS } from "@plane/constants";
 import { Logo } from "@plane/propel/emoji-icon-picker";
 import type { ISvgIcons } from "@plane/propel/icons";
 import {
@@ -132,12 +132,12 @@ export const getGroupByColumns = ({
   isEpic = false,
   projectId,
 }: TGetGroupByColumns): IGroupByColumn[] | undefined => {
-  // If no groupBy is specified and includeNone is true, return "All Issues" group
+  // Keep the internal group ID in sync with the issue stores, regardless of the display label.
   if (!groupBy && includeNone) {
     return [
       {
-        id: "All Issues",
-        name: `All ${isEpic ? "Epics" : "work items"}`,
+        id: ALL_ISSUES,
+        name: isEpic ? "All Epics" : ALL_ISSUES,
         payload: {},
         icon: undefined,
       },
@@ -755,10 +755,10 @@ export const getBlockViewDetails = (
  * @param iconKey
  */
 export function SpreadSheetPropertyIcon(props: ISvgIcons & { iconKey: string }) {
-  const { iconKey } = props;
+  const { iconKey, ...iconProps } = props;
   const Icon = SpreadSheetPropertyIconMap[iconKey];
   if (!Icon) return null;
-  return <Icon {...props} />;
+  return <Icon {...iconProps} />;
 }
 
 /**

@@ -18,6 +18,15 @@ from plane.db.models import Issue, IssueAssignee, Project, ProjectMember, Worksp
 
 CREATED_RANGES = {"last_7_days": 7, "last_30_days": 30, "last_90_days": 90}
 RISK_KINDS = {"overdue", "due_soon", "stale", "high_priority_unassigned"}
+PRIORITIES = {"urgent", "high", "medium", "low", "none"}
+DETAIL_GROUPS = {
+    "total": None,
+    "backlog": "backlog",
+    "unstarted": "unstarted",
+    "in_progress": "started",
+    "completed": "completed",
+    "cancelled": "cancelled",
+}
 
 
 def risk_item_values(queryset):
@@ -79,7 +88,9 @@ class WorkspaceDashboardOverviewEndpoint(BaseAPIView):
         project_id = request.GET.get("project_id")
         assignee_id = request.GET.get("assignee_id")
         created_range = request.GET.get("created_range", "")
+        priority = request.GET.get("priority", "")
         risk = request.GET.get("risk", "")
+        detail = request.GET.get("detail", "")
         page = request.GET.get("page", "1")
         try:
             if project_id:
@@ -91,7 +102,10 @@ class WorkspaceDashboardOverviewEndpoint(BaseAPIView):
             return Response({"error": "Invalid dashboard filter."}, status=status.HTTP_400_BAD_REQUEST)
         if (
             (created_range and created_range not in CREATED_RANGES)
+            or (priority and priority not in PRIORITIES)
             or (risk and risk not in RISK_KINDS)
+            or (detail and detail not in DETAIL_GROUPS)
+            or (risk and detail)
             or not 1 <= page_number <= 1000
         ):
             return Response({"error": "Invalid dashboard filter."}, status=status.HTTP_400_BAD_REQUEST)
@@ -126,6 +140,8 @@ class WorkspaceDashboardOverviewEndpoint(BaseAPIView):
                 )
         if created_range:
             issues = issues.filter(created_at__gte=timezone.now() - timedelta(days=CREATED_RANGES[created_range]))
+        if priority:
+            issues = issues.filter(priority=priority)
 
         open_issues = issues.exclude(state__group__in=["completed", "cancelled"])
         overdue_issues = open_issues.filter(target_date__lt=today)
@@ -189,6 +205,22 @@ class WorkspaceDashboardOverviewEndpoint(BaseAPIView):
             if selected_risk is not None
             else []
         )
+        detail_issues = issues
+        if detail and DETAIL_GROUPS[detail] == "unstarted":
+            detail_issues = detail_issues.filter(
+                Q(state__group="unstarted") | Q(state__group__isnull=True)
+            )
+        elif detail and DETAIL_GROUPS[detail]:
+            detail_issues = detail_issues.filter(state__group=DETAIL_GROUPS[detail])
+        detail_total = detail_issues.count() if detail else 0
+        detail_page = min(page_number, max(1, (detail_total + 19) // 20))
+        detail_items = (
+            risk_item_values(
+                detail_issues.order_by("-created_at", "id")[(detail_page - 1) * 20 : detail_page * 20]
+            )
+            if detail
+            else []
+        )
         overdue_items = risk_item_values(risks["overdue"][:10])
         assignees = WorkspaceMember.objects.filter(
             workspace__slug=slug, is_active=True, member__is_bot=False
@@ -210,5 +242,8 @@ class WorkspaceDashboardOverviewEndpoint(BaseAPIView):
                 "risk_items": risk_items,
                 "risk_page": risk_page,
                 "risk_total": risk_total,
+                "detail_items": detail_items,
+                "detail_page": detail_page,
+                "detail_total": detail_total,
             }
         )

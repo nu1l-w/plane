@@ -48,4 +48,11 @@ describe("dashboard overview", () => {
       })
     ).toBe("/team/dashboards?project_id=one");
   });
+
+  it("preserves filters while opening a metric detail and clears conflicting views", () => {
+    const filters = new URLSearchParams("priority=high&risk=overdue&page=2");
+    expect(getDashboardHref("team", filters, { detail: "completed", risk: null, page: null })).toBe(
+      "/team/dashboards?priority=high&detail=completed"
+    );
+  });
 });

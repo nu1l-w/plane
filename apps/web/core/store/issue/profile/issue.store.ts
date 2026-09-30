@@ -127,6 +127,8 @@ export class ProfileIssues extends BaseIssuesStore implements IProfileIssues {
     view: TProfileViews,
     isExistingPaginationOptions: boolean = false
   ) => {
+    let controller: AbortController | undefined;
+    let responseReceived = false;
     try {
       // set loader and clear store
       runInAction(() => {
@@ -151,14 +153,18 @@ export class ProfileIssues extends BaseIssuesStore implements IProfileIssues {
       else if (this.currentView === "subscribed") params = { ...params, subscriber: userId };
 
       // call the fetch issues API with the params
+      controller = this.controller;
       const response = await this.userService.getUserProfileIssues(workspaceSlug, userId, params, {
-        signal: this.controller.signal,
+        signal: controller.signal,
       });
 
+      if (controller.signal.aborted) return;
+      responseReceived = true;
       // after fetching issues, call the base method to process the response further
       this.onfetchIssues(response, options, workspaceSlug, undefined, undefined, !isExistingPaginationOptions);
       return response;
     } catch (error) {
+      if (!responseReceived && controller?.signal.aborted) return;
       // set loader to undefined if errored out
       this.setLoader(undefined);
       throw error;

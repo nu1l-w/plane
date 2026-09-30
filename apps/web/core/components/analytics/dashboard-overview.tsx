@@ -14,6 +14,8 @@ import type {
   IDashboardRiskItem,
   IWorkspaceDashboardFilters,
   IWorkspaceDashboardOverview,
+  TDashboardDetail,
+  TDashboardPriority,
   TDashboardRisk,
 } from "@/services/dashboard.service";
 import {
@@ -33,6 +35,8 @@ const STATE_COLORS: Record<string, string> = {
 };
 
 const RISK_KINDS: TDashboardRisk[] = ["overdue", "due_soon", "stale", "high_priority_unassigned"];
+const DETAIL_KINDS: TDashboardDetail[] = ["total", "backlog", "unstarted", "in_progress", "completed", "cancelled"];
+const PRIORITIES: TDashboardPriority[] = ["urgent", "high", "medium", "low", "none"];
 
 function SummaryCard({
   label,
@@ -118,7 +122,17 @@ function ProjectProgress({
   );
 }
 
-function StateDistribution({ states }: { states: Record<string, number> }) {
+function StateDistribution({
+  workspaceSlug,
+  states,
+  searchParams,
+  activeDetail,
+}: {
+  workspaceSlug: string;
+  states: Record<string, number>;
+  searchParams: URLSearchParams;
+  activeDetail?: TDashboardDetail;
+}) {
   const { t } = useTranslation();
   const distribution = getStateDistribution(states);
   const total = distribution.reduce((sum, item) => sum + item.count, 0);
@@ -131,7 +145,16 @@ function StateDistribution({ states }: { states: Record<string, number> }) {
       ) : (
         <div className="space-y-4">
           {distribution.map(({ group, count }) => (
-            <div key={group} className="flex items-center gap-3">
+            <Link
+              key={group}
+              href={getDashboardHref(workspaceSlug, searchParams, {
+                detail: group === "started" ? "in_progress" : group,
+                risk: null,
+                page: null,
+              })}
+              aria-current={activeDetail === (group === "started" ? "in_progress" : group) ? "page" : undefined}
+              className="flex items-center gap-3 rounded-md hover:text-accent-primary"
+            >
               <span className="w-16 shrink-0 text-13 text-secondary">{t(`dashboard_overview.states.${group}`)}</span>
               <div className="h-2 flex-1 overflow-hidden rounded-full bg-layer-1">
                 <div
@@ -140,8 +163,84 @@ function StateDistribution({ states }: { states: Record<string, number> }) {
                 />
               </div>
               <span className="w-9 text-right text-13 text-primary">{count}</span>
-            </div>
+            </Link>
           ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function DetailItems({
+  workspaceSlug,
+  items,
+  detail,
+  total,
+  page,
+  searchParams,
+}: {
+  workspaceSlug: string;
+  items: IDashboardRiskItem[];
+  detail: TDashboardDetail;
+  total: number;
+  page: number;
+  searchParams: URLSearchParams;
+}) {
+  const { t } = useTranslation();
+  const title =
+    detail === "total" || detail === "in_progress"
+      ? t(`dashboard_overview.metrics.${detail}`)
+      : t(`dashboard_overview.states.${detail}`);
+
+  return (
+    <section className="rounded-xl border border-subtle bg-surface-1 p-5">
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-16 font-semibold text-primary">{title}</h2>
+        <Link
+          href={getDashboardHref(workspaceSlug, searchParams, { detail: null, page: null })}
+          className="text-13 text-accent-primary"
+        >
+          {t("dashboard_overview.back_to_overview")}
+        </Link>
+      </div>
+      {items.length === 0 ? (
+        <p className="py-10 text-center text-13 text-tertiary">{t("dashboard_overview.no_work_items")}</p>
+      ) : (
+        <div className="divide-y divide-subtle">
+          {items.map((item) => (
+            <Link
+              key={item.id}
+              href={`/${workspaceSlug}/projects/${item.project_id}/issues/${item.id}`}
+              className="flex items-center justify-between gap-4 py-3 text-13 hover:text-accent-primary"
+            >
+              <span className="min-w-0 truncate text-primary">
+                <span className="mr-2 text-tertiary">
+                  {item.project__identifier}-{item.sequence_id}
+                </span>
+                {item.name}
+              </span>
+              <span className="shrink-0 text-secondary">{item.target_date ?? ""}</span>
+            </Link>
+          ))}
+        </div>
+      )}
+      {total > 20 && (
+        <div className="mt-4 flex items-center justify-between border-t border-subtle pt-4 text-13 text-secondary">
+          {page > 1 ? (
+            <Link href={getDashboardHref(workspaceSlug, searchParams, { page: String(page - 1) })}>
+              {t("dashboard_overview.previous")}
+            </Link>
+          ) : (
+            <span />
+          )}
+          <span>{t("dashboard_overview.page_info", { page, pages: Math.ceil(total / 20) })}</span>
+          {page * 20 < total ? (
+            <Link href={getDashboardHref(workspaceSlug, searchParams, { page: String(page + 1) })}>
+              {t("dashboard_overview.next")}
+            </Link>
+          ) : (
+            <span />
+          )}
         </div>
       )}
     </section>
@@ -282,18 +381,22 @@ export function WorkspaceDashboardOverview() {
   const slug = workspaceSlug?.toString();
   const requestedRisk = searchParams.get("risk");
   const risk = RISK_KINDS.find((kind) => kind === requestedRisk);
+  const requestedDetail = searchParams.get("detail");
+  const detail = DETAIL_KINDS.find((kind) => kind === requestedDetail);
   const filters: IWorkspaceDashboardFilters = {
     project_id: searchParams.get("project_id") ?? undefined,
     assignee_id: searchParams.get("assignee_id") ?? undefined,
     created_range: searchParams.get("created_range") ?? undefined,
+    priority: PRIORITIES.find((priority) => priority === searchParams.get("priority")),
     risk,
-    page: risk ? Number(searchParams.get("page") ?? "1") : undefined,
+    detail,
+    page: risk || detail ? Number(searchParams.get("page") ?? "1") : undefined,
   };
   const { data, error, isLoading, mutate } = useSWR(
     slug ? ["dashboard-overview", slug, searchParams.toString()] : null,
     () => dashboardService.getWorkspaceOverview(slug as string, filters)
   );
-  const changeFilter = (key: "project_id" | "assignee_id" | "created_range", value: string) => {
+  const changeFilter = (key: "project_id" | "assignee_id" | "created_range" | "priority", value: string) => {
     const params = new URLSearchParams(searchParams);
     if (value) params.set(key, value);
     else params.delete(key);
@@ -378,12 +481,48 @@ export function WorkspaceDashboardOverview() {
             ))}
           </select>
         </label>
+        <label className="flex flex-col gap-1 text-12 text-secondary">
+          {t("common.priority")}
+          <select
+            aria-label={t("common.priority")}
+            value={filters.priority ?? ""}
+            onChange={(event) => changeFilter("priority", event.target.value)}
+            className="rounded-md border border-subtle bg-surface-1 px-3 py-2 text-13 text-primary"
+          >
+            <option value="">{t("common.all")}</option>
+            {PRIORITIES.map((priority) => (
+              <option key={priority} value={priority}>
+                {t(`common.${priority}`)}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {summaryCards.map(([key, value]) => (
-          <SummaryCard key={key} label={t(`dashboard_overview.metrics.${key}`)} value={value} />
+          <SummaryCard
+            key={key}
+            label={t(`dashboard_overview.metrics.${key}`)}
+            value={value}
+            href={
+              key === "projects"
+                ? undefined
+                : getDashboardHref(slug as string, searchParams, { detail: key, risk: null, page: null })
+            }
+            active={detail === key}
+          />
         ))}
       </div>
+      {detail && (
+        <DetailItems
+          workspaceSlug={slug as string}
+          items={data.detail_items}
+          detail={detail}
+          total={data.detail_total}
+          page={data.detail_page}
+          searchParams={searchParams}
+        />
+      )}
       <section>
         <h2 className="mb-3 text-16 font-semibold text-primary">{t("dashboard_overview.risks_title")}</h2>
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -392,7 +531,7 @@ export function WorkspaceDashboardOverview() {
               key={kind}
               label={t(`dashboard_overview.metrics.${kind}`)}
               value={data.summary[kind]}
-              href={getDashboardHref(slug as string, searchParams, { risk: kind, page: null })}
+              href={getDashboardHref(slug as string, searchParams, { risk: kind, detail: null, page: null })}
               active={risk === kind}
             />
           ))}
@@ -411,7 +550,12 @@ export function WorkspaceDashboardOverview() {
       )}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <ProjectProgress workspaceSlug={slug as string} projects={data.projects} />
-        <StateDistribution states={data.states} />
+        <StateDistribution
+          workspaceSlug={slug as string}
+          states={data.states}
+          searchParams={searchParams}
+          activeDetail={detail}
+        />
       </div>
       <WeeklyTrends weeks={data.weekly_trends} />
       <section className="rounded-xl border border-subtle bg-surface-1 p-5 text-12 leading-6 text-secondary">
@@ -420,7 +564,7 @@ export function WorkspaceDashboardOverview() {
         <p>{t("dashboard_overview.definition.stale")}</p>
         <p>{t("dashboard_overview.definition.created_filter")}</p>
       </section>
-      {!risk && <RiskItems workspaceSlug={slug as string} items={data.overdue_items} />}
+      {!risk && !detail && <RiskItems workspaceSlug={slug as string} items={data.overdue_items} />}
     </main>
   );
 }
