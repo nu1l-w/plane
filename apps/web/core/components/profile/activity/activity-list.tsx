@@ -147,7 +147,9 @@ export const ActivityList = observer(function ActivityList(props: Props) {
                             {activityItem.field === "archived_at" && activityItem.new_value !== "restore" ? (
                               <span className="text-gray font-medium">星轴科技</span>
                             ) : activityItem.actor_detail.is_bot ? (
-                              <span className="text-gray font-medium">{activityItem.actor_detail.first_name} 机器人</span>
+                              <span className="text-gray font-medium">
+                                {activityItem.actor_detail.first_name} 机器人
+                              </span>
                             ) : (
                               <Link
                                 href={`/${activityItem.workspace_detail?.slug}/profile/${activityItem.actor_detail.id}`}

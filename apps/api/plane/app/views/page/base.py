@@ -8,7 +8,7 @@ from datetime import datetime
 from django.core.serializers.json import DjangoJSONEncoder
 
 # Django imports
-from django.db import connection
+from django.db import connection, transaction
 from django.db.models import (
     Exists,
     OuterRef,
@@ -26,8 +26,9 @@ from django.contrib.postgres.fields import ArrayField
 from django.db.models.functions import Coalesce
 
 # Third party imports
-from rest_framework import status
+from rest_framework import serializers, status
 from rest_framework.response import Response
+from django.utils import timezone
 
 # Module imports
 from plane.app.permissions import allow_permission, ROLE
@@ -43,6 +44,9 @@ from plane.db.models import (
     ProjectMember,
     ProjectPage,
     Project,
+    FileAsset,
+    Workspace,
+    WorkspaceMember,
     UserRecentVisit,
 )
 from plane.utils.error_codes import ERROR_CODES
@@ -55,6 +59,7 @@ from plane.bgtasks.page_version_task import track_page_version
 from plane.bgtasks.recent_visited_task import recent_visited_task
 from plane.bgtasks.copy_s3_object import copy_s3_objects_of_description_and_assets
 from plane.app.permissions import ProjectPagePermission
+from plane.app.permissions import WorkspacePagePermission
 
 
 def unarchive_archive_page_and_descendants(page_id, archived_at):
@@ -484,6 +489,189 @@ class PageViewSet(BaseViewSet):
         return Response(stats, status=status.HTTP_200_OK)
 
 
+class WorkspacePageViewSet(BaseViewSet):
+    serializer_class = PageSerializer
+    model = Page
+    permission_classes = [WorkspacePagePermission]
+    search_fields = ["name"]
+    lookup_url_kwarg = "page_id"
+
+    def get_queryset(self):
+        membership = WorkspaceMember.objects.filter(
+            workspace__slug=self.kwargs.get("slug"),
+            member=self.request.user,
+            is_active=True,
+        ).first()
+        queryset = Page.objects.filter(
+            workspace__slug=self.kwargs.get("slug"),
+            is_global=True,
+            parent__isnull=True,
+            archived_at__isnull=True,
+        )
+        if membership and membership.role != ROLE.ADMIN.value:
+            queryset = queryset.filter(Q(owned_by=self.request.user) | Q(access=Page.PUBLIC_ACCESS))
+
+        favorite_subquery = UserFavorite.objects.filter(
+            user=self.request.user,
+            entity_type="page",
+            entity_identifier=OuterRef("pk"),
+            workspace__slug=self.kwargs.get("slug"),
+        )
+        return (
+            self.filter_queryset(queryset)
+            .select_related("workspace", "owned_by")
+            .prefetch_related("labels")
+            .annotate(
+                is_favorite=Exists(favorite_subquery),
+                label_ids=Coalesce(
+                    ArrayAgg(
+                        "page_labels__label_id",
+                        distinct=True,
+                        filter=~Q(page_labels__label_id__isnull=True),
+                    ),
+                    Value([], output_field=ArrayField(UUIDField())),
+                ),
+                project_ids=Value([], output_field=ArrayField(UUIDField())),
+            )
+            .order_by(
+                sanitize_order_by(
+                    self.request.GET.get("order_by", "-created_at"),
+                    PAGE_ORDER_BY_ALLOWLIST,
+                    default="-created_at",
+                ),
+                "id",
+            )
+        )
+
+    def create(self, request, slug):
+        workspace = Workspace.objects.get(slug=slug)
+        serializer = PageSerializer(
+            data=request.data,
+            context={
+                "workspace_id": workspace.id,
+                "owned_by_id": request.user.id,
+                "description_json": request.data.get("description_json", {}),
+                "description_binary": request.data.get("description_binary"),
+                "description_html": request.data.get("description_html", "<p></p>"),
+            },
+        )
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        if serializer.validated_data.get("parent"):
+            return Response(
+                {"parent": ["Nested workspace pages are not supported yet."]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        page = serializer.save()
+        page_transaction.delay(
+            new_description_html=request.data.get("description_html", "<p></p>"),
+            old_description_html=None,
+            page_id=page.id,
+        )
+        page = self.get_queryset().get(pk=page.id)
+        return Response(PageDetailSerializer(page).data, status=status.HTTP_201_CREATED)
+
+    def retrieve(self, request, slug, page_id):
+        page = self.get_object()
+        data = PageDetailSerializer(page).data
+        data["issue_ids"] = list(
+            PageLog.objects.filter(page_id=page_id, entity_name="issue").values_list("entity_identifier", flat=True)
+        )
+        return Response(data, status=status.HTTP_200_OK)
+
+    def partial_update(self, request, slug, page_id):
+        page = self.get_object()
+        if page.is_locked:
+            return Response({"error": "Page is locked"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if request.data.get("parent"):
+            return Response(
+                {"parent": ["Nested workspace pages are not supported yet."]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        previous_description = page.description_html
+        serializer = PageDetailSerializer(page, data=request.data, partial=True)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        page = serializer.save()
+        if request.data.get("description_html") and previous_description != page.description_html:
+            page_transaction.delay(
+                new_description_html=page.description_html,
+                old_description_html=previous_description,
+                page_id=page_id,
+            )
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def move(self, request, slug, page_id):
+        page = self.get_object()
+        if not page.is_global:
+            return Response({"error": "Only workspace pages can be moved."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            new_project_id = serializers.UUIDField().run_validation(request.data.get("new_project_id"))
+        except serializers.ValidationError as error:
+            return Response({"new_project_id": error.detail}, status=status.HTTP_400_BAD_REQUEST)
+
+        project = Project.objects.filter(
+            pk=new_project_id,
+            workspace__slug=slug,
+            archived_at__isnull=True,
+        ).first()
+        if project is None:
+            return Response({"error": "Destination project not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        project_members = ProjectMember.objects.filter(
+            workspace_id=page.workspace_id,
+            project=project,
+            is_active=True,
+        )
+        mover_membership = project_members.filter(member=request.user).first()
+        if mover_membership is None or (
+            mover_membership.role not in [ROLE.ADMIN.value, ROLE.MEMBER.value]
+            and page.owned_by_id != request.user.id
+        ):
+            return Response(
+                {"error": "You must be an active project member to move this page."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        if not project_members.filter(member_id=page.owned_by_id).exists():
+            return Response(
+                {"error": "The page owner must be an active member of the destination project."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        with transaction.atomic():
+            page = Page.objects.select_for_update().get(pk=page_id, workspace__slug=slug, is_global=True)
+            if not ProjectPage.objects.filter(project=project, page=page, deleted_at__isnull=True).exists():
+                ProjectPage.objects.create(
+                    workspace_id=page.workspace_id,
+                    project=project,
+                    page=page,
+                    created_by_id=request.user.id,
+                    updated_by_id=request.user.id,
+                )
+            ProjectPage.objects.filter(page=page, deleted_at__isnull=True).exclude(project=project).update(
+                deleted_at=timezone.now(),
+                updated_by_id=request.user.id,
+            )
+            page.is_global = False
+            page.updated_by_id = request.user.id
+            page.save(update_fields=["is_global", "updated_by", "updated_at"])
+            # Keep embedded page assets on the same project scope as the moved page.
+            FileAsset.objects.filter(
+                page=page,
+                workspace_id=page.workspace_id,
+                entity_type=FileAsset.EntityTypeContext.PAGE_DESCRIPTION,
+                deleted_at__isnull=True,
+            ).update(project=project, updated_by_id=request.user.id)
+
+        return Response({"page_id": str(page.id), "project_id": str(project.id)}, status=status.HTTP_200_OK)
+
+
 class PageFavoriteViewSet(BaseViewSet):
     model = UserFavorite
 
@@ -588,6 +776,55 @@ class PagesDescriptionViewSet(BaseViewSet):
             return Response({"message": "Updated successfully"})
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class WorkspacePageDescriptionEndpoint(BaseAPIView):
+    permission_classes = [WorkspacePagePermission]
+
+    def get_page(self, slug, page_id):
+        return Page.objects.get(
+            pk=page_id,
+            workspace__slug=slug,
+            is_global=True,
+        )
+
+    def get(self, request, slug, page_id):
+        page = self.get_page(slug, page_id)
+        binary_data = page.description_binary
+
+        def stream_data():
+            yield binary_data or b""
+
+        response = StreamingHttpResponse(stream_data(), content_type="application/octet-stream")
+        response["Content-Disposition"] = 'attachment; filename="page_description.bin"'
+        return response
+
+    def patch(self, request, slug, page_id):
+        page = self.get_page(slug, page_id)
+        if page.is_locked or page.archived_at:
+            return Response(
+                {
+                    "error_code": ERROR_CODES["PAGE_LOCKED"] if page.is_locked else ERROR_CODES["PAGE_ARCHIVED"],
+                    "error_message": "PAGE_LOCKED" if page.is_locked else "PAGE_ARCHIVED",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        old_description_html = page.description_html
+        serializer = PageBinaryUpdateSerializer(page, data=request.data, partial=True)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer.save()
+        if request.data.get("description_html"):
+            page_transaction.delay(
+                new_description_html=page.description_html,
+                old_description_html=old_description_html,
+                page_id=page_id,
+            )
+            existing_instance = json.dumps({"description_html": old_description_html}, cls=DjangoJSONEncoder)
+            track_page_version.delay(page_id=page_id, existing_instance=existing_instance, user_id=request.user.id)
+        return Response({"message": "Updated successfully"})
 
 
 class PageDuplicateEndpoint(BaseAPIView):

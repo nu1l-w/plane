@@ -142,6 +142,7 @@ export const PageOptionsDropdown = observer(function PageOptionsDropdown(props: 
           "make-a-copy",
           "archive-restore",
           "delete",
+          "move",
           "toggle-access",
           "export",
         ]}

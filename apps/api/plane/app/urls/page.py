@@ -7,13 +7,46 @@ from django.urls import path
 
 from plane.app.views import (
     PageViewSet,
+    WorkspacePageViewSet,
     PageFavoriteViewSet,
     PagesDescriptionViewSet,
+    WorkspacePageDescriptionEndpoint,
     PageVersionEndpoint,
+    WorkspacePageVersionEndpoint,
     PageDuplicateEndpoint,
 )
 
 urlpatterns = [
+    path(
+        "workspaces/<str:slug>/pages/",
+        WorkspacePageViewSet.as_view({"get": "list", "post": "create"}),
+        name="workspace-pages",
+    ),
+    path(
+        "workspaces/<str:slug>/pages/<uuid:page_id>/",
+        WorkspacePageViewSet.as_view({"get": "retrieve", "patch": "partial_update"}),
+        name="workspace-page-detail",
+    ),
+    path(
+        "workspaces/<str:slug>/pages/<uuid:page_id>/move/",
+        WorkspacePageViewSet.as_view({"post": "move"}),
+        name="workspace-page-move",
+    ),
+    path(
+        "workspaces/<str:slug>/pages/<uuid:page_id>/description/",
+        WorkspacePageDescriptionEndpoint.as_view(),
+        name="workspace-page-description",
+    ),
+    path(
+        "workspaces/<str:slug>/pages/<uuid:page_id>/versions/",
+        WorkspacePageVersionEndpoint.as_view(),
+        name="workspace-page-versions",
+    ),
+    path(
+        "workspaces/<str:slug>/pages/<uuid:page_id>/versions/<uuid:pk>/",
+        WorkspacePageVersionEndpoint.as_view(),
+        name="workspace-page-version-detail",
+    ),
     path(
         "workspaces/<str:slug>/projects/<uuid:project_id>/pages-summary/",
         PageViewSet.as_view({"get": "summary"}),

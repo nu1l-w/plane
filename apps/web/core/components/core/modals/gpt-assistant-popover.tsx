@@ -91,9 +91,7 @@ export function GptAssistantPopover(props: Props) {
   const handleServiceError = (err: any) => {
     const error = err?.data?.error;
     const errorMessage =
-      err?.status === 429
-        ? error || "您已达到每月每用户 50 次请求的最大数量限制。"
-        : error || "发生错误，请重试。";
+      err?.status === 429 ? error || "您已达到每月每用户 50 次请求的最大数量限制。" : error || "发生错误，请重试。";
 
     setToast({
       type: TOAST_TYPE.ERROR,
@@ -189,11 +187,7 @@ export function GptAssistantPopover(props: Props) {
     </Button>
   );
 
-  const generateResponseButtonText = isSubmitting
-    ? "正在生成回复..."
-    : response === ""
-      ? "生成回复"
-      : "重新生成";
+  const generateResponseButtonText = isSubmitting ? "正在生成回复..." : response === "" ? "生成回复" : "重新生成";
 
   return (
     <Popover as="div" className={`relative w-min text-left`}>
@@ -250,9 +244,7 @@ export function GptAssistantPopover(props: Props) {
               </div>
             )}
             {invalidResponse && (
-              <div className="text-13 text-danger-primary">
-                无法生成回复。这可能是由于内容或任务信息不足。请重试。
-              </div>
+              <div className="text-13 text-danger-primary">无法生成回复。这可能是由于内容或任务信息不足。请重试。</div>
             )}
           </div>
           <Controller
@@ -266,11 +258,8 @@ export function GptAssistantPopover(props: Props) {
                 value={value}
                 onChange={onChange}
                 ref={ref}
-                placeholder={`${
-                  prompt && prompt !== "" ? "告诉 AI 要对此内容执行什么操作..." : "向 AI 提问..."
-                }`}
+                placeholder={`${prompt && prompt !== "" ? "告诉 AI 要对此内容执行什么操作..." : "向 AI 提问..."}`}
                 className="w-full"
-                autoFocus
               />
             )}
           />

@@ -38,8 +38,7 @@ export const IssueDefaultActivity = observer(function IssueDefaultActivity(props
         {activity.verb === "created" ? (
           source && source !== EInboxIssueSource.IN_APP ? (
             <span>
-              通过{" "}
-              <span className="font-medium">{capitalizeFirstLetter(source.toLowerCase() || "")}</span>
+              通过 <span className="font-medium">{capitalizeFirstLetter(source.toLowerCase() || "")}</span>
               创建了工作项。
             </span>
           ) : (

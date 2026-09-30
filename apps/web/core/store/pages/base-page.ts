@@ -91,8 +91,10 @@ export class BasePage extends ExtendedBasePage implements TBasePage {
   color: string | undefined;
   label_ids: string[] | undefined;
   owned_by: string | undefined;
+  parent: string | null | undefined;
   access: EPageAccess | undefined;
   is_favorite: boolean;
+  is_global: boolean;
   is_locked: boolean;
   archived_at: string | null | undefined;
   workspace: string | undefined;
@@ -128,8 +130,10 @@ export class BasePage extends ExtendedBasePage implements TBasePage {
     this.color = page?.color || undefined;
     this.label_ids = page?.label_ids || undefined;
     this.owned_by = page?.owned_by || undefined;
+    this.parent = page?.parent ?? undefined;
     this.access = page?.access || EPageAccess.PUBLIC;
     this.is_favorite = page?.is_favorite || false;
+    this.is_global = page?.is_global ?? false;
     this.is_locked = page?.is_locked || false;
     this.archived_at = page?.archived_at || undefined;
     this.workspace = page?.workspace || undefined;
@@ -153,8 +157,10 @@ export class BasePage extends ExtendedBasePage implements TBasePage {
       color: observable.ref,
       label_ids: observable,
       owned_by: observable.ref,
+      parent: observable.ref,
       access: observable.ref,
       is_favorite: observable.ref,
+      is_global: observable.ref,
       is_locked: observable.ref,
       archived_at: observable.ref,
       workspace: observable.ref,
@@ -228,9 +234,11 @@ export class BasePage extends ExtendedBasePage implements TBasePage {
       color: this.color,
       label_ids: this.label_ids,
       owned_by: this.owned_by,
+      parent: this.parent,
       access: this.access,
       logo_props: this.logo_props,
       is_favorite: this.is_favorite,
+      is_global: this.is_global,
       is_locked: this.is_locked,
       archived_at: this.archived_at,
       workspace: this.workspace,

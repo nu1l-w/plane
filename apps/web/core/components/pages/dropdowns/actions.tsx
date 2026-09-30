@@ -18,6 +18,7 @@ import { ContextMenu, CustomMenu } from "@plane/ui";
 // components
 import { cn } from "@plane/utils";
 import { DeletePageModal } from "@/components/pages/modals/delete-page-modal";
+import { MoveWorkspacePageModal } from "@/components/pages/modals/move-workspace-page-modal";
 // hooks
 import { usePageOperations } from "@/hooks/use-page-operations";
 // plane web hooks
@@ -75,6 +76,7 @@ export const PageActions = observer(function PageActions(props: Props) {
     canCurrentUserDuplicatePage,
     canCurrentUserLockPage,
     canCurrentUserMovePage,
+    is_global,
   } = page;
   // menu items
   const MENU_ITEMS = useMemo(
@@ -144,7 +146,7 @@ export const PageActions = observer(function PageActions(props: Props) {
           action: () => setMovePageModal(true),
           title: "Move",
           icon: FileOutput,
-          shouldRender: canCurrentUserMovePage && isMovePageEnabled,
+          shouldRender: canCurrentUserMovePage && (is_global || isMovePageEnabled),
         },
       ];
       if (extraOptions) {
@@ -163,6 +165,7 @@ export const PageActions = observer(function PageActions(props: Props) {
       canCurrentUserArchivePage,
       canCurrentUserDeletePage,
       canCurrentUserMovePage,
+      is_global,
       isMovePageEnabled,
       pageOperations,
     ]
@@ -184,6 +187,14 @@ export const PageActions = observer(function PageActions(props: Props) {
         page={page}
         storeType={storeType}
       />
+      {is_global && (
+        <MoveWorkspacePageModal
+          isOpen={movePageModal}
+          onClose={() => setMovePageModal(false)}
+          page={page}
+          workspaceSlug={workspaceSlug?.toString() ?? ""}
+        />
+      )}
       {parentRef && <ContextMenu parentRef={parentRef} items={arrangedOptions} />}
       <CustomMenu placement="bottom-end" optionsClassName="max-h-[90vh]" ellipsis closeOnSelect>
         {arrangedOptions.map((item) => {

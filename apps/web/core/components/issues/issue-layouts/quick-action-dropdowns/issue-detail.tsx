@@ -11,6 +11,7 @@ import { useParams } from "next/navigation";
 import { Ellipsis } from "lucide-react";
 // plane imports
 import { ARCHIVABLE_STATE_GROUPS, EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { getIconButtonStyling } from "@plane/propel/icon-button";
 import type { TIssue } from "@plane/types";
 import { EIssuesStoreType } from "@plane/types";
 import { ContextMenu, CustomMenu } from "@plane/ui";
@@ -27,7 +28,6 @@ import { CreateUpdateIssueModal } from "../../issue-modal/modal";
 import type { IQuickActionProps } from "../list/list-view-types";
 import type { MenuItemFactoryProps } from "./helper";
 import { useWorkItemDetailMenuItems } from "./helper";
-import { IconButton } from "@plane/propel/icon-button";
 
 type TWorkItemDetailQuickActionProps = IQuickActionProps & {
   toggleEditIssueModal?: (value: boolean) => void;
@@ -228,7 +228,8 @@ export const WorkItemDetailQuickActions = observer(function WorkItemDetailQuickA
       <CustomMenu
         ellipsis
         placement={placements}
-        customButton={<IconButton size="lg" variant="secondary" icon={Ellipsis} />}
+        customButton={<Ellipsis className="size-4" />}
+        customButtonClassName={getIconButtonStyling("secondary", "lg")}
         portalElement={portalElement}
         menuItemsClassName="z-[14]"
         maxHeight="lg"

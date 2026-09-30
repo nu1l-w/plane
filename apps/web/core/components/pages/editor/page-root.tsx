@@ -134,12 +134,14 @@ export const PageRoot = observer(function PageRoot(props: TPageRootProps) {
     projectId,
   });
 
+  const { restoreVersion } = handlers;
   const handleRestoreVersion = useCallback(
-    async (descriptionHTML: string) => {
+    async (pageId: string, versionId: string, descriptionHTML: string) => {
+      await restoreVersion(pageId, versionId);
       editorRef.current?.clearEditor();
       editorRef.current?.setEditorValue(descriptionHTML);
     },
-    [editorRef]
+    [editorRef, restoreVersion]
   );
 
   // reset editor ref on unmount

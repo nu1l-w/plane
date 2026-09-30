@@ -7,6 +7,6 @@ declare module "next/link" {
     shallow?: boolean;
   };
 
-  const Link: React.FC<Props>;
+  const Link: React.ForwardRefExoticComponent<Props & React.RefAttributes<HTMLAnchorElement>>;
   export default Link;
 }

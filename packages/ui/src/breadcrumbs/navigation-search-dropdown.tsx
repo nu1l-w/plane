@@ -40,72 +40,95 @@ export function BreadcrumbNavigationSearchDropdown(props: TBreadcrumbNavigationS
   // state
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  return (
-    <CustomSearchSelect
-      onOpen={() => {
-        setIsDropdownOpen(true);
-      }}
-      onClose={() => {
-        setIsDropdownOpen(false);
-      }}
-      options={navigationItems}
-      value={selectedItem}
-      onChange={(value: string) => {
-        if (value !== selectedItem) {
-          onChange?.(value);
-        }
-      }}
-      customButton={
-        <>
-          <Tooltip tooltipContent={title} position="bottom">
-            <button
-              onClick={(e) => {
-                if (!isLast) {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleOnClick?.();
-                }
-              }}
-              className={cn(
-                "group flex h-full cursor-pointer items-center gap-2 rounded-sm rounded-r-none px-1.5 py-1 text-13 font-medium text-tertiary",
-                {
-                  "hover:bg-layer-1 hover:text-primary": !isLast,
-                }
-              )}
-            >
-              {shouldTruncate && <div className="flex text-tertiary @4xl:hidden">...</div>}
-              <div
-                className={cn("flex gap-2", {
-                  "hidden items-center gap-2 @4xl:flex": shouldTruncate,
-                })}
-              >
-                {icon && <Breadcrumbs.Icon>{icon}</Breadcrumbs.Icon>}
-                <Breadcrumbs.Label>{title}</Breadcrumbs.Label>
-              </div>
-            </button>
-          </Tooltip>
-          <Breadcrumbs.Separator
-            className={cn("rounded-r-sm", {
-              "bg-layer-1": isDropdownOpen && !isLast,
-              "hover:bg-layer-1": !isLast,
-            })}
-            containerClassName="p-0"
-            iconClassName={cn("group-hover:rotate-90 hover:text-primary", {
-              "text-primary": isDropdownOpen,
-              "rotate-90": isDropdownOpen || isLast,
-            })}
-            showDivider={!isLast}
-          />
-        </>
-      }
-      disabled={navigationDisabled}
-      className="h-full rounded-sm"
-      customButtonClassName={cn(
-        "group flex h-full cursor-pointer items-center gap-0.5 rounded-sm outline-none hover:bg-surface-2",
-        {
-          "bg-surface-2": isDropdownOpen,
-        }
+  const titleContent = (
+    <>
+      {shouldTruncate && <div className="flex text-tertiary @4xl:hidden">...</div>}
+      <div
+        className={cn("flex gap-2", {
+          "hidden items-center gap-2 @4xl:flex": shouldTruncate,
+        })}
+      >
+        {icon && <Breadcrumbs.Icon>{icon}</Breadcrumbs.Icon>}
+        <Breadcrumbs.Label>{title}</Breadcrumbs.Label>
+      </div>
+    </>
+  );
+  const titleClassName = cn(
+    "group flex h-full cursor-pointer items-center gap-2 rounded-sm rounded-r-none px-1.5 py-1 text-13 font-medium text-tertiary",
+    {
+      "hover:bg-layer-1 hover:text-primary": !isLast,
+    }
+  );
+  const titleElement = (
+    <Tooltip tooltipContent={title} position="bottom">
+      {isLast ? (
+        <span className={titleClassName}>{titleContent}</span>
+      ) : (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleOnClick?.();
+          }}
+          className={titleClassName}
+        >
+          {titleContent}
+        </button>
       )}
+    </Tooltip>
+  );
+  const separator = (
+    <Breadcrumbs.Separator
+      className={cn("rounded-r-sm", {
+        "bg-layer-1": isDropdownOpen && !isLast,
+        "hover:bg-layer-1": !isLast,
+      })}
+      containerClassName="p-0"
+      iconClassName={cn("group-hover:rotate-90 hover:text-primary", {
+        "text-primary": isDropdownOpen,
+        "rotate-90": isDropdownOpen || isLast,
+      })}
+      showDivider={!isLast}
     />
+  );
+
+  return (
+    <>
+      {!isLast && titleElement}
+      <CustomSearchSelect
+        onOpen={() => {
+          setIsDropdownOpen(true);
+        }}
+        onClose={() => {
+          setIsDropdownOpen(false);
+        }}
+        options={navigationItems}
+        value={selectedItem}
+        onChange={(value: string) => {
+          if (value !== selectedItem) {
+            onChange?.(value);
+          }
+        }}
+        customButton={
+          isLast ? (
+            <>
+              {titleElement}
+              {separator}
+            </>
+          ) : (
+            separator
+          )
+        }
+        disabled={navigationDisabled}
+        className="h-full rounded-sm"
+        customButtonClassName={cn(
+          "group flex h-full cursor-pointer items-center gap-0.5 rounded-sm outline-none hover:bg-surface-2",
+          {
+            "bg-surface-2": isDropdownOpen,
+          }
+        )}
+      />
+    </>
   );
 }

@@ -47,6 +47,7 @@ class PageSerializer(BaseSerializer):
             "is_locked",
             "archived_at",
             "workspace",
+            "is_global",
             "created_at",
             "updated_at",
             "created_by",
@@ -56,18 +57,21 @@ class PageSerializer(BaseSerializer):
             "label_ids",
             "project_ids",
         ]
-        read_only_fields = ["workspace", "owned_by"]
+        read_only_fields = ["workspace", "owned_by", "is_global"]
 
     def create(self, validated_data):
         labels = validated_data.pop("labels", None)
-        project_id = self.context["project_id"]
+        project_id = self.context.get("project_id")
         owned_by_id = self.context["owned_by_id"]
         description_json = self.context["description_json"]
         description_binary = self.context["description_binary"]
         description_html = self.context["description_html"]
 
-        # Get the workspace id from the project
-        project = Project.objects.get(pk=project_id)
+        if project_id:
+            project = Project.objects.get(pk=project_id)
+            workspace_id = project.workspace_id
+        else:
+            workspace_id = self.context["workspace_id"]
 
         # Create the page
         page = Page.objects.create(
@@ -76,17 +80,18 @@ class PageSerializer(BaseSerializer):
             description_binary=description_binary,
             description_html=description_html,
             owned_by_id=owned_by_id,
-            workspace_id=project.workspace_id,
+            workspace_id=workspace_id,
+            is_global=not bool(project_id),
         )
 
-        # Create the project page
-        ProjectPage.objects.create(
-            workspace_id=page.workspace_id,
-            project_id=project_id,
-            page_id=page.id,
-            created_by_id=page.created_by_id,
-            updated_by_id=page.updated_by_id,
-        )
+        if project_id:
+            ProjectPage.objects.create(
+                workspace_id=page.workspace_id,
+                project_id=project_id,
+                page_id=page.id,
+                created_by_id=page.created_by_id,
+                updated_by_id=page.updated_by_id,
+            )
 
         # Create page labels
         if labels is not None:

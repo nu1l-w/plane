@@ -236,6 +236,20 @@ export const WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS: Record<string, IWorkspac
     access: [EUserWorkspaceRoles.ADMIN, EUserWorkspaceRoles.MEMBER, EUserWorkspaceRoles.GUEST],
     highlight: (pathname: string, url: string) => pathname === url,
   },
+  dashboards: {
+    key: "dashboards",
+    labelTranslationKey: "workspace_dashboards",
+    href: `/dashboards/`,
+    access: [EUserWorkspaceRoles.ADMIN, EUserWorkspaceRoles.MEMBER],
+    highlight: (pathname: string, url: string) => pathname.includes(url),
+  },
+  workspace_pages: {
+    key: "workspace_pages",
+    labelTranslationKey: "sidebar.pages",
+    href: `/pages/`,
+    access: [EUserWorkspaceRoles.ADMIN, EUserWorkspaceRoles.MEMBER, EUserWorkspaceRoles.GUEST],
+    highlight: (pathname: string, url: string) => pathname.includes(url),
+  },
   inbox: {
     key: "inbox",
     labelTranslationKey: "notification.label",
@@ -275,6 +289,8 @@ export const WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS: Record<string, IWorkspac
 
 export const WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS_LINKS: IWorkspaceSidebarNavigationItem[] = [
   WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS["home"],
+  WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS["dashboards"],
+  WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS["workspace_pages"],
 ];
 
 export const WORKSPACE_SIDEBAR_STATIC_PINNED_NAVIGATION_ITEMS_LINKS: IWorkspaceSidebarNavigationItem[] = [

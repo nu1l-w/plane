@@ -22,7 +22,7 @@ import { useOutsideClickDetector } from "@plane/hooks";
 import { useTranslation } from "@plane/i18n";
 import { Logo } from "@plane/propel/emoji-icon-picker";
 import { LinkIcon, ArchiveIcon, ChevronRightIcon } from "@plane/propel/icons";
-import { IconButton } from "@plane/propel/icon-button";
+import { getIconButtonStyling, IconButton } from "@plane/propel/icon-button";
 import { Tooltip } from "@plane/propel/tooltip";
 import { CustomMenu, DropIndicator, DragHandle, ControlLink } from "@plane/ui";
 import { cn } from "@plane/utils";
@@ -86,7 +86,7 @@ export const SidebarProjectsListItem = observer(function SidebarProjectsListItem
   const isProjectListOpen = getIsProjectListOpen(projectId);
   const [instruction, setInstruction] = useState<"DRAG_OVER" | "DRAG_BELOW" | undefined>(undefined);
   // refs
-  const actionSectionRef = useRef<HTMLButtonElement | null>(null);
+  const actionSectionRef = useRef<HTMLDivElement | null>(null);
   const projectRef = useRef<HTMLDivElement | null>(null);
   const dragHandleRef = useRef<HTMLButtonElement | null>(null);
   // router
@@ -309,20 +309,17 @@ export const SidebarProjectsListItem = observer(function SidebarProjectsListItem
                 position="top-end"
                 disabled={isDragging}
               >
-                <button
-                  type="button"
+                <DragHandle
+                  ref={dragHandleRef}
                   className={cn(
-                    "absolute top-1/2 -left-3 hidden -translate-y-1/2 cursor-grab items-center justify-center rounded-sm text-placeholder group-hover/project-item:flex",
+                    "absolute top-1/2 -left-3 hidden -translate-y-1/2 cursor-grab items-center justify-center rounded-sm bg-transparent text-placeholder group-hover/project-item:flex",
                     {
                       "cursor-not-allowed opacity-60": project.sort_order === null,
                       "cursor-grabbing": isDragging,
                       flex: isMenuActive || renderInExtendedSidebar,
                     }
                   )}
-                  ref={dragHandleRef}
-                >
-                  <DragHandle className="bg-transparent" />
-                </button>
+                />
               </Tooltip>
             )}
             <>
@@ -353,32 +350,30 @@ export const SidebarProjectsListItem = observer(function SidebarProjectsListItem
                 )}
               </ControlLink>
               <div className="flex items-center gap-1">
-                <CustomMenu
-                  customButton={
-                    <IconButton
-                      ref={actionSectionRef}
-                      variant="ghost"
-                      size="sm"
-                      icon={MoreHorizontal}
-                      onClick={() => setIsMenuActive(!isMenuActive)}
-                      className="text-placeholder"
-                    />
-                  }
+                <div
+                  ref={actionSectionRef}
                   className={cn(
                     "pointer-events-none flex-shrink-0 opacity-0 group-hover/project-item:pointer-events-auto group-hover/project-item:opacity-100",
                     {
                       "pointer-events-auto opacity-100": isMenuActive,
                     }
                   )}
-                  customButtonClassName="grid place-items-center"
-                  placement="bottom-start"
-                  ariaLabel={t("aria_labels.projects_sidebar.toggle_quick_actions_menu")}
-                  useCaptureForOutsideClick
-                  closeOnSelect
-                  onMenuClose={() => setIsMenuActive(false)}
                 >
-                  {/* TODO: Removed is_favorite logic due to the optimization in projects API */}
-                  {/* {isAuthorized && (
+                  <CustomMenu
+                    customButton={<MoreHorizontal className="size-4" />}
+                    customButtonClassName={cn(
+                      getIconButtonStyling("ghost", "sm"),
+                      "text-placeholder hover:bg-layer-transparent-hover"
+                    )}
+                    menuButtonOnClick={() => setIsMenuActive((active) => !active)}
+                    placement="bottom-start"
+                    ariaLabel={t("aria_labels.projects_sidebar.toggle_quick_actions_menu")}
+                    useCaptureForOutsideClick
+                    closeOnSelect
+                    onMenuClose={() => setIsMenuActive(false)}
+                  >
+                    {/* TODO: Removed is_favorite logic due to the optimization in projects API */}
+                    {/* {isAuthorized && (
                     <CustomMenu.MenuItem
                       onClick={project.is_favorite ? handleRemoveFromFavorites : handleAddToFavorites}
                     >
@@ -393,58 +388,59 @@ export const SidebarProjectsListItem = observer(function SidebarProjectsListItem
                     </CustomMenu.MenuItem>
                   )} */}
 
-                  {/* publish project settings */}
-                  {isAdmin && (
-                    <CustomMenu.MenuItem onClick={() => setPublishModal(true)}>
-                      <div className="relative flex flex-shrink-0 items-center justify-start gap-2">
-                        <div className="flex h-4 w-4 cursor-pointer items-center justify-center rounded-sm text-secondary transition-all duration-300 hover:bg-layer-1">
-                          <Share2 className="h-3.5 w-3.5 stroke-[1.5]" />
+                    {/* publish project settings */}
+                    {isAdmin && (
+                      <CustomMenu.MenuItem onClick={() => setPublishModal(true)}>
+                        <div className="relative flex flex-shrink-0 items-center justify-start gap-2">
+                          <div className="flex h-4 w-4 cursor-pointer items-center justify-center rounded-sm text-secondary transition-all duration-300 hover:bg-layer-1">
+                            <Share2 className="h-3.5 w-3.5 stroke-[1.5]" />
+                          </div>
+                          <div>{t("publish_project")}</div>
                         </div>
-                        <div>{t("publish_project")}</div>
-                      </div>
+                      </CustomMenu.MenuItem>
+                    )}
+                    <CustomMenu.MenuItem onClick={handleCopyText}>
+                      <span className="flex items-center justify-start gap-2">
+                        <LinkIcon className="h-3.5 w-3.5 stroke-[1.5]" />
+                        <span>{t("copy_link")}</span>
+                      </span>
                     </CustomMenu.MenuItem>
-                  )}
-                  <CustomMenu.MenuItem onClick={handleCopyText}>
-                    <span className="flex items-center justify-start gap-2">
-                      <LinkIcon className="h-3.5 w-3.5 stroke-[1.5]" />
-                      <span>{t("copy_link")}</span>
-                    </span>
-                  </CustomMenu.MenuItem>
-                  {isAuthorized && (
+                    {isAuthorized && (
+                      <CustomMenu.MenuItem
+                        onClick={() => {
+                          router.push(`/${workspaceSlug}/projects/${project?.id}/archives/issues`);
+                        }}
+                      >
+                        <div className="flex cursor-pointer items-center justify-start gap-2">
+                          <ArchiveIcon className="h-3.5 w-3.5 stroke-[1.5]" />
+                          <span>{t("archives")}</span>
+                        </div>
+                      </CustomMenu.MenuItem>
+                    )}
                     <CustomMenu.MenuItem
                       onClick={() => {
-                        router.push(`/${workspaceSlug}/projects/${project?.id}/archives/issues`);
+                        router.push(`/${workspaceSlug}/settings/projects/${project?.id}`);
                       }}
                     >
                       <div className="flex cursor-pointer items-center justify-start gap-2">
-                        <ArchiveIcon className="h-3.5 w-3.5 stroke-[1.5]" />
-                        <span>{t("archives")}</span>
+                        <Settings className="h-3.5 w-3.5 stroke-[1.5]" />
+                        <span>{t("settings")}</span>
                       </div>
                     </CustomMenu.MenuItem>
-                  )}
-                  <CustomMenu.MenuItem
-                    onClick={() => {
-                      router.push(`/${workspaceSlug}/settings/projects/${project?.id}`);
-                    }}
-                  >
-                    <div className="flex cursor-pointer items-center justify-start gap-2">
-                      <Settings className="h-3.5 w-3.5 stroke-[1.5]" />
-                      <span>{t("settings")}</span>
-                    </div>
-                  </CustomMenu.MenuItem>
-                  {/* leave project */}
-                  {!isAuthorized && (
-                    <CustomMenu.MenuItem
-                      onClick={handleLeaveProject}
-                      data-ph-element={MEMBER_TRACKER_ELEMENTS.SIDEBAR_PROJECT_QUICK_ACTIONS}
-                    >
-                      <div className="flex items-center justify-start gap-2">
-                        <LogOut className="h-3.5 w-3.5 stroke-[1.5]" />
-                        <span>{t("leave_project")}</span>
-                      </div>
-                    </CustomMenu.MenuItem>
-                  )}
-                </CustomMenu>
+                    {/* leave project */}
+                    {!isAuthorized && (
+                      <CustomMenu.MenuItem
+                        onClick={handleLeaveProject}
+                        data-ph-element={MEMBER_TRACKER_ELEMENTS.SIDEBAR_PROJECT_QUICK_ACTIONS}
+                      >
+                        <div className="flex items-center justify-start gap-2">
+                          <LogOut className="h-3.5 w-3.5 stroke-[1.5]" />
+                          <span>{t("leave_project")}</span>
+                        </div>
+                      </CustomMenu.MenuItem>
+                    )}
+                  </CustomMenu>
+                </div>
                 {isAccordionMode && (
                   <IconButton
                     variant="ghost"

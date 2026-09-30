@@ -88,7 +88,7 @@ export const StickyDNDWrapper = observer(function StickyDNDWrapper(props: Props)
         dropTargetForElements({
           element,
           canDrop: ({ source }) => source.data?.type === "sticky",
-          getData: ({ input, element }) => {
+          getData: ({ input, element: dropTargetElement }) => {
             const blockedStates: InstructionType[] = ["make-child"];
             if (!isLastChild) {
               blockedStates.push("reorder-below");
@@ -96,7 +96,7 @@ export const StickyDNDWrapper = observer(function StickyDNDWrapper(props: Props)
 
             return attachInstruction(initialData, {
               input,
-              element,
+              element: dropTargetElement,
               currentLevel: 1,
               indentPerLevel: 0,
               mode: isLastChild ? "last-in-group" : "standard",
@@ -119,15 +119,9 @@ export const StickyDNDWrapper = observer(function StickyDNDWrapper(props: Props)
   }, [handleDrop, isDragging, isLastChild, pathname, stickyId, workspaceSlug]);
 
   return (
-    <div
-      className="box-border flex flex-col p-[8px]"
-    >
+    <div className="box-border flex flex-col p-[8px]">
       {/* {!isInFirstRow && <DropIndicator isVisible={instruction === "reorder-above"} />} */}
-      <StickyNote
-        key={stickyId || "new"}
-        workspaceSlug={workspaceSlug}
-        stickyId={stickyId}
-      />
+      <StickyNote key={stickyId || "new"} workspaceSlug={workspaceSlug} stickyId={stickyId} />
       {/* {!isInLastRow && <DropIndicator isVisible={instruction === "reorder-below"} />} */}
     </div>
   );

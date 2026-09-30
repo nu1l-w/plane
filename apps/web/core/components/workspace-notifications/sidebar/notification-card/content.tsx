@@ -45,10 +45,7 @@ export type TNotificationContentMap = {
 // Base notification content map for core fields
 export const BASE_NOTIFICATION_CONTENT_MAP: TNotificationContentMap = {
   duplicate: ({ verb }) => ({
-    action:
-      verb === "created"
-        ? "已标记此工作项为"
-        : "已取消标记此工作项为重复项",
+    action: verb === "created" ? "已标记此工作项为" : "已取消标记此工作项为重复项",
     value: null,
     showConnector: false,
   }),

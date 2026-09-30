@@ -195,9 +195,7 @@ export const IssueBlock = observer(function IssueBlock(props: IssueBlockProps) {
             setToast({
               type: TOAST_TYPE.WARNING,
               title: "无法移动工作项",
-              message: !canEditIssueProperties
-                ? "您没有权限移动此工作项"
-                : "当前分组方式下禁止拖拽",
+              message: !canEditIssueProperties ? "您没有权限移动此工作项" : "当前分组方式下禁止拖拽",
             });
           }
         }}

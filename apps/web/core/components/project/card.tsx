@@ -194,15 +194,26 @@ export const ProjectCard = observer(function ProjectCard(props: Props) {
           archive={false}
         />
       )}
-      <Link
+      <div
         ref={projectCardRef}
-        href={`/${workspaceSlug}/projects/${project.id}/issues`}
-        onClick={(e) => {
+        // oxlint-disable-next-line jsx_a11y/prefer-tag-over-role
+        role="link"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key !== "Enter" || e.target !== e.currentTarget) return;
+          e.preventDefault();
           if (!isMemberOfProject || isArchived) {
-            e.preventDefault();
-            e.stopPropagation();
             if (!isArchived) setJoinProjectModal(true);
+            return;
           }
+          router.push(`/${workspaceSlug}/projects/${project.id}/issues`);
+        }}
+        onClick={() => {
+          if (!isMemberOfProject || isArchived) {
+            if (!isArchived) setJoinProjectModal(true);
+            return;
+          }
+          router.push(`/${workspaceSlug}/projects/${project.id}/issues`);
         }}
         data-prevent-progress={!isMemberOfProject || isArchived}
         className={cn(
@@ -307,7 +318,8 @@ export const ProjectCard = observer(function ProjectCard(props: Props) {
             {isArchived ? (
               hasAdminRole && (
                 <div className="flex items-center justify-center gap-2">
-                  <div
+                  <button
+                    type="button"
                     className="flex items-center justify-center text-11 font-medium text-placeholder hover:text-secondary"
                     onClick={(e) => {
                       e.preventDefault();
@@ -319,8 +331,9 @@ export const ProjectCard = observer(function ProjectCard(props: Props) {
                       <ArchiveRestoreIcon className="h-3.5 w-3.5" />
                       恢复
                     </div>
-                  </div>
-                  <div
+                  </button>
+                  <button
+                    type="button"
                     className="flex items-center justify-center text-11 font-medium text-placeholder hover:text-secondary"
                     onClick={(e) => {
                       e.preventDefault();
@@ -329,7 +342,7 @@ export const ProjectCard = observer(function ProjectCard(props: Props) {
                     }}
                   >
                     <TrashIcon className="h-3.5 w-3.5" />
-                  </div>
+                  </button>
                 </div>
               )
             ) : (
@@ -370,7 +383,7 @@ export const ProjectCard = observer(function ProjectCard(props: Props) {
             )}
           </div>
         </div>
-      </Link>
+      </div>
     </>
   );
 });

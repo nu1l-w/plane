@@ -101,6 +101,15 @@ const defaultValues: TFormValues = {
   content_variety: "everything",
 };
 
+const initiateDownload = (blob: Blob, filename: string) => {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+};
+
 export function ExportPageModal(props: Props) {
   const { editorRef, isOpen, onClose, pageTitle } = props;
   // states
@@ -131,17 +140,6 @@ export function ExportPageModal(props: Props) {
     setTimeout(() => {
       reset();
     }, 300);
-  };
-
-  const initiateDownload = (blob: Blob, filename: string) => {
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = filename;
-    link.click();
-    setTimeout(() => {
-      URL.revokeObjectURL(url);
-    }, 1000);
   };
 
   // handle export as a PDF

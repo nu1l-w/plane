@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 # See the LICENSE file for details.
 
-from plane.db.models import ProjectMember, Page
+from plane.db.models import ProjectMember, Page, WorkspaceMember
 from plane.app.permissions import ROLE
 
 
@@ -136,3 +136,48 @@ class ProjectPagePermission(BasePermission):
         if not project_member_exists:
             return False
         return True
+
+
+class WorkspacePagePermission(BasePermission):
+    """Restrict workspace-level pages to active workspace members."""
+
+    def has_permission(self, request, view):
+        if request.user.is_anonymous:
+            return False
+
+        membership = WorkspaceMember.objects.filter(
+            workspace__slug=view.kwargs.get("slug"),
+            member=request.user,
+            is_active=True,
+        ).first()
+        if membership is None:
+            return False
+
+        page_id = view.kwargs.get("page_id")
+        page = None
+        if page_id:
+            page = Page.objects.filter(
+                id=page_id,
+                workspace__slug=view.kwargs.get("slug"),
+                is_global=True,
+            ).first()
+            if page is None:
+                return False
+
+        if request.method in SAFE_METHODS:
+            return (
+                page is None
+                or page.access == Page.PUBLIC_ACCESS
+                or page.owned_by_id == request.user.id
+                or membership.role == ADMIN
+            )
+
+        if request.method == "POST":
+            if page is not None:
+                return membership.role == ADMIN or page.owned_by_id == request.user.id
+            return membership.role in [ADMIN, MEMBER]
+
+        if request.method in ["PUT", "PATCH", "DELETE"]:
+            return page is not None and (membership.role == ADMIN or page.owned_by_id == request.user.id)
+
+        return False

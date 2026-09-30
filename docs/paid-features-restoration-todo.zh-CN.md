@@ -41,7 +41,9 @@
 - 仓库内已存在 dashboard service、store、组件和迁移痕迹。
 - 更像是“已有主体实现 + plan gate / 入口限制”。
 - 已补齐工作区侧边栏 `/dashboards/` 页面路由，并复用现有首页 Dashboard Widgets。
-- 当前仅恢复基础工作区仪表板入口，尚未完成自定义 Dashboard、Widget 管理和统计接口的端到端验证。
+- 工作区首页 widget 已确认走 `home-preferences` API，快捷链接、近期动态和便笺可以复用。
+- 旧版自定义 Dashboard service 调用的 `/api/workspaces/:slug/dashboard/`、`/api/dashboard/:id/` 等接口当前没有对应后端路由；相关数据库模型已迁移为 `DeprecatedDashboard` / `DeprecatedWidget`。
+- 因此目前恢复的是基础工作区首页入口，不是可创建多个仪表板或配置统计 widget 的自定义 Dashboard。
 
 代码线索：
 
@@ -51,10 +53,10 @@
 
 TODO：
 
-- [ ] 盘点 Dashboard 页面入口、菜单入口、权限开关
-- [ ] 确认社区版是否仅隐藏入口，还是后端接口也有限制
-- [ ] 恢复 Workspace/Home Dashboard 可见性
-- [ ] 验证 widget 查询、过滤、统计接口是否完整
+- [x] 盘点 Dashboard 页面入口、菜单入口、权限开关
+- [x] 确认当前首页 widget 使用的后端接口；旧自定义 Dashboard API 未注册，不能只按隐藏入口处理
+- [x] 恢复 Workspace/Home Dashboard 可见性
+- [ ] 验证现有首页 widget 查询链路；统计型 widget 和自定义 Dashboard API 尚未恢复
 - [ ] 补充中文化与品牌替换
 
 难度：中低
@@ -65,8 +67,14 @@ TODO：
 
 - Workspace pages、shared pages、private pages、wiki collections 等文案与结构都较完整。
 - 后端权限代码里明确预留了 feature flag 覆盖点。
-- 当前已确认前端只有项目级 Pages 路由和 Store；Workspace Wiki 尚未接入独立的 workspace-level 页面列表、创建和编辑链路。
-- 项目级 Pages 的 API、版本、锁定、归档和权限能力可以复用，但不能直接视为 Workspace Wiki 已恢复。
+- 已新增 workspace-level 页面列表/创建/详情/编辑、描述内容、版本列表/详情/恢复 API，并接入 `/workspaceSlug/pages` 列表与编辑器路由。
+- 已采用“共享页工作区成员可读、所有者/管理员可编辑；私有页仅所有者/管理员可见”的权限规则，并新增对应 API 合约测试。
+- 版本历史已接入 workspace pages；同时修正版本任务读取不存在的 `Page.description` 属性、改为快照 `description_json`。
+- “恢复版本”按钮现会调用后端恢复 API，而不只是更新编辑器内容；项目页恢复 URL 也已对齐后端版本详情路由。
+- Workspace Pages 的访问权限由活动工作区成员关系继承；公开页成员可读，私有页仅所有者/管理员可读，编辑同样限所有者/管理员。
+- 已实现将 Workspace Page 移入同一工作区项目；移动后页面从工作区列表移除，附件同步切换到项目访问域。移动者与原页面所有者都必须是目标项目成员。
+- collection 和嵌套页面尚未实现；项目页跨项目移动仍需另行恢复。
+- 对应权限、版本读写与快照测试已补充，待运行验证。
 
 代码线索：
 
@@ -76,11 +84,14 @@ TODO：
 
 TODO：
 
-- [ ] 盘点 Workspace Wiki 相关路由、菜单和数据来源
-- [ ] 检查 collection、shared/private/public page 的后端接口是否齐全
+- [x] 盘点 Workspace Wiki 相关路由、菜单和数据来源
+- [ ] 检查 collection、shared/private/public page 的后端接口是否齐全；shared/private 已有基础 API，collection 尚未实现
 - [ ] 去掉 wiki 相关付费限制提示
-- [ ] 恢复 workspace-level pages 入口与创建流程
-- [ ] 验证页面移动、权限继承、版本历史是否可用
+- [x] 恢复 workspace-level pages 入口与创建流程
+- [x] 补齐并核对 workspace page 的成员权限继承规则
+- [x] 接通 workspace page 版本列表、详情和恢复；修复快照 JSON 字段，并让版本历史 UI 调用恢复 API
+- [x] 实现 workspace page 移入同一 workspace 下项目的 API、权限检查、附件作用域更新和前端入口
+- [ ] 运行 API 合约测试并验证页面移动、版本历史端到端链路
 
 难度：中
 
@@ -143,7 +154,8 @@ TODO：
 状态判断：
 
 - 项目模型已有 `is_time_tracking_enabled`。
-- 文案和计划比较中也反复出现 time tracking / timesheets。
+- 仓库包含 TIME 类型的工作项估算，但未发现工时记录模型、worklog API、工时录入 UI 或 timesheet 查询实现。
+- 当前项目开关字段没有形成可用的工时记录端到端链路；历史 timesheet 不能通过恢复入口直接获得。
 
 代码线索：
 
@@ -152,11 +164,11 @@ TODO：
 
 TODO：
 
-- [ ] 确认记录工时、汇总工时、导出 timesheets 的接口是否存在
+- [x] 确认记录工时、汇总工时、导出 timesheets 的接口是否存在；当前均未发现实现
 - [ ] 恢复项目设置中的 time tracking 开关
 - [ ] 盘点 work item 详情中的工时录入 UI
 - [ ] 验证跨项目 timesheet 统计是否可用
-- [ ] 明确内部版是否需要“历史工时报表”
+- [ ] 明确内部版是否需要“历史工时报表”；若需要，需设计工时记录模型和查询/导出 API
 
 难度：中低
 
@@ -177,9 +189,9 @@ TODO：
 TODO：
 
 - [ ] 验证 Intake 列表、创建、接受、拒绝、转正式工作项链路
-- [ ] 恢复 Intake 功能入口和项目特性开关
+- [x] 恢复 Intake 功能入口和项目特性开关；项目导航、项目设置及 `intake_view` 字段链路已存在
 - [ ] 评估是否已有 triage state 自动创建逻辑
-- [ ] 恢复 auto-archive / auto-close 两项自动化配置
+- [x] 恢复 auto-archive / auto-close 两项自动化配置；设置 UI 和项目字段已有实现，仍需运行时验证定时任务
 - [ ] 暂不把基础 automations 等同于 Business 自定义自动化
 
 难度：中

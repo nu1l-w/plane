@@ -170,11 +170,13 @@ from .api import ApiTokenEndpoint
 
 from .page.base import (
     PageViewSet,
+    WorkspacePageViewSet,
     PageFavoriteViewSet,
     PagesDescriptionViewSet,
+    WorkspacePageDescriptionEndpoint,
     PageDuplicateEndpoint,
 )
-from .page.version import PageVersionEndpoint
+from .page.version import PageVersionEndpoint, WorkspacePageVersionEndpoint
 
 from .search.base import GlobalSearchEndpoint, SearchEndpoint
 from .search.issue import IssueSearchEndpoint

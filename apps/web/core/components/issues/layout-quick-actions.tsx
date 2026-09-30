@@ -11,7 +11,7 @@ import { CustomMenu } from "@plane/ui";
 import { copyUrlToClipboard, cn } from "@plane/utils";
 import { useLayoutMenuItems } from "@/components/common/quick-actions-helper";
 import { Ellipsis } from "lucide-react";
-import { IconButton } from "@plane/propel/icon-button";
+import { getIconButtonStyling } from "@plane/propel/icon-button";
 
 type Props = {
   workspaceSlug: string;
@@ -24,14 +24,22 @@ export const LayoutQuickActions = observer(function LayoutQuickActions(props: Pr
 
   const layoutLink = `${workspaceSlug}/projects/${projectId}/${storeType === "EPIC" ? "epics" : "issues"}`;
 
-  const handleCopyLink = () =>
-    copyUrlToClipboard(layoutLink).then(() => {
+  const handleCopyLink = async () => {
+    try {
+      await copyUrlToClipboard(layoutLink);
       setToast({
         type: TOAST_TYPE.SUCCESS,
         title: "Link copied",
         message: `${storeType === "EPIC" ? "Epics" : "Work items"} link copied to clipboard.`,
       });
-    });
+    } catch {
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: "Unable to copy link",
+        message: "Please check clipboard permissions and try again.",
+      });
+    }
+  };
 
   const handleOpenInNewTab = () => window.open(`/${layoutLink}`, "_blank");
 
@@ -55,7 +63,8 @@ export const LayoutQuickActions = observer(function LayoutQuickActions(props: Pr
         closeOnSelect
         maxHeight="lg"
         className="flex size-[26px] flex-shrink-0 items-center justify-center rounded"
-        customButton={<IconButton size="lg" variant="tertiary" icon={Ellipsis} />}
+        customButton={<Ellipsis className="size-4" />}
+        customButtonClassName={getIconButtonStyling("tertiary", "lg")}
       >
         {MENU_ITEMS.map((item) => {
           if (item.shouldRender === false) return null;

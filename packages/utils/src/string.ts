@@ -4,8 +4,33 @@
  * See the LICENSE file for details.
  */
 
-import sanitizeHtml from "sanitize-html";
+import rehypeParse from "rehype-parse";
+import { unified } from "unified";
 import type { Content, JSONContent } from "@plane/types";
+
+type HtmlNode = {
+  type: string;
+  value?: string;
+  tagName?: string;
+  children?: HtmlNode[];
+};
+
+const htmlParser = unified().use(rehypeParse, { fragment: true });
+const nonTextTags = new Set(["option", "script", "style", "textarea"]);
+
+const getHtmlTextContent = (node: HtmlNode): string => {
+  if (node.type === "text") return node.value ?? "";
+  if (node.type === "element" && nonTextTags.has(node.tagName ?? "")) return "";
+  return node.children?.map(getHtmlTextContent).join("") ?? "";
+};
+
+const hasAllowedHtmlTag = (node: HtmlNode, allowedTags: Set<string>): boolean => {
+  if (node.type === "element") {
+    if (nonTextTags.has(node.tagName ?? "")) return false;
+    if (allowedTags.has(node.tagName ?? "")) return true;
+  }
+  return node.children?.some((child) => hasAllowedHtmlTag(child, allowedTags)) ?? false;
+};
 
 /**
  * @description Adds space between camelCase words
@@ -54,12 +79,12 @@ export const truncateText = (str: string, length: number) => {
  * createSimilarString("hello") // might return "olleh" or "lehol"
  */
 export const createSimilarString = (str: string) => {
-  const shuffled = str
-    .split("")
-    .sort(() => Math.random() - 0.5)
-    .join("");
-
-  return shuffled;
+  const characters = str.split("");
+  for (let index = characters.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    [characters[index], characters[randomIndex]] = [characters[randomIndex], characters[index]];
+  }
+  return characters.join("");
 };
 
 /**
@@ -126,8 +151,7 @@ const text = stripHTML(html);
 console.log(text); // Some text
  */
 export const sanitizeHTML = (htmlString: string) => {
-  const sanitizedText = sanitizeHtml(htmlString, { allowedTags: [] }); // sanitize the string to remove all HTML tags
-  return sanitizedText.trim(); // trim the string to remove leading and trailing whitespaces
+  return getHtmlTextContent(htmlParser.parse(htmlString)).trim();
 };
 
 /**
@@ -153,7 +177,7 @@ export const checkEmailValidity = (email: string): boolean => {
   if (!email) return false;
 
   const isEmailValid =
-    /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
+    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(
       email
     );
 
@@ -161,10 +185,9 @@ export const checkEmailValidity = (email: string): boolean => {
 };
 
 export const isEmptyHtmlString = (htmlString: string, allowedHTMLTags: string[] = []) => {
-  // Remove HTML tags using sanitize-html
-  const cleanText = sanitizeHtml(htmlString, { allowedTags: allowedHTMLTags });
-  // Trim the string and check if it's empty
-  return cleanText.trim() === "";
+  const htmlTree = htmlParser.parse(htmlString);
+  const allowedTags = new Set(allowedHTMLTags.map((tag) => tag.toLowerCase()));
+  return !hasAllowedHtmlTag(htmlTree, allowedTags) && getHtmlTextContent(htmlTree).trim() === "";
 };
 
 /**
@@ -236,7 +259,7 @@ export const isCommentEmpty = (comment: Content | undefined): boolean => {
 
   // Handle JSONContent[] (array)
   if (Array.isArray(comment)) {
-    return comment.length === 0 || comment.every(isJSONContentEmpty);
+    return comment.every(isJSONContentEmpty);
   }
 
   // Handle JSONContent (object)

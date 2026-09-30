@@ -264,9 +264,7 @@ export function EditorAIMenu(props: Props) {
                     </div>
                   </div>
                 ) : (
-                  <p className="text-13 text-secondary">
-                    {activeTask ? LOADING_TEXTS[activeTask] : "AI 正在编写"}...
-                  </p>
+                  <p className="text-13 text-secondary">{activeTask ? LOADING_TEXTS[activeTask] : "AI 正在编写"}...</p>
                 )}
               </div>
               <div className="sticky bottom-0 flex w-full items-center gap-2 bg-surface-1 py-2 pl-[54.8px]">
@@ -299,9 +297,7 @@ export function EditorAIMenu(props: Props) {
           <span className="grid size-4 flex-shrink-0 place-items-center">
             <TriangleAlert className="size-3" />
           </span>
-          <p className="flex-shrink-0 text-11 font-medium">
-            使用此功能即表示您同意将消息分享给第三方服务。
-          </p>
+          <p className="flex-shrink-0 text-11 font-medium">使用此功能即表示您同意将消息分享给第三方服务。</p>
         </div>
       )}
     </div>

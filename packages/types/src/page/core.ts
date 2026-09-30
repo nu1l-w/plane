@@ -18,10 +18,12 @@ export type TPage = {
   description_html: string | undefined;
   id: string | undefined;
   is_favorite: boolean;
+  is_global: boolean;
   is_locked: boolean;
   label_ids: string[] | undefined;
   name: string | undefined;
   owned_by: string | undefined;
+  parent: string | null | undefined;
   project_ids?: string[] | undefined;
   updated_at: Date | undefined;
   updated_by: string | undefined;

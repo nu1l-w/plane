@@ -30,12 +30,12 @@ const analyticsService = new AnalyticsService();
 
 const INSIGHT_LABEL_MAP: Record<string, string> = {
   "Work Items": "工作项",
-  "Cycles": "周期",
-  "Modules": "模块",
-  "Intake": "收集",
-  "Members": "成员",
-  "Pages": "页面",
-  "Views": "视图",
+  Cycles: "周期",
+  Modules: "模块",
+  Intake: "收集",
+  Members: "成员",
+  Pages: "页面",
+  Views: "视图",
 };
 
 const ProjectInsights = observer(function ProjectInsights() {

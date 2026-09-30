@@ -13,7 +13,7 @@ import { GOD_MODE_URL } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { Avatar, CustomMenu } from "@plane/ui";
-import { getFileURL } from "@plane/utils";
+import { cn, getFileURL } from "@plane/utils";
 // components
 import { CoverImage } from "@/components/common/cover-image";
 import { AppSidebarItem } from "@/components/sidebar/sidebar-item";
@@ -56,20 +56,21 @@ export const UserMenuRoot = observer(function UserMenuRoot() {
   return (
     <CustomMenu
       className="flex items-center"
+      customButtonClassName={cn(
+        "group flex size-8 flex-col items-center justify-center rounded-md text-tertiary",
+        isUserMenuOpen ? "bg-layer-transparent-selected text-secondary" : "hover:bg-layer-transparent-hover"
+      )}
       customButton={
-        <AppSidebarItem
-          variant="button"
-          item={{
-            icon: (
-              <Avatar
-                name={currentUser?.display_name}
-                src={getFileURL(currentUser?.avatar_url ?? "")}
-                size={20}
-                shape="circle"
-              />
-            ),
-            isActive: isUserMenuOpen,
-          }}
+        <AppSidebarItem.Icon
+          icon={
+            <Avatar
+              name={currentUser?.display_name}
+              src={getFileURL(currentUser?.avatar_url ?? "")}
+              size={20}
+              shape="circle"
+            />
+          }
+          highlight={isUserMenuOpen}
         />
       }
       menuButtonOnClick={() => !isUserMenuOpen && setIsUserMenuOpen(true)}

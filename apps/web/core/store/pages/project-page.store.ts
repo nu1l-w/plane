@@ -17,6 +17,7 @@ import { filterPagesByPageType, getPageName, orderPages, shouldFilterPage } from
 // plane web store
 // services
 import { ProjectPageService } from "@/services/page";
+import { WorkspacePageService } from "@/services/page";
 // store
 import type { CoreRootStore } from "../root.store";
 import type { TProjectPage } from "./project-page";
@@ -55,13 +56,17 @@ export interface IProjectPageStore {
     projectId: string,
     pageType?: TPageNavigationTabs
   ) => Promise<TPage[] | undefined>;
+  fetchWorkspacePages: (workspaceSlug: string) => Promise<TPage[] | undefined>;
   fetchPageDetails: (
     workspaceSlug: string,
     projectId: string,
     pageId: string,
     options?: { trackVisit?: boolean }
   ) => Promise<TPage | undefined>;
+  fetchWorkspacePageDetails: (workspaceSlug: string, pageId: string) => Promise<TPage | undefined>;
   createPage: (pageData: Partial<TPage>) => Promise<TPage | undefined>;
+  createWorkspacePage: (workspaceSlug: string, pageData: Partial<TPage>) => Promise<TPage | undefined>;
+  moveWorkspacePage: (workspaceSlug: string, pageId: string, projectId: string) => Promise<void>;
   removePage: (params: { pageId: string; shouldSync?: boolean }) => Promise<void>;
   movePage: (workspaceSlug: string, projectId: string, pageId: string, newProjectId: string) => Promise<void>;
 }
@@ -78,6 +83,7 @@ export class ProjectPageStore implements IProjectPageStore {
   };
   // service
   service: ProjectPageService;
+  workspacePageService: WorkspacePageService;
   rootStore: CoreRootStore;
 
   constructor(private store: CoreRootStore) {
@@ -95,14 +101,19 @@ export class ProjectPageStore implements IProjectPageStore {
       clearAllFilters: action,
       // actions
       fetchPagesList: action,
+      fetchWorkspacePages: action,
       fetchPageDetails: action,
+      fetchWorkspacePageDetails: action,
       createPage: action,
+      createWorkspacePage: action,
+      moveWorkspacePage: action,
       removePage: action,
       movePage: action,
     });
     this.rootStore = store;
     // service
     this.service = new ProjectPageService();
+    this.workspacePageService = new WorkspacePageService();
     // initialize display filters of the current project
     reaction(
       () => this.store.router.projectId,
@@ -247,9 +258,40 @@ export class ProjectPageStore implements IProjectPageStore {
     }
   };
 
+  fetchWorkspacePages = async (workspaceSlug: string) => {
+    try {
+      if (!workspaceSlug) return undefined;
+      runInAction(() => {
+        this.loader = Object.values(this.data).some((page) => page.is_global) ? "mutation-loader" : "init-loader";
+        this.error = undefined;
+      });
+
+      const pages = await this.workspacePageService.fetchAll(workspaceSlug);
+      runInAction(() => {
+        for (const page of pages) {
+          if (!page?.id) continue;
+          const existingPage = this.getPageById(page.id);
+          if (existingPage) existingPage.mutateProperties(page, false);
+          else set(this.data, [page.id], new ProjectPage(this.store, page));
+        }
+        this.loader = undefined;
+      });
+      return pages;
+    } catch (error) {
+      runInAction(() => {
+        this.loader = undefined;
+        this.error = {
+          title: "Failed",
+          description: "Failed to fetch workspace pages. Please try again later.",
+        };
+      });
+      throw error;
+    }
+  };
+
   /**
-   * @description fetch the details of a page
-   * @param {string} pageId
+   * @description Fetch the details of a project page.
+   * @param args - Workspace, project, page, and visit-tracking parameters.
    */
   fetchPageDetails = async (...args: Parameters<IProjectPageStore["fetchPageDetails"]>) => {
     const [workspaceSlug, projectId, pageId, options] = args;
@@ -290,6 +332,34 @@ export class ProjectPageStore implements IProjectPageStore {
     }
   };
 
+  fetchWorkspacePageDetails = async (workspaceSlug: string, pageId: string) => {
+    try {
+      if (!workspaceSlug || !pageId) return undefined;
+      runInAction(() => {
+        this.loader = this.getPageById(pageId) ? "mutation-loader" : "init-loader";
+        this.error = undefined;
+      });
+      const page = await this.workspacePageService.fetchById(workspaceSlug, pageId);
+      if (!page.id) throw new Error("Workspace page response is missing an id.");
+      runInAction(() => {
+        const pageInstance = this.getPageById(pageId);
+        if (pageInstance) pageInstance.mutateProperties(page, false);
+        else set(this.data, [pageId], new ProjectPage(this.store, page));
+        this.loader = undefined;
+      });
+      return page;
+    } catch (error) {
+      runInAction(() => {
+        this.loader = undefined;
+        this.error = {
+          title: "Failed",
+          description: "Failed to fetch the workspace page. Please try again later.",
+        };
+      });
+      throw error;
+    }
+  };
+
   /**
    * @description create a page
    * @param {Partial<TPage>} pageData
@@ -321,6 +391,38 @@ export class ProjectPageStore implements IProjectPageStore {
       });
       throw error;
     }
+  };
+
+  createWorkspacePage = async (workspaceSlug: string, pageData: Partial<TPage>) => {
+    try {
+      if (!workspaceSlug) return undefined;
+      runInAction(() => {
+        this.loader = "mutation-loader";
+        this.error = undefined;
+      });
+      const page = await this.workspacePageService.create(workspaceSlug, pageData);
+      runInAction(() => {
+        if (page?.id) set(this.data, [page.id], new ProjectPage(this.store, page));
+        this.loader = undefined;
+      });
+      return page;
+    } catch (error) {
+      runInAction(() => {
+        this.loader = undefined;
+        this.error = {
+          title: "Failed",
+          description: "Failed to create the workspace page. Please try again later.",
+        };
+      });
+      throw error;
+    }
+  };
+
+  moveWorkspacePage = async (workspaceSlug: string, pageId: string, projectId: string) => {
+    await this.workspacePageService.moveToProject(workspaceSlug, pageId, projectId);
+    runInAction(() => {
+      unset(this.data, [pageId]);
+    });
   };
 
   /**

@@ -19,7 +19,6 @@ import type { IWorkspace } from "@plane/types";
 import { Loader } from "@plane/ui";
 import { orderWorkspacesList, cn } from "@plane/utils";
 // helpers
-import { AppSidebarItem } from "@/components/sidebar/sidebar-item";
 // hooks
 import { useAppTheme } from "@/hooks/store/use-app-theme";
 import { useWorkspace } from "@/hooks/store/use-workspace";
@@ -96,17 +95,10 @@ export const WorkspaceMenuRoot = observer(function WorkspaceMenuRoot(props: Work
                   "bg-layer-1": open,
                 })}
               >
-                <AppSidebarItem
-                  variant="button"
-                  item={{
-                    icon: (
-                      <WorkspaceLogo
-                        logo={activeWorkspace?.logo_url}
-                        name={activeWorkspace?.name}
-                        classNames="size-8 rounded-md border border-subtle"
-                      />
-                    ),
-                  }}
+                <WorkspaceLogo
+                  logo={activeWorkspace?.logo_url}
+                  name={activeWorkspace?.name}
+                  classNames="size-8 rounded-md border border-subtle"
                 />
               </Menu.Button>
             )}

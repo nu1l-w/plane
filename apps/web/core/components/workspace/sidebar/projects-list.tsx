@@ -5,8 +5,6 @@
  */
 
 import { useState, useRef, useEffect } from "react";
-import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
-import { autoScrollForElements } from "@atlaskit/pragmatic-drag-and-drop-auto-scroll/element";
 import { observer } from "mobx-react";
 import { useParams, usePathname } from "next/navigation";
 import { Ellipsis } from "lucide-react";
@@ -68,14 +66,21 @@ export const SidebarProjectsList = observer(function SidebarProjectsList() {
   const hasMoreProjects =
     projectPreferences.showLimitedProjects && joinedProjects.length > projectPreferences.limitedProjectsCount;
 
-  const handleCopyText = (projectId: string) => {
-    copyUrlToClipboard(`${workspaceSlug}/projects/${projectId}/issues`).then(() => {
+  const handleCopyText = async (projectId: string) => {
+    try {
+      await copyUrlToClipboard(`${workspaceSlug}/projects/${projectId}/issues`);
       setToast({
         type: TOAST_TYPE.SUCCESS,
         title: t("link_copied"),
         message: t("project_link_copied_to_clipboard"),
       });
-    });
+    } catch {
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: t("something_went_wrong"),
+        message: t("something_went_wrong_please_try_again"),
+      });
+    }
   };
 
   const handleOnProjectDrop = (
@@ -127,20 +132,6 @@ export const SidebarProjectsList = observer(function SidebarProjectsList() {
         currentContainerRef.removeEventListener("scroll", handleScroll);
       }
     };
-  }, [containerRef]);
-
-  useEffect(() => {
-    const element = containerRef.current;
-
-    if (!element) return;
-
-    return combine(
-      autoScrollForElements({
-        element,
-        canScroll: ({ source }) => source?.data?.dragInstanceId === "PROJECTS",
-        getAllowedAxis: () => "vertical",
-      })
-    );
   }, [containerRef]);
 
   const toggleListDisclosure = (isOpen: boolean) => {
@@ -229,8 +220,8 @@ export const SidebarProjectsList = observer(function SidebarProjectsList() {
             >
               {loader === "init-loader" && (
                 <Loader className="w-full space-y-1.5">
-                  {Array.from({ length: 4 }).map((_, index) => (
-                    <Loader.Item key={index} height="28px" />
+                  {["skeleton-1", "skeleton-2", "skeleton-3", "skeleton-4"].map((key) => (
+                    <Loader.Item key={key} height="28px" />
                   ))}
                 </Loader>
               )}

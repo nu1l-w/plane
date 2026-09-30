@@ -58,19 +58,25 @@ export const PagesListMainContent = observer(function PagesListMainContent(props
       access: pageType === "private" ? EPageAccess.PRIVATE : EPageAccess.PUBLIC,
     };
 
-    await createPage(payload)
-      .then((res) => {
-        const pageId = `/${workspaceSlug}/projects/${currentProjectDetails?.id}/pages/${res?.id}`;
-        router.push(pageId);
-      })
-      .catch((err) => {
-        setToast({
-          type: TOAST_TYPE.ERROR,
-          title: "Error!",
-          message: err?.data?.error || "Page could not be created. Please try again.",
-        });
-      })
-      .finally(() => setIsCreatingPage(false));
+    try {
+      const page = await createPage(payload);
+      if (!page?.id || !workspaceSlug || !currentProjectDetails?.id) {
+        throw new Error("Created page response is missing route details.");
+      }
+      router.push(`/${workspaceSlug}/projects/${currentProjectDetails.id}/pages/${page.id}`);
+    } catch (error) {
+      const message =
+        typeof error === "object" && error !== null && "data" in error
+          ? (error.data as { error?: string })?.error
+          : undefined;
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: "Error!",
+        message: message || "Page could not be created. Please try again.",
+      });
+    } finally {
+      setIsCreatingPage(false);
+    }
   };
 
   if (loader === "init-loader") return <PageLoader />;

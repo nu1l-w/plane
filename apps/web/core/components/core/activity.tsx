@@ -35,7 +35,7 @@ import {
 } from "@plane/propel/icons";
 import { Tooltip } from "@plane/propel/tooltip";
 import type { IIssueActivity } from "@plane/types";
-import { renderFormattedDate, generateWorkItemLink, capitalizeFirstLetter } from "@plane/utils";
+import { renderFormattedDate, generateWorkItemLink } from "@plane/utils";
 // helpers
 import { useLabel } from "@/hooks/store/use-label";
 import { usePlatformOS } from "@/hooks/use-platform-os";
@@ -577,8 +577,7 @@ const activityDetails: {
           : activity.new_value || "无";
       return (
         <>
-          已将优先级设置为{" "}
-          <span className="font-medium text-primary">{translatedPriority}</span>
+          已将优先级设置为 <span className="font-medium text-primary">{translatedPriority}</span>
           {showIssue && (
             <>
               {" "}
@@ -602,8 +601,7 @@ const activityDetails: {
       else
         return (
           <>
-            已移除与{" "}
-            <span className="font-medium whitespace-nowrap text-primary">{activity.old_value}</span> 的关联。
+            已移除与 <span className="font-medium whitespace-nowrap text-primary">{activity.old_value}</span> 的关联。
           </>
         );
     },
@@ -621,8 +619,7 @@ const activityDetails: {
       else
         return (
           <>
-            已移除阻塞工作项{" "}
-            <span className="font-medium whitespace-nowrap text-primary">{activity.old_value}</span>。
+            已移除阻塞工作项 <span className="font-medium whitespace-nowrap text-primary">{activity.old_value}</span>。
           </>
         );
     },

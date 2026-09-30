@@ -102,9 +102,7 @@ export const messages = (activity: TProjectActivity): { message: string | ReactN
         none: "无",
       };
       const translatedPriority =
-        newValue && priorityMap[newValue.toLowerCase()]
-          ? priorityMap[newValue.toLowerCase()]
-          : newValue || "无";
+        newValue && priorityMap[newValue.toLowerCase()] ? priorityMap[newValue.toLowerCase()] : newValue || "无";
       return {
         message: (
           <>
@@ -191,9 +189,7 @@ export const messages = (activity: TProjectActivity): { message: string | ReactN
       return {
         message: (
           <>
-            <span>
-              {verb === "removed" ? "已从周期" : "已将此项目添加到周期"} {" "}
-            </span>
+            <span>{verb === "removed" ? "已从周期" : "已将此项目添加到周期"} </span>
             {verb !== "removed" ? (
               <a
                 href={`/${workspaceDetail?.slug}/projects/${activity.project}/cycles/${activity.new_identifier}`}
@@ -214,12 +210,8 @@ export const messages = (activity: TProjectActivity): { message: string | ReactN
       return {
         message: (
           <>
-            <span>
-              {verb === "removed" ? "已从模块" : "已将此项目添加到模块"} {" "}
-            </span>
-            <span className="font-medium text-primary">
-              {verb === "removed" ? oldValue : newValue || "未知模块"}
-            </span>
+            <span>{verb === "removed" ? "已从模块" : "已将此项目添加到模块"} </span>
+            <span className="font-medium text-primary">{verb === "removed" ? oldValue : newValue || "未知模块"}</span>
             {verb === "removed" ? "中移除" : ""}
           </>
         ),
