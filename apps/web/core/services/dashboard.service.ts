@@ -10,9 +10,76 @@ import { APIService } from "@/services/api.service";
 // helpers
 // types
 
+export type TDashboardRisk = "overdue" | "due_soon" | "stale" | "high_priority_unassigned";
+export interface IWorkspaceDashboardFilters {
+  project_id?: string;
+  assignee_id?: string;
+  created_range?: string;
+  risk?: TDashboardRisk;
+  page?: number;
+}
+
+export interface IDashboardRiskItem {
+  id: string;
+  name: string;
+  sequence_id: number;
+  priority: string;
+  target_date: string | null;
+  updated_at: string;
+  project_id: string;
+  project__name: string;
+  project__identifier: string;
+}
+
+export interface IWorkspaceDashboardOverview {
+  summary: {
+    projects: number;
+    total: number;
+    completed: number;
+    in_progress: number;
+    cancelled: number;
+    overdue: number;
+    due_soon: number;
+    stale: number;
+    high_priority_unassigned: number;
+  };
+  states: Record<string, number>;
+  available_projects: { id: string; name: string }[];
+  assignees: { member_id: string; member__display_name: string }[];
+  projects: {
+    id: string;
+    name: string;
+    identifier: string;
+    total: number;
+    completed: number;
+    cancelled: number;
+    overdue: number;
+  }[];
+  weekly_trends: {
+    week_start: string;
+    created: number;
+    completed: number;
+    overdue: number;
+  }[];
+  overdue_items: IDashboardRiskItem[];
+  risk_items: IDashboardRiskItem[];
+  risk_total: number;
+  risk_page: number;
+}
+
 export class DashboardService extends APIService {
   constructor() {
     super(API_BASE_URL);
+  }
+
+  async getWorkspaceOverview(
+    workspaceSlug: string,
+    filters: IWorkspaceDashboardFilters = {}
+  ): Promise<IWorkspaceDashboardOverview> {
+    const response = await this.get(`/api/workspaces/${encodeURIComponent(workspaceSlug)}/dashboard-overview/`, {
+      params: filters,
+    });
+    return response.data;
   }
 
   async getHomeDashboardWidgets(workspaceSlug: string): Promise<THomeDashboardResponse> {

@@ -6,19 +6,23 @@
 
 import { useState, useEffect, useCallback } from "react";
 
-export const getValueFromLocalStorage = (key: string, defaultValue: any) => {
-  if (typeof window === "undefined" || typeof window === "undefined") return defaultValue;
+export const getValueFromLocalStorage = <T,>(key: string, defaultValue: T): T => {
+  if (typeof window === "undefined") return defaultValue;
   try {
     const item = window.localStorage.getItem(key);
     return item ? JSON.parse(item) : defaultValue;
   } catch (_error) {
-    window.localStorage.removeItem(key);
+    try {
+      window.localStorage.removeItem(key);
+    } catch {
+      // Storage itself may be inaccessible, not just contain invalid JSON.
+    }
     return defaultValue;
   }
 };
 
-export const setValueIntoLocalStorage = (key: string, value: any) => {
-  if (typeof window === "undefined" || typeof window === "undefined") return false;
+export const setValueIntoLocalStorage = (key: string, value: unknown) => {
+  if (typeof window === "undefined") return false;
   try {
     window.localStorage.setItem(key, JSON.stringify(value));
     return true;
@@ -32,17 +36,22 @@ export const useLocalStorage = <T,>(key: string, initialValue: T) => {
 
   const setValue = useCallback(
     (value: T) => {
-      window.localStorage.setItem(key, JSON.stringify(value));
+      const persisted = setValueIntoLocalStorage(key, value);
       setStoredValue(value);
-      window.dispatchEvent(new Event(`local-storage:${key}`));
+      if (persisted) window.dispatchEvent(new Event(`local-storage:${key}`));
     },
     [key]
   );
 
   const clearValue = useCallback(() => {
-    window.localStorage.removeItem(key);
     setStoredValue(null);
-    window.dispatchEvent(new Event(`local-storage:${key}`));
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.removeItem(key);
+      window.dispatchEvent(new Event(`local-storage:${key}`));
+    } catch {
+      // Keep the in-memory value usable when browser storage is unavailable.
+    }
   }, [key]);
 
   const reHydrate = useCallback(() => {

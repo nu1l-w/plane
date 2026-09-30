@@ -7,14 +7,14 @@
 import { observer } from "mobx-react";
 // components
 import { useTranslation } from "@plane/i18n";
+import { Breadcrumbs, Header } from "@plane/ui";
+import { WorkspaceDashboardOverview } from "@/components/analytics/dashboard-overview";
+import { BreadcrumbLink } from "@/components/common/breadcrumb-link";
 import { AppHeader } from "@/components/core/app-header";
 import { ContentWrapper } from "@/components/core/content-wrapper";
 import { PageHead } from "@/components/core/page-title";
-import { WorkspaceHomeView } from "@/components/home";
 // hooks
 import { useWorkspace } from "@/hooks/store/use-workspace";
-// local components
-import { WorkspaceDashboardHeader } from "../header";
 
 function WorkspaceDashboardsPage() {
   const { currentWorkspace } = useWorkspace();
@@ -23,10 +23,20 @@ function WorkspaceDashboardsPage() {
 
   return (
     <>
-      <AppHeader header={<WorkspaceDashboardHeader />} />
+      <AppHeader
+        header={
+          <Header>
+            <Header.LeftItem>
+              <Breadcrumbs>
+                <Breadcrumbs.Item component={<BreadcrumbLink label={t("workspace_dashboards")} />} />
+              </Breadcrumbs>
+            </Header.LeftItem>
+          </Header>
+        }
+      />
       <ContentWrapper>
         <PageHead title={pageTitle} />
-        <WorkspaceHomeView />
+        <WorkspaceDashboardOverview />
       </ContentWrapper>
     </>
   );

@@ -83,7 +83,7 @@ function main(): void {
   const jsonFiles = fs
     .readdirSync(localesDir)
     .filter((file) => file.endsWith(".json"))
-    .sort();
+    .toSorted();
 
   if (jsonFiles.length === 0) {
     console.error(`Error: No JSON files found in ${localesDir}`);
@@ -133,7 +133,7 @@ function main(): void {
   }
 
   // Detect path conflicts
-  const sortedKeys = [...allKeys].sort();
+  const sortedKeys = [...allKeys].toSorted();
   const pathConflicts = detectPathConflicts(sortedKeys);
 
   if (pathConflicts.length > 0) {
@@ -158,11 +158,13 @@ function main(): void {
 // Run: pnpm run generate:types
 
 export type TTranslationKeys =
-${keyLines}
-  ;
+${keyLines};
 `;
 
-  fs.writeFileSync(outputFile, output, "utf-8");
+  // Avoid triggering rebuilds and HMR when the generated keys are unchanged.
+  if (!fs.existsSync(outputFile) || fs.readFileSync(outputFile, "utf-8") !== output) {
+    fs.writeFileSync(outputFile, output, "utf-8");
+  }
 
   console.log(`Generated ${sortedKeys.length} keys from ${jsonFiles.length} namespace files`);
 }

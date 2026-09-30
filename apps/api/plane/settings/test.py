@@ -11,6 +11,14 @@ DEBUG = True
 # Send it in a dummy outbox
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 
+# Keep request throttles and other caches isolated from previous test runs.
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "plane-tests",
+    }
+}
+
 INSTALLED_APPS.append(  # noqa
     "plane.tests"
 )

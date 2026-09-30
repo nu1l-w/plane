@@ -38,28 +38,32 @@
 
 状态判断：
 
-- 仓库内已存在 dashboard service、store、组件和迁移痕迹。
-- 更像是“已有主体实现 + plan gate / 入口限制”。
-- 已补齐工作区侧边栏 `/dashboards/` 页面路由，并复用现有首页 Dashboard Widgets。
-- 工作区首页 widget 已确认走 `home-preferences` API，快捷链接、近期动态和便笺可以复用。
-- 旧版自定义 Dashboard service 调用的 `/api/workspaces/:slug/dashboard/`、`/api/dashboard/:id/` 等接口当前没有对应后端路由；相关数据库模型已迁移为 `DeprecatedDashboard` / `DeprecatedWidget`。
-- 因此目前恢复的是基础工作区首页入口，不是可创建多个仪表板或配置统计 widget 的自定义 Dashboard。
+- 已将工作区侧边栏 `/dashboards/` 与个人首页分离，新增固定研发总览：项目/工作项总数、已完成、进行中，以及项目进度与状态分布。
+- 风险卡片可打开分页工作项明细：逾期、未来 7 天到期、14 天未更新（按工作项 `updated_at`）和高优先级未分配；可进入任务详情。按项目、负责人（含未分配）、创建时间筛选，URL 可保存/分享当前条件；风险分类允许重叠。
+- 已增加近 8 周的新增、当前完成与当前逾期（按截止周）图；逾期图不是历史每周逾期存量。项目完成率排除已取消项，工作项总数仍包含取消项；“14 天未更新”不计评论活动，负责人及创建时间筛选限定工作项集合，但不改变可访问项目数。页面提供这些口径说明。
+- 总览数据来自只读 `/api/workspaces/<slug>/dashboard-overview/`，仅汇总当前用户拥有有效项目管理员/成员资格的未归档项目；API 合约测试已覆盖越权、访客项目、筛选及分页。
+- 个人首页 widget 仍走 `home-preferences` API，保留快速链接、近期动态和便笺。
+- 旧版自定义 Dashboard service 指向的 `/api/workspaces/:slug/dashboard/`、`/api/dashboard/:id/` 等接口没有注册；相关旧模型先改名为 `Deprecated*`，再被迁移 `0092` 删除。
+- 当前交付的是**固定研发总览**，不是 Pro/Business 可创建多个仪表板、保存过滤器、拖放或编辑统计 widget 的完整功能。
 
 代码线索：
 
 - `packages/services/src/dashboard/dashboard.service.ts`
-- `apps/api/plane/db/migrations/0054_dashboard_widget_dashboardwidget.py`
-- `apps/api/plane/db/migrations/0055_auto_20240108_0648.py`
+- `apps/web/core/components/analytics/dashboard-overview.tsx`
+- `apps/api/plane/app/views/analytic/dashboard.py`
+- `apps/api/plane/db/migrations/0092_alter_deprecateddashboardwidget_unique_together_and_more.py`
 
 TODO：
 
 - [x] 盘点 Dashboard 页面入口、菜单入口、权限开关
 - [x] 确认当前首页 widget 使用的后端接口；旧自定义 Dashboard API 未注册，不能只按隐藏入口处理
 - [x] 恢复 Workspace/Home Dashboard 可见性
-- [ ] 验证现有首页 widget 查询链路；统计型 widget 和自定义 Dashboard API 尚未恢复
-- [ ] 补充中文化与品牌替换
+- [x] 实现固定研发总览、中文文案与项目作用域测试
+- [x] 增加风险分类、可跳转分页明细及项目/负责人/创建时间筛选
+- [x] 增加近 8 周趋势与完成率、未更新和时间筛选的口径说明
+- [ ] 若需复刻官方付费版，再设计仪表板/小部件持久化、可配置聚合、权限和拖放布局
 
-难度：中低
+固定总览难度：中；完整自定义仪表板难度：高
 
 #### 2. Workspace Wiki / Workspace Pages
 

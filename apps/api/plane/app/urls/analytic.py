@@ -19,9 +19,15 @@ from plane.app.views import (
     ProjectAdvanceAnalyticsStatsEndpoint,
     ProjectAdvanceAnalyticsChartEndpoint,
 )
+from plane.app.views.analytic.dashboard import WorkspaceDashboardOverviewEndpoint
 
 
 urlpatterns = [
+    path(
+        "workspaces/<str:slug>/dashboard-overview/",
+        WorkspaceDashboardOverviewEndpoint.as_view(),
+        name="workspace-dashboard-overview",
+    ),
     path(
         "workspaces/<str:slug>/analytics/",
         AnalyticsEndpoint.as_view(),

@@ -4,30 +4,32 @@
  * See the LICENSE file for details.
  */
 
-import { isEmpty } from "lodash-es";
-
 export const storage = {
   set: (key: string, value: object | string | boolean): void => {
-    if (typeof window === undefined || typeof window === "undefined" || !key || !value) return undefined;
-    const tempValue: string | undefined = value
-      ? ["string", "boolean"].includes(typeof value)
-        ? value.toString()
-        : isEmpty(value)
-          ? undefined
-          : JSON.stringify(value)
-      : undefined;
-    if (!tempValue) return undefined;
-    window.localStorage.setItem(key, tempValue);
+    if (typeof window === "undefined" || !key) return;
+    try {
+      const serializedValue = typeof value === "string" ? value : JSON.stringify(value);
+      window.localStorage.setItem(key, serializedValue);
+    } catch {
+      // Preferences must remain optional when storage is blocked or full.
+    }
   },
 
   get: (key: string): string | undefined => {
-    if (typeof window === undefined || typeof window === "undefined") return undefined;
-    const item = window.localStorage.getItem(key);
-    return item ? item : undefined;
+    if (typeof window === "undefined") return undefined;
+    try {
+      return window.localStorage.getItem(key) ?? undefined;
+    } catch {
+      return undefined;
+    }
   },
 
   remove: (key: string): void => {
-    if (typeof window === undefined || typeof window === "undefined" || !key) return undefined;
-    window.localStorage.removeItem(key);
+    if (typeof window === "undefined" || !key) return;
+    try {
+      window.localStorage.removeItem(key);
+    } catch {
+      // A blocked storage backend must not interrupt the caller.
+    }
   },
 };

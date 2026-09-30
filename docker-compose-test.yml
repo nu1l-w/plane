@@ -144,7 +144,8 @@ services:
         mkdir -p plane/static-assets/collected-static
         exec "$@"
       - --
-    command: ["pytest"]
+    # Reused database schemas can outlive model/branch changes.
+    command: ["pytest", "--create-db"]
 
 networks:
   test_env:

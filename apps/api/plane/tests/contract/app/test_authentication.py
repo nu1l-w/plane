@@ -21,14 +21,8 @@ from plane.license.models import Instance
 
 
 def _clear_auth_throttle_keys():
-    """Delete only the AuthenticationThrottle history keys from the shared cache.
-
-    DRF's SimpleRateThrottle stores request history under
-    ``throttle_<scope>_<ident>`` keys, so scoping the pattern to
-    ``throttle_authentication_`` removes just this throttle's entries instead
-    of wiping unrelated cache state.
-    """
-    cache.delete_pattern("throttle_authentication_*")
+    """Clear throttle history in the isolated, process-local test cache."""
+    cache.clear()
 
 
 @pytest.fixture(autouse=True)
@@ -528,8 +522,8 @@ class TestMagicSignInVerifyAttempts:
         # First (MAX-1) wrong attempts: each redirects with INVALID_MAGIC_CODE_SIGN_IN.
         for i in range(MagicCodeProvider.MAX_VERIFY_ATTEMPTS - 1):
             response = django_client.post(url, {"email": self.EMAIL, "code": "000000"}, follow=False)
-            assert response.status_code == 302, f"attempt {i+1} unexpected status"
-            assert "INVALID_MAGIC_CODE_SIGN_IN" in response.url, f"attempt {i+1} did not return INVALID"
+            assert response.status_code == 302, f"attempt {i + 1} unexpected status"
+            assert "INVALID_MAGIC_CODE_SIGN_IN" in response.url, f"attempt {i + 1} did not return INVALID"
 
         # Token and counter both still live, with counter at MAX-1.
         assert ri.exists(f"magic_{self.EMAIL}")
@@ -769,9 +763,7 @@ class TestBotUserLoginBlocked:
         """Password sign-in with a bot's *correct* credentials is still rejected:
         the block happens after credential verification, so no session is created."""
         url = reverse("sign-in")
-        response = django_client.post(
-            url, {"email": self.BOT_EMAIL, "password": self.PASSWORD}, follow=False
-        )
+        response = django_client.post(url, {"email": self.BOT_EMAIL, "password": self.PASSWORD}, follow=False)
         assert response.status_code == 302
         assert "BOT_USER_LOGIN_FORBIDDEN" in response.url
         # The block must prevent authentication.
@@ -779,9 +771,7 @@ class TestBotUserLoginBlocked:
 
     @pytest.mark.django_db
     @patch("plane.bgtasks.magic_link_code_task.magic_link.delay")
-    def test_bot_magic_sign_in_blocked(
-        self, mock_magic_link, django_client, api_client, bot_user, setup_instance
-    ):
+    def test_bot_magic_sign_in_blocked(self, mock_magic_link, django_client, api_client, bot_user, setup_instance):
         """The same block applies via a second provider (magic code), proving the
         guard sits at the shared chokepoint rather than in one provider."""
         token = _generate_magic_token(api_client, self.BOT_EMAIL)
@@ -796,9 +786,7 @@ class TestBotUserLoginBlocked:
         """Control: a normal user with the identical setup still signs in — the
         guard is scoped strictly to is_bot and does not regress human logins."""
         url = reverse("sign-in")
-        response = django_client.post(
-            url, {"email": self.HUMAN_EMAIL, "password": self.PASSWORD}, follow=False
-        )
+        response = django_client.post(url, {"email": self.HUMAN_EMAIL, "password": self.PASSWORD}, follow=False)
         assert response.status_code == 302
         assert "BOT_USER_LOGIN_FORBIDDEN" not in response.url
         assert "error_code" not in response.url

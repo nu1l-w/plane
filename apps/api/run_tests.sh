@@ -1,4 +1,4 @@
 #!/bin/bash
 
-# This is a simple wrapper script that calls the main test runner in the tests directory
-exec tests/run_tests.sh "$@" 
+# Run the adjacent test runner regardless of the caller's working directory.
+exec python3 "$(dirname "$0")/run_tests.py" "$@"

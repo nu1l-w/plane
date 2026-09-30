@@ -5,6 +5,8 @@
 import pytest
 from rest_framework import status
 import uuid
+from unittest import mock
+from django.db import IntegrityError
 from django.utils import timezone
 
 from plane.db.models import (
@@ -92,9 +94,52 @@ class TestProjectAPIPost(TestProjectBase):
         # Verify default states were created
         states = State.objects.filter(project=project)
         assert states.count() == 5
-        expected_states = ["Backlog", "Todo", "In Progress", "Done", "Cancelled"]
+        expected_states = ["待办", "未开始", "进行中", "已完成", "已取消"]
         state_names = list(states.values_list("name", flat=True))
         assert set(state_names) == set(expected_states)
+
+    @pytest.mark.django_db
+    def test_default_state_failure_rolls_back_project(self, session_client, workspace):
+        with (
+            mock.patch(
+                "plane.app.views.project.base.State.objects.bulk_create",
+                side_effect=IntegrityError("default state insert failed"),
+            ),
+            mock.patch("plane.app.views.project.base.model_activity") as activity,
+        ):
+            response = session_client.post(
+                self.get_project_url(workspace.slug),
+                {"name": "Rollback Project", "identifier": "RB"},
+                format="json",
+            )
+
+        assert response.status_code >= 400
+        assert not Project.objects.exists()
+        assert not ProjectMember.objects.exists()
+        assert not ProjectUserProperty.objects.exists()
+        assert not State.objects.exists()
+        activity.delay.assert_not_called()
+
+    @pytest.mark.django_db
+    def test_broker_failure_does_not_fail_committed_project(
+        self, session_client, workspace, django_capture_on_commit_callbacks
+    ):
+        with (
+            mock.patch("plane.app.views.project.base.model_activity") as activity,
+            django_capture_on_commit_callbacks(execute=True),
+        ):
+            activity.delay.side_effect = RuntimeError("broker unavailable")
+            response = session_client.post(
+                self.get_project_url(workspace.slug),
+                {"name": "Broker Down Project", "identifier": "BD"},
+                format="json",
+            )
+
+        assert response.status_code == status.HTTP_201_CREATED
+        project = Project.objects.get(id=response.data["id"])
+        assert State.objects.filter(project=project).count() == 5
+        assert ProjectMember.objects.filter(project=project).count() == 1
+        activity.delay.assert_called_once()
 
     @pytest.mark.django_db
     def test_create_project_with_project_lead(self, session_client, workspace, create_user):

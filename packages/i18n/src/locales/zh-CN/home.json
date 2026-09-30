@@ -1,4 +1,69 @@
 {
+  "dashboard_overview": {
+    "title": "研发总览",
+    "description": "汇总当前工作区中您有权限访问的项目和工作项。",
+    "loading": "正在加载仪表板...",
+    "load_error": "仪表板加载失败。",
+    "retry": "重试",
+    "project_progress": "项目进度",
+    "progress_hint": "已完成 / 未取消工作项",
+    "project_overdue": "{count} 项逾期",
+    "state_distribution": "工作项状态分布",
+    "overdue_list": "逾期工作项",
+    "top_ten": "最早到期的 10 项",
+    "no_projects": "暂无可访问的项目。",
+    "no_work_items": "暂无工作项。",
+    "no_overdue": "暂无逾期工作项。",
+    "no_risk_items": "当前条件下暂无此类工作项。",
+    "back_to_overview": "返回总览",
+    "previous": "上一页",
+    "next": "下一页",
+    "page_info": "第 {page} / {pages} 页",
+    "risks_title": "需要关注",
+    "risks_hint": "风险分类可能重叠；14 天未更新按工作项的更新时间计算。",
+    "trends": {
+      "title": "近 8 周变化",
+      "created": "新增",
+      "completed": "完成",
+      "overdue": "当前逾期（按截止周）",
+      "hint": "统计当前筛选出的工作项：完成按最近完成时间计；逾期仅统计目前仍未完成、截止日期落在该周的工作项，并非该周的历史逾期存量。"
+    },
+    "definition": {
+      "title": "指标口径",
+      "progress": "工作项总数包含已取消项；项目完成率 = 已完成 /（总数 - 已取消），没有可执行工作项时显示 0%。",
+      "stale": "14 天未更新仅看工作项更新时间，评论等动态不会重置该时间。",
+      "created_filter": "负责人和创建时间筛选先限定工作项，再计算工作项指标、风险与趋势；可访问项目数不受这两项影响。时间筛选不按完成或截止时间计算。"
+    },
+    "filters": {
+      "project": "项目",
+      "all_projects": "全部项目",
+      "assignee": "负责人",
+      "all_assignees": "全部负责人",
+      "unassigned": "未分配",
+      "created_range": "创建时间",
+      "all_time": "不限时间",
+      "last_7_days": "近 7 天创建",
+      "last_30_days": "近 30 天创建",
+      "last_90_days": "近 90 天创建"
+    },
+    "metrics": {
+      "projects": "项目数",
+      "total": "工作项总数",
+      "completed": "已完成",
+      "in_progress": "进行中",
+      "overdue": "已逾期",
+      "due_soon": "未来 7 天到期",
+      "stale": "14 天未更新",
+      "high_priority_unassigned": "高优先级未分配"
+    },
+    "states": {
+      "backlog": "待办",
+      "unstarted": "未开始",
+      "started": "进行中",
+      "completed": "已完成",
+      "cancelled": "已取消"
+    }
+  },
   "home": {
     "empty": {
       "quickstart_guide": "快速入门指南",

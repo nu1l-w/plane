@@ -6,6 +6,7 @@
 import argparse
 import subprocess
 import sys
+from pathlib import Path
 
 
 def main():
@@ -19,7 +20,8 @@ def main():
     args = parser.parse_args()
 
     # Build command
-    cmd = ["python", "-m", "pytest"]
+    cmd = [sys.executable, "-m", "pytest"]
+    api_directory = Path(__file__).resolve().parent
     markers = []
 
     # Add test markers
@@ -53,13 +55,13 @@ def main():
     print(f"Running: {' '.join(cmd)}")
 
     # Execute command
-    result = subprocess.run(cmd)
+    result = subprocess.run(cmd, cwd=api_directory)
 
     # Check coverage thresholds if coverage is enabled
     if args.coverage:
         print("Checking coverage thresholds...")
-        coverage_cmd = ["python", "-m", "coverage", "report", "--fail-under=90"]
-        coverage_result = subprocess.run(coverage_cmd)
+        coverage_cmd = [sys.executable, "-m", "coverage", "report", "--fail-under=90"]
+        coverage_result = subprocess.run(coverage_cmd, cwd=api_directory)
         if coverage_result.returncode != 0:
             print("Coverage below threshold (90%)")
             sys.exit(coverage_result.returncode)

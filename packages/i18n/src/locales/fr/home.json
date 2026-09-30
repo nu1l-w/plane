@@ -1,4 +1,69 @@
 {
+  "dashboard_overview": {
+    "title": "Development overview",
+    "description": "A snapshot of the projects and work items you can access in this workspace.",
+    "loading": "Loading dashboard...",
+    "load_error": "Could not load the dashboard.",
+    "retry": "Retry",
+    "project_progress": "Project progress",
+    "progress_hint": "Completed / work items excluding cancelled",
+    "project_overdue": "{count} overdue",
+    "state_distribution": "Work item status",
+    "overdue_list": "Overdue work items",
+    "top_ten": "10 earliest due",
+    "no_projects": "No accessible projects yet.",
+    "no_work_items": "No work items yet.",
+    "no_overdue": "No overdue work items.",
+    "no_risk_items": "No work items match this risk.",
+    "back_to_overview": "Back to overview",
+    "previous": "Previous",
+    "next": "Next",
+    "page_info": "Page {page} of {pages}",
+    "risks_title": "Items needing attention",
+    "risks_hint": "Risk categories can overlap. Stale means the work item has not been updated for 14 days.",
+    "trends": {
+      "title": "Last 8 weeks",
+      "created": "Created",
+      "completed": "Completed",
+      "overdue": "Currently overdue, by due week",
+      "hint": "Counts use the currently filtered work items. Completed items are counted by their latest completion date; overdue items are still open today and grouped by due week, not a historical snapshot."
+    },
+    "definition": {
+      "title": "How these numbers are counted",
+      "progress": "Work item totals include cancelled items. Project completion is completed / (total - cancelled); projects with no active work show 0%.",
+      "stale": "Not updated in 14 days uses the work item's update time; comments and other activity do not reset it.",
+      "created_filter": "Assignee and creation-date filters limit work items before calculating their metrics, risks and trends; they do not change the accessible project count. Time does not filter by completion or due date."
+    },
+    "filters": {
+      "project": "Project",
+      "all_projects": "All projects",
+      "assignee": "Assignee",
+      "all_assignees": "All assignees",
+      "unassigned": "Unassigned",
+      "created_range": "Created",
+      "all_time": "All time",
+      "last_7_days": "Last 7 days",
+      "last_30_days": "Last 30 days",
+      "last_90_days": "Last 90 days"
+    },
+    "metrics": {
+      "projects": "Projects",
+      "total": "Work items",
+      "completed": "Completed",
+      "in_progress": "In progress",
+      "overdue": "Overdue",
+      "due_soon": "Due in 7 days",
+      "stale": "Not updated in 14 days",
+      "high_priority_unassigned": "High priority, unassigned"
+    },
+    "states": {
+      "backlog": "Backlog",
+      "unstarted": "Not started",
+      "started": "In progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    }
+  },
   "home": {
     "empty": {
       "quickstart_guide": "Guide de démarrage rapide",

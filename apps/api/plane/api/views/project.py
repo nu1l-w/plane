@@ -304,9 +304,15 @@ class ProjectListCreateAPIEndpoint(BaseAPIView):
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except IntegrityError as e:
-            if "already exists" in str(e):
+            constraint = getattr(getattr(e.__cause__, "diag", None), "constraint_name", None)
+            if constraint == "project_unique_name_workspace_when_deleted_at_null":
                 return Response(
                     {"name": "The project name is already taken"},
+                    status=status.HTTP_409_CONFLICT,
+                )
+            if constraint == "project_unique_identifier_workspace_when_deleted_at_null":
+                return Response(
+                    {"identifier": "The project identifier is already taken"},
                     status=status.HTTP_409_CONFLICT,
                 )
             # Any other IntegrityError is unexpected: log it the same way

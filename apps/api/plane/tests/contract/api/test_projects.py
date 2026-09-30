@@ -6,6 +6,7 @@ from unittest import mock
 from uuid import uuid4
 
 import pytest
+from django.db import IntegrityError
 from rest_framework import status
 
 from plane.db.models import Project, ProjectMember, State, User, WorkspaceMember
@@ -203,6 +204,20 @@ class TestProjectListCreateAPIEndpoint:
         response = api_key_client.get(url, {"order_by": "not_a_field"})
 
         assert response.status_code == status.HTTP_200_OK, f"Got {response.status_code}: {response.data!r}"
+
+    @pytest.mark.django_db
+    def test_duplicate_state_is_not_reported_as_duplicate_project(self, api_key_client, workspace):
+        error = IntegrityError("duplicate state: already exists")
+        with mock.patch("plane.api.views.project.State.objects.bulk_create", side_effect=error):
+            response = api_key_client.post(
+                self.get_url(workspace.slug),
+                {"name": "Unique Project", "identifier": "UP"},
+                format="json",
+            )
+
+        assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+        assert response.data == {"error": "An unexpected error occurred"}
+        assert not Project.objects.exists()
 
     @pytest.mark.django_db
     def test_list_relational_order_by_injection_does_not_500(self, api_key_client, workspace, create_user):
