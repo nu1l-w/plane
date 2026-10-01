@@ -45,6 +45,7 @@ import { useProjectState } from "@/hooks/store/use-project-state";
 import { useWorkspaceDraftIssues } from "@/hooks/store/workspace-draft";
 import { usePlatformOS } from "@/hooks/use-platform-os";
 import { useProjectIssueProperties } from "@/hooks/use-project-issue-properties";
+import { getParentModuleDefaults } from "./module-defaults";
 
 export interface IssueFormProps {
   data?: Partial<TIssue>;
@@ -126,7 +127,7 @@ export const IssueFormRoot = observer(function IssueFormRoot(props: IssueFormPro
   const { moveIssue } = useWorkspaceDraftIssues();
 
   const {
-    issue: { getIssueById },
+    issue: { getIssueById, fetchIssue },
   } = useIssueDetail();
   const { fetchCycles } = useProjectIssueProperties();
   const { getStateById } = useProjectState();
@@ -148,6 +149,7 @@ export const IssueFormRoot = observer(function IssueFormRoot(props: IssueFormPro
   } = methods;
 
   const projectId = watch("project_id");
+  const parentId = watch("parent_id");
   const activeAdditionalPropertiesLength = getActiveAdditionalPropertiesLength({
     projectId: projectId,
     workspaceSlug: workspaceSlug?.toString(),
@@ -207,6 +209,37 @@ export const IssueFormRoot = observer(function IssueFormRoot(props: IssueFormPro
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workItemTemplateId]);
+
+  useEffect(() => {
+    if (data?.id || !parentId || !projectId || !workspaceSlug || getValues("module_ids") != null) return;
+    let cancelled = false;
+
+    const applyDefaults = (parent: TIssue) => {
+      if (cancelled) return;
+      const moduleIds = getParentModuleDefaults(getValues(), parent);
+      if (moduleIds) setValue("module_ids", moduleIds);
+    };
+    const parent = getIssueById(parentId);
+    if (parent?.module_ids) applyDefaults(parent);
+    else
+      fetchIssue(workspaceSlug.toString(), projectId, parentId)
+        .then(applyDefaults)
+        .catch((error: unknown) => console.error("Failed to load parent module defaults", error));
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    data?.id,
+    parentId,
+    projectId,
+    workspaceSlug,
+    getValues,
+    setValue,
+    getIssueById,
+    fetchIssue,
+    formState.submitCount,
+  ]);
 
   const handleFormSubmit = async (formData: Partial<TIssue>, is_draft_issue = false) => {
     // Check if the editor is ready to discard

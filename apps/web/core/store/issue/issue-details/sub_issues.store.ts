@@ -197,7 +197,32 @@ export class IssueSubIssuesStore implements IIssueSubIssuesStore {
       });
     });
 
-    this.rootIssueDetailStore.rootIssueStore.issues.addIssue(subIssues);
+    const rootIssueStore = this.rootIssueDetailStore.rootIssueStore;
+    const listStores = [
+      rootIssueStore.projectIssues,
+      rootIssueStore.projectViewIssues,
+      rootIssueStore.cycleIssues,
+      rootIssueStore.moduleIssues,
+      rootIssueStore.workspaceIssues,
+      rootIssueStore.profileIssues,
+      rootIssueStore.teamIssues,
+      rootIssueStore.teamViewIssues,
+      rootIssueStore.teamProjectWorkItems,
+    ];
+    // Re-group visible cards using the old membership before replacing cached issues.
+    for (const subIssue of subIssues) {
+      const previousIssue = rootIssueStore.issues.getIssueById(subIssue.id);
+      if (!previousIssue) continue;
+      for (const listStore of listStores) {
+        const isVisible = Object.values(listStore.groupedIssueIds ?? {}).some((group) =>
+          Array.isArray(group)
+            ? group.includes(subIssue.id)
+            : Object.values(group).some((ids) => Array.isArray(ids) && ids.includes(subIssue.id))
+        );
+        if (isVisible) listStore.updateIssueList({ ...previousIssue, ...subIssue }, previousIssue);
+      }
+    }
+    rootIssueStore.issues.addIssue(subIssues);
 
     // update sub-issues_count of the parent issue
     set(
