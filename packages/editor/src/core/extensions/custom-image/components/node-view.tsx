@@ -25,6 +25,7 @@ export type CustomImageNodeViewProps = Omit<NodeViewProps, "extension" | "update
 export function CustomImageNodeView(props: CustomImageNodeViewProps) {
   const { editor, extension, node, updateAttributes } = props;
   const { src: imgNodeSrc, status } = node.attrs;
+  const editorDom = editor.view.dom;
 
   const [isUploaded, setIsUploaded] = useState(!!imgNodeSrc);
   const [resolvedSrc, setResolvedSrc] = useState<string | undefined>(undefined);
@@ -38,11 +39,12 @@ export function CustomImageNodeView(props: CustomImageNodeViewProps) {
   const isDuplicatingRef = useRef(false);
 
   useEffect(() => {
-    const closestEditorContainer = imageComponentRef.current?.closest(".editor-container");
-    if (closestEditorContainer) {
-      setEditorContainer(closestEditorContainer as HTMLDivElement);
-    }
-  }, []);
+    const closestEditorContainer =
+      imageComponentRef.current?.closest(".editor-container") ??
+      editorDom.closest(".editor-container") ??
+      editorDom.parentElement;
+    if (closestEditorContainer instanceof HTMLDivElement) setEditorContainer(closestEditorContainer);
+  }, [editorDom]);
 
   // the image is already uploaded if the image-component node has src attribute
   // and we need to remove the blob from our file system

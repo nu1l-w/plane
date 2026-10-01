@@ -256,28 +256,28 @@ export const SidebarFavoritesMenu = observer(function SidebarFavoritesMenu() {
               ) : (
                 orderBy(Object.values(groupedFavorites), "sequence", "desc")
                   .filter((fav) => !fav.parent)
-                  .map((fav, index, { length }) => (
-                    <>
-                      {fav?.is_folder ? (
-                        <FavoriteFolder
-                          favorite={fav}
-                          isLastChild={index === length - 1}
-                          handleRemoveFromFavorites={handleRemoveFromFavorites}
-                          handleRemoveFromFavoritesFolder={handleRemoveFromFavoritesFolder}
-                          handleDrop={handleDrop}
-                        />
-                      ) : (
-                        <FavoriteRoot
-                          workspaceSlug={workspaceSlug.toString()}
-                          favorite={fav}
-                          isLastChild={index === length - 1}
-                          parentId={undefined}
-                          handleRemoveFromFavorites={handleRemoveFromFavorites}
-                          handleDrop={handleDrop}
-                        />
-                      )}
-                    </>
-                  ))
+                  .map((fav, index, { length }) =>
+                    fav?.is_folder ? (
+                      <FavoriteFolder
+                        key={fav.id}
+                        favorite={fav}
+                        isLastChild={index === length - 1}
+                        handleRemoveFromFavorites={handleRemoveFromFavorites}
+                        handleRemoveFromFavoritesFolder={handleRemoveFromFavoritesFolder}
+                        handleDrop={handleDrop}
+                      />
+                    ) : (
+                      <FavoriteRoot
+                        key={fav.id}
+                        workspaceSlug={workspaceSlug.toString()}
+                        favorite={fav}
+                        isLastChild={index === length - 1}
+                        parentId={undefined}
+                        handleRemoveFromFavorites={handleRemoveFromFavorites}
+                        handleDrop={handleDrop}
+                      />
+                    )
+                  )
               )}
             </Disclosure.Panel>
           )}

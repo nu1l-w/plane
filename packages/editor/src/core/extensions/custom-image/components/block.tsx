@@ -51,6 +51,7 @@ export function CustomImageBlock(props: CustomImageBlockProps) {
     alignment: nodeAlignment,
     status,
   } = node.attrs;
+  const editorDom = editor.view.dom;
   // states
   const [size, setSize] = useState<TCustomImageSize>({
     width: ensurePixelString(nodeWidth, "35%") ?? "35%",
@@ -82,21 +83,11 @@ export function CustomImageBlock(props: CustomImageBlockProps) {
   const handleImageLoad = useCallback(() => {
     const img = imageRef.current;
     if (!img) return;
-    let closestEditorContainer: HTMLDivElement | null = null;
+    const fallbackEditorContainer =
+      img.closest(".editor-container") ?? editorDom.closest(".editor-container") ?? editorDom.parentElement;
+    const closestEditorContainer = editorContainer ?? fallbackEditorContainer;
 
-    if (editorContainer) {
-      closestEditorContainer = editorContainer;
-    } else {
-      closestEditorContainer = img.closest(".editor-container");
-      if (!closestEditorContainer) {
-        console.error("Editor container not found");
-        return;
-      }
-    }
-    if (!closestEditorContainer) {
-      console.error("Editor container not found");
-      return;
-    }
+    if (!(closestEditorContainer instanceof HTMLDivElement)) return;
 
     setEditorContainer(closestEditorContainer);
     const aspectRatioCalculated = img.naturalWidth / img.naturalHeight;
@@ -131,7 +122,7 @@ export function CustomImageBlock(props: CustomImageBlockProps) {
       }
     }
     setInitialResizeComplete(true);
-  }, [nodeWidth, updateAttributesSafely, editorContainer, nodeAspectRatio, setEditorContainer]);
+  }, [nodeWidth, updateAttributesSafely, editorContainer, nodeAspectRatio, setEditorContainer, editorDom]);
 
   // for real time resizing
   useLayoutEffect(() => {
@@ -237,6 +228,7 @@ export function CustomImageBlock(props: CustomImageBlockProps) {
     >
       <div
         ref={containerRef}
+        role="presentation"
         className="group/image-component relative inline-block max-w-full"
         onMouseDown={handleImageMouseDown}
         style={{
@@ -334,6 +326,7 @@ export function CustomImageBlock(props: CustomImageBlockProps) {
               )}
             />
             <div
+              role="presentation"
               className={cn(
                 "absolute bottom-0 size-4 translate-y-1/2 rounded-full border-2 border-white bg-accent-primary transition-opacity duration-100 ease-in-out",
                 {

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import type { TIssue, TIssuesResponse } from "@plane/types";
 import { ProjectIssues } from "./project/issue.store";
+import { ProjectViewIssues } from "./project-views/issue.store";
 import { ProfileIssues } from "./profile/issue.store";
 
 vi.mock("@/lib/store-context", () => ({ store: {} }));
@@ -63,6 +64,33 @@ describe("work item request cancellation", () => {
 
     expect(await first).toBeUndefined();
     expect(await second).toBe(response);
+    expect(root.issues.addIssue).toHaveBeenCalledTimes(1);
+  });
+
+  it("ignores an obsolete project view request", async () => {
+    const root = makeRootStore();
+    const store = new ProjectViewIssues(
+      root as unknown as ConstructorParameters<typeof ProjectViewIssues>[0],
+      { getFilterParams: () => ({}) } as unknown as ConstructorParameters<typeof ProjectViewIssues>[1]
+    );
+    let rejectFirst!: (error: Error) => void;
+    const getIssues = vi
+      .spyOn(store.issueService, "getIssues")
+      .mockImplementationOnce(
+        () =>
+          new Promise((_resolve, reject) => {
+            rejectFirst = reject;
+          })
+      )
+      .mockResolvedValueOnce(response);
+
+    const first = store.fetchIssues("workspace", "project", "view", "init-loader", options);
+    const second = store.fetchIssues("workspace", "project", "view", "init-loader", options);
+    rejectFirst(new Error("canceled"));
+
+    expect(await first).toBeUndefined();
+    expect(await second).toBe(response);
+    expect(getIssues).toHaveBeenCalledTimes(2);
     expect(root.issues.addIssue).toHaveBeenCalledTimes(1);
   });
 

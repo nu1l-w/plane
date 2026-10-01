@@ -17,7 +17,13 @@ export function LogoSpinner() {
   return (
     <div className="flex items-center justify-center">
       <div className="flex items-center gap-2">
-        <img src={logoSrc} alt="" aria-hidden="true" className="h-6 w-auto object-contain sm:h-11" />
+        <img
+          src={logoSrc}
+          alt=""
+          aria-hidden="true"
+          suppressHydrationWarning
+          className="h-6 w-auto object-contain sm:h-11"
+        />
         <span className="text-14 font-semibold text-primary sm:text-16">星轴科技</span>
       </div>
     </div>

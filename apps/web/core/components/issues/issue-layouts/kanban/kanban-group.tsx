@@ -132,53 +132,59 @@ export const KanbanGroup = observer(function KanbanGroup(props: IKanbanGroup) {
 
     if (!element) return;
 
+    const dropTarget = dropTargetForElements({
+      element,
+      getData: () => ({ groupId, subGroupId: sub_group_id, columnId: `${groupId}__${sub_group_id}`, type: "COLUMN" }),
+      onDragEnter: (payload) => {
+        const source = getSourceFromDropPayload(payload);
+        setIsDraggingOverColumn(true);
+        // handle if dragging a workflowState
+        if (source) {
+          handleWorkFlowState(source?.groupId, groupId, source?.subGroupId, sub_group_id);
+        }
+      },
+      onDragLeave: () => {
+        setIsDraggingOverColumn(false);
+      },
+      onDragStart: (payload) => {
+        const source = getSourceFromDropPayload(payload);
+        setIsDraggingOverColumn(true);
+        // handle if dragging a workflowState
+        if (source) {
+          handleWorkFlowState(source?.groupId, groupId, source?.subGroupId, sub_group_id);
+        }
+      },
+      onDrop: (payload) => {
+        setIsDraggingOverColumn(false);
+        const source = getSourceFromDropPayload(payload);
+        const destination = getDestinationFromDropPayload(payload);
+
+        if (!source || !destination) return;
+
+        if ((isWorkflowDropDisabled || isDropDisabled) && dropErrorMessage) {
+          setToast({
+            type: TOAST_TYPE.WARNING,
+            title: t("common.warning"),
+            message: dropErrorMessage,
+          });
+          return;
+        }
+
+        handleOnDrop(source, destination);
+
+        highlightIssueOnDrop(
+          getIssueBlockId(source.id, destination?.groupId, destination?.subGroupId),
+          orderBy !== "sort_order"
+        );
+      },
+    });
+
+    // With sub-groups enabled, the outer kanban container owns vertical scrolling.
+    // Individual columns are not scroll containers in that layout.
+    if (sub_group_by) return dropTarget;
+
     return combine(
-      dropTargetForElements({
-        element,
-        getData: () => ({ groupId, subGroupId: sub_group_id, columnId: `${groupId}__${sub_group_id}`, type: "COLUMN" }),
-        onDragEnter: (payload) => {
-          const source = getSourceFromDropPayload(payload);
-          setIsDraggingOverColumn(true);
-          // handle if dragging a workflowState
-          if (source) {
-            handleWorkFlowState(source?.groupId, groupId, source?.subGroupId, sub_group_id);
-          }
-        },
-        onDragLeave: () => {
-          setIsDraggingOverColumn(false);
-        },
-        onDragStart: (payload) => {
-          const source = getSourceFromDropPayload(payload);
-          setIsDraggingOverColumn(true);
-          // handle if dragging a workflowState
-          if (source) {
-            handleWorkFlowState(source?.groupId, groupId, source?.subGroupId, sub_group_id);
-          }
-        },
-        onDrop: (payload) => {
-          setIsDraggingOverColumn(false);
-          const source = getSourceFromDropPayload(payload);
-          const destination = getDestinationFromDropPayload(payload);
-
-          if (!source || !destination) return;
-
-          if ((isWorkflowDropDisabled || isDropDisabled) && dropErrorMessage) {
-            setToast({
-              type: TOAST_TYPE.WARNING,
-              title: t("common.warning"),
-              message: dropErrorMessage,
-            });
-            return;
-          }
-
-          handleOnDrop(source, destination);
-
-          highlightIssueOnDrop(
-            getIssueBlockId(source.id, destination?.groupId, destination?.subGroupId),
-            orderBy !== "sort_order"
-          );
-        },
-      }),
+      dropTarget,
       autoScrollForElements({
         element,
       })
@@ -194,6 +200,7 @@ export const KanbanGroup = observer(function KanbanGroup(props: IKanbanGroup) {
     isWorkflowDropDisabled,
     dropErrorMessage,
     handleOnDrop,
+    sub_group_by,
   ]);
 
   const prePopulateQuickAddData = (

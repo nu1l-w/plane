@@ -4,7 +4,6 @@
  * See the LICENSE file for details.
  */
 
-import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import Script from "next/script";
 import { Links, Meta, Outlet, Scripts } from "react-router";
@@ -135,14 +134,6 @@ export default function Root() {
 }
 
 export function HydrateFallback() {
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  if (!isMounted) return <div />;
-
   return (
     <div className="relative flex h-screen w-full items-center justify-center bg-canvas">
       <LogoSpinner />

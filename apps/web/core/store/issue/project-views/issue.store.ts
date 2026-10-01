@@ -96,6 +96,8 @@ export class ProjectViewIssues extends BaseIssuesStore implements IProjectViewIs
     options: IssuePaginationOptions,
     isExistingPaginationOptions: boolean = false
   ) => {
+    let controller: AbortController | undefined;
+    let responseReceived = false;
     try {
       // set loader and clear store
       runInAction(() => {
@@ -106,14 +108,18 @@ export class ProjectViewIssues extends BaseIssuesStore implements IProjectViewIs
       // get params from pagination options
       const params = this.issueFilterStore?.getFilterParams(options, viewId, undefined, undefined, undefined);
       // call the fetch issues API with the params
+      controller = this.controller;
       const response = await this.issueService.getIssues(workspaceSlug, projectId, params, {
-        signal: this.controller.signal,
+        signal: controller.signal,
       });
 
+      if (controller.signal.aborted) return;
+      responseReceived = true;
       // after fetching issues, call the base method to process the response further
       this.onfetchIssues(response, options, workspaceSlug, projectId, viewId, !isExistingPaginationOptions);
       return response;
     } catch (error) {
+      if (!responseReceived && controller?.signal.aborted) return;
       // set loader to undefined if errored out
       this.setLoader(undefined);
       throw error;

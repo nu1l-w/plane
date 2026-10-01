@@ -27,6 +27,11 @@ type TUserProfileHeader = {
   showProfileIssuesFilter?: boolean;
 };
 
+const getDisplayValue = (value: string | null | undefined) => {
+  const normalizedValue = value?.trim();
+  return normalizedValue && !["null", "undefined"].includes(normalizedValue.toLowerCase()) ? normalizedValue : "";
+};
+
 export const UserProfileHeader = observer(function UserProfileHeader(props: TUserProfileHeader) {
   const { userProjectsData, type = undefined, showProfileIssuesFilter } = props;
   // router
@@ -47,7 +52,12 @@ export const UserProfileHeader = observer(function UserProfileHeader(props: TUse
 
   const tabsList = isAuthorized ? [...PROFILE_VIEWER_TAB, ...PROFILE_ADMINS_TAB] : PROFILE_VIEWER_TAB;
 
-  const userName = `${userProjectsData?.user_data?.first_name} ${userProjectsData?.user_data?.last_name}`;
+  const userName =
+    [getDisplayValue(userProjectsData?.user_data?.first_name), getDisplayValue(userProjectsData?.user_data?.last_name)]
+      .filter(Boolean)
+      .join(" ") ||
+    getDisplayValue(userProjectsData?.user_data?.display_name) ||
+    t("profile.page_label");
 
   const isCurrentUser = currentUser?.id === userId;
 

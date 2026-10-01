@@ -14,6 +14,11 @@ export interface IUserGreetingsView {
   user: IUser;
 }
 
+function getDisplayValue(value: string | null | undefined) {
+  const normalizedValue = value?.trim();
+  return normalizedValue && !["null", "undefined"].includes(normalizedValue.toLowerCase()) ? normalizedValue : "";
+}
+
 export function UserGreetingsView(props: IUserGreetingsView) {
   const { user } = props;
   // current time hook
@@ -37,11 +42,15 @@ export function UserGreetingsView(props: IUserGreetingsView) {
 
   const greeting = parseInt(hour, 10) < 12 ? "morning" : parseInt(hour, 10) < 18 ? "afternoon" : "evening";
   const greetingText = greeting === "morning" ? "早上好" : greeting === "afternoon" ? "下午好" : "晚上好";
+  const displayName =
+    [getDisplayValue(user?.first_name), getDisplayValue(user?.last_name)].filter(Boolean).join(" ") ||
+    getDisplayValue(user?.display_name) ||
+    getDisplayValue(user?.username);
 
   return (
     <div className="my-6 flex flex-col items-center">
       <h2 className="text-center text-20 font-semibold">
-        {greetingText}，{user?.first_name} {user?.last_name}
+        {greetingText}，{displayName}
       </h2>
       <h5 className="flex items-center gap-2 font-medium text-placeholder">
         <div>{greeting === "morning" ? "🌤️" : greeting === "afternoon" ? "🌥️" : "🌙️"}</div>
