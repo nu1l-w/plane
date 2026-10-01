@@ -88,7 +88,6 @@ export interface IBaseIssuesStore {
 
   addIssueToList: (issueId: string) => void;
   removeIssueFromList: (issueId: string) => void;
-  updateIssueList: (issue?: TIssue, issueBeforeUpdate?: TIssue) => void;
   addIssuesToModule: (
     workspaceSlug: string,
     projectId: string,
@@ -578,30 +577,6 @@ export abstract class BaseIssuesStore implements IBaseIssuesStore {
 
       // call API to update the issue
       await this.issueService.patchIssue(workspaceSlug, projectId, issueId, data);
-
-      if (
-        data.parent_id &&
-        data.parent_id !== issueBeforeUpdate?.parent_id &&
-        data.module_ids == null &&
-        !issueBeforeUpdate?.module_ids?.length
-      ) {
-        // The server may have applied parent module defaults while linking the issue.
-        await this.issueService
-          .retrieveIssues(workspaceSlug, projectId, [issueId])
-          .then((issues) => {
-            const updatedIssue = issues.find((issue) => issue.id === issueId);
-            if (updatedIssue)
-              return this.issueUpdate(
-                workspaceSlug,
-                projectId,
-                issueId,
-                { module_ids: updatedIssue.module_ids },
-                false
-              );
-            return undefined;
-          })
-          .catch((error: unknown) => console.error("Failed to refresh inherited modules", error));
-      }
 
       // call fetch Parent Stats
       this.fetchParentStats(workspaceSlug, projectId);

@@ -6,7 +6,7 @@
 from django.utils import timezone
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError
 
 # Third Party imports
 from rest_framework import serializers
@@ -49,7 +49,6 @@ from plane.utils.content_validator import (
     validate_html_content,
     validate_binary_data,
 )
-from plane.utils.issue_modules import inherit_parent_modules
 
 
 class IssueFlatSerializer(BaseSerializer):
@@ -243,12 +242,8 @@ class IssueCreateSerializer(BaseSerializer):
             if project_type:
                 validated_data["type"] = project_type.issue_type
 
-        # Create the issue and its default membership together.
-        with transaction.atomic():
-            issue = Issue.objects.create(**validated_data, project_id=project_id)
-            # An explicit selection (including []) takes precedence over defaults.
-            if self.initial_data.get("module_ids") is None and issue.parent_id:
-                inherit_parent_modules(issue, issue.parent, issue.updated_by_id)
+        # Create Issue
+        issue = Issue.objects.create(**validated_data, project_id=project_id)
 
         # Issue Audit Users
         created_by_id = issue.created_by_id
@@ -317,12 +312,6 @@ class IssueCreateSerializer(BaseSerializer):
         return issue
 
     def update(self, instance, validated_data):
-        parent = validated_data.get("parent")
-        should_inherit_modules = (
-            parent is not None
-            and parent.id != instance.parent_id
-            and self.initial_data.get("module_ids") is None
-        )
         assignees = validated_data.pop("assignee_ids", None)
         labels = validated_data.pop("label_ids", None)
 
@@ -376,11 +365,7 @@ class IssueCreateSerializer(BaseSerializer):
 
         # Time updation occues even when other related models are updated
         instance.updated_at = timezone.now()
-        with transaction.atomic():
-            instance = super().update(instance, validated_data)
-            if should_inherit_modules:
-                inherit_parent_modules(instance, parent, instance.updated_by_id)
-        return instance
+        return super().update(instance, validated_data)
 
 
 class IssueActivitySerializer(BaseSerializer):

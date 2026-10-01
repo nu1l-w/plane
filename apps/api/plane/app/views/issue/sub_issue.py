@@ -7,7 +7,6 @@ import json
 
 # Django imports
 from django.utils import timezone
-from django.db import transaction
 from django.db.models import OuterRef, Func, F, Q, Value, UUIDField, Subquery, Count, IntegerField
 from django.utils.decorators import method_decorator
 from django.views.decorators.gzip import gzip_page
@@ -29,7 +28,6 @@ from plane.utils.timezone_converter import user_timezone_converter
 from collections import defaultdict
 from plane.utils.host import base_host
 from plane.utils.order_queryset import order_issue_queryset
-from plane.utils.issue_modules import inherit_parent_modules
 
 
 class SubIssuesEndpoint(BaseAPIView):
@@ -234,13 +232,10 @@ class SubIssuesEndpoint(BaseAPIView):
             id__in=sub_issue_ids, workspace__slug=slug, project_id=project_id
         )
 
-        with transaction.atomic():
-            for sub_issue in sub_issues:
-                if sub_issue.parent_id != parent_issue.id:
-                    inherit_parent_modules(sub_issue, parent_issue, request.user.id)
-                sub_issue.parent = parent_issue
+        for sub_issue in sub_issues:
+            sub_issue.parent = parent_issue
 
-            _ = Issue.objects.bulk_update(sub_issues, ["parent"], batch_size=10)
+        _ = Issue.objects.bulk_update(sub_issues, ["parent"], batch_size=10)
 
         # Only the issues that were actually re-parented — i.e. the project-scoped
         # `sub_issues`, not the raw caller-supplied ids. Otherwise a cross-project id
@@ -250,23 +245,7 @@ class SubIssuesEndpoint(BaseAPIView):
 
         updated_sub_issues = Issue.issue_objects.filter(
             id__in=scoped_sub_issue_ids, workspace__slug=slug, project_id=project_id
-        ).annotate(
-            state_group=F("state__group"),
-            module_ids=Coalesce(
-                Subquery(
-                    ModuleIssue.objects.filter(
-                        issue_id=OuterRef("id"),
-                        module__archived_at__isnull=True,
-                        module__deleted_at__isnull=True,
-                    )
-                    .order_by()
-                    .values("issue_id")
-                    .annotate(arr=ArrayAgg("module_id", distinct=True))
-                    .values("arr")
-                ),
-                Value([], output_field=ArrayField(UUIDField())),
-            ),
-        )
+        ).annotate(state_group=F("state__group"))
 
         # Track the issue
         _ = [
