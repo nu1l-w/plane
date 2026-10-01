@@ -1060,8 +1060,10 @@ class IssueDetailEndpoint(BaseAPIView):
             .values("id")
         )
         # Main issue query
-        issue = Issue.issue_objects.filter(workspace__slug=slug, project_id=project_id).filter(
-            Exists(permission_subquery)
+        issue = (
+            Issue.issue_objects.filter(workspace__slug=slug, project_id=project_id)
+            .select_related("parent")
+            .filter(Exists(permission_subquery))
         )
 
         # Add additional prefetch based on expand parameter

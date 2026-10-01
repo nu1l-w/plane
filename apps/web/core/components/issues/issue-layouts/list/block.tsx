@@ -22,6 +22,7 @@ import { cn, generateWorkItemLink } from "@plane/utils";
 // components
 import { MultipleSelectEntityAction } from "@/components/core/multiple-select";
 import { IssueProperties } from "@/components/issues/issue-layouts/properties";
+import { WorkItemSummary } from "@/components/issues/issue-layouts/work-item-summary";
 import { IssueIdentifier } from "@/components/issues/issue-detail/issue-identifier";
 // hooks
 import { useAppTheme } from "@/hooks/store/use-app-theme";
@@ -231,7 +232,7 @@ export const IssueBlock = observer(function IssueBlock(props: IssueBlockProps) {
                   </div>
                 </Tooltip>
               )}
-              {displayProperties && (displayProperties.key || displayProperties.issue_type) && (
+              {displayProperties?.key && (
                 <div className="flex-shrink-0" style={{ minWidth: `${keyMinWidth}px` }}>
                   {issue.project_id && (
                     <IssueIdentifier
@@ -268,15 +269,18 @@ export const IssueBlock = observer(function IssueBlock(props: IssueBlockProps) {
               )}
             </div>
 
-            <Tooltip
-              tooltipContent={issue.name}
-              isMobile={isMobile}
-              position="top-start"
-              disabled={isCurrentBlockDragging}
-              renderByDefault={false}
-            >
-              <p className="cursor-pointer truncate text-body-xs-medium text-primary">{issue.name}</p>
-            </Tooltip>
+            <div className="flex min-w-0 flex-1 flex-col gap-1">
+              <Tooltip
+                tooltipContent={issue.name}
+                isMobile={isMobile}
+                position="top-start"
+                disabled={isCurrentBlockDragging}
+                renderByDefault={false}
+              >
+                <p className="cursor-pointer truncate text-body-xs-medium text-primary">{issue.name}</p>
+              </Tooltip>
+              <WorkItemSummary issue={issue} workspaceSlug={workspaceSlug} displayProperties={displayProperties} />
+            </div>
           </div>
           {!issue?.tempId && (
             <div

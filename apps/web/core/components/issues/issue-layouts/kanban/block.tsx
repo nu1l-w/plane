@@ -25,6 +25,7 @@ import { cn, generateWorkItemLink } from "@plane/utils";
 import RenderIfVisible from "@/components/core/render-if-visible-HOC";
 import { HIGHLIGHT_CLASS, getIssueBlockId } from "@/components/issues/issue-layouts/utils";
 import { IssueIdentifier } from "@/components/issues/issue-detail/issue-identifier";
+import { WorkItemSummary } from "@/components/issues/issue-layouts/work-item-summary";
 // hooks
 import { useIssueDetail } from "@/hooks/store/use-issue-detail";
 import { useKanbanView } from "@/hooks/store/use-kanban-view";
@@ -56,6 +57,7 @@ interface IssueBlockProps {
 interface IssueDetailsBlockProps {
   cardRef: React.RefObject<HTMLElement>;
   issue: TIssue;
+  workspaceSlug: string | undefined;
   displayProperties: IIssueDisplayProperties | undefined;
   updateIssue: ((projectId: string | null, issueId: string, data: Partial<TIssue>) => Promise<void>) | undefined;
   quickActions: TRenderQuickActions;
@@ -64,7 +66,16 @@ interface IssueDetailsBlockProps {
 }
 
 const KanbanIssueDetailsBlock = observer(function KanbanIssueDetailsBlock(props: IssueDetailsBlockProps) {
-  const { cardRef, issue, updateIssue, quickActions, isReadOnly, displayProperties, isEpic = false } = props;
+  const {
+    cardRef,
+    issue,
+    workspaceSlug,
+    updateIssue,
+    quickActions,
+    isReadOnly,
+    displayProperties,
+    isEpic = false,
+  } = props;
   // refs
   const menuActionRef = useRef<HTMLDivElement | null>(null);
   // states
@@ -126,6 +137,7 @@ const KanbanIssueDetailsBlock = observer(function KanbanIssueDetailsBlock(props:
           <span>{issue.name}</span>
         </div>
       </Tooltip>
+      <WorkItemSummary issue={issue} workspaceSlug={workspaceSlug} displayProperties={displayProperties} />
 
       <KanbanBlockedBadge issue={issue} isEpic={isEpic} />
 
@@ -282,6 +294,7 @@ export const KanbanIssueBlock = observer(function KanbanIssueBlock(props: IssueB
             <KanbanIssueDetailsBlock
               cardRef={cardRef}
               issue={issue}
+              workspaceSlug={workspaceSlug}
               displayProperties={displayProperties}
               updateIssue={updateIssue}
               quickActions={quickActions}

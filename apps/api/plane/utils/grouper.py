@@ -119,7 +119,11 @@ def issue_on_results(
         "sequence_id",
         "project_id",
         "parent_id",
+        "parent__name",
+        "parent__sequence_id",
+        "parent__project_id",
         "cycle_id",
+        "type_id",
         "sub_issues_count",
         "created_at",
         "updated_at",
@@ -142,6 +146,21 @@ def issue_on_results(
 
     required_fields.extend(original_list)
     results = list(issues.values(*required_fields))
+    for issue in results:
+        parent_id = issue["parent_id"]
+        parent_name = issue.pop("parent__name")
+        parent_sequence_id = issue.pop("parent__sequence_id")
+        parent_project_id = issue.pop("parent__project_id")
+        issue["parent"] = (
+            {
+                "id": parent_id,
+                "name": parent_name,
+                "sequence_id": parent_sequence_id,
+                "project_id": parent_project_id,
+            }
+            if parent_id
+            else None
+        )
     expand_issue_relations(results, expand, user)
     return results
 

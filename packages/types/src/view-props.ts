@@ -107,6 +107,7 @@ export const WORK_ITEM_FILTER_PROPERTY_KEYS = [
   "cycle_id",
   "module_id",
   "project_id",
+  "type_id",
   "created_at",
   "updated_at",
 ] as const;
@@ -175,6 +176,7 @@ export interface IIssueDisplayProperties {
   modules?: boolean;
   cycle?: boolean;
   issue_type?: boolean;
+  parent?: boolean;
 }
 
 export type TIssueKanbanFilters = {

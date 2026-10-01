@@ -893,6 +893,16 @@ class IssueListDetailSerializer(serializers.Serializer):
             "sequence_id": instance.sequence_id,
             "project_id": instance.project_id,
             "parent_id": instance.parent_id,
+            "parent": (
+                {
+                    "id": instance.parent_id,
+                    "name": instance.parent.name,
+                    "sequence_id": instance.parent.sequence_id,
+                    "project_id": instance.parent.project_id,
+                }
+                if instance.parent_id
+                else None
+            ),
             "type_id": instance.type_id,
             "created_at": instance.created_at,
             "updated_at": instance.updated_at,

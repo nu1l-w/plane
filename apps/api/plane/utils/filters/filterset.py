@@ -151,6 +151,8 @@ class IssueFilterSet(BaseFilterSet):
     label_id__in = UUIDInFilter(method="filter_label_id_in", lookup_expr="in")
 
     # Direct field lookups remain the same
+    type_id = filters.UUIDFilter(field_name="type_id")
+    type_id__in = UUIDInFilter(field_name="type_id", lookup_expr="in")
     created_by_id = filters.UUIDFilter(field_name="created_by_id")
     created_by_id__in = UUIDInFilter(field_name="created_by_id", lookup_expr="in")
 

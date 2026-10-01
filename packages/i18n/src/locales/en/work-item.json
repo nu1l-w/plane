@@ -57,6 +57,7 @@
         "label": "Display Properties",
         "id": "ID",
         "issue_type": "Work item Type",
+        "parent": "Parent",
         "sub_issue_count": "Sub-work item count",
         "attachment_count": "Attachment count",
         "created_on": "Created on",

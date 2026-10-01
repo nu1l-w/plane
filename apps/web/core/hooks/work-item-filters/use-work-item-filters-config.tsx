@@ -5,7 +5,8 @@
  */
 
 import { useCallback, useMemo } from "react";
-import { AtSign, Briefcase } from "lucide-react";
+import { AtSign, Briefcase, Shapes } from "lucide-react";
+import useSWR from "swr";
 // plane imports
 import { Logo } from "@plane/propel/emoji-icon-picker";
 import { useTranslation } from "@plane/i18n";
@@ -32,6 +33,7 @@ import type {
   IIssueLabel,
   IModule,
   IProject,
+  TProjectWorkItemType,
   TWorkItemFilterProperty,
 } from "@plane/types";
 import { Avatar } from "@plane/ui";
@@ -52,6 +54,7 @@ import {
   getSubscriberFilterConfig,
   getTargetDateFilterConfig,
   getUpdatedAtFilterConfig,
+  getWorkItemTypeFilterConfig,
   isLoaderReady,
 } from "@plane/utils";
 // store hooks
@@ -63,6 +66,9 @@ import { useProject } from "@/hooks/store/use-project";
 import { useProjectState } from "@/hooks/store/use-project-state";
 // plane web imports
 import { useFiltersOperatorConfigs } from "@/hooks/rich-filters/use-filters-operator-configs";
+import { WorkItemTypeService } from "@/services/issue/work-item-type.service";
+
+const workItemTypeService = new WorkItemTypeService();
 
 export type TWorkItemFiltersEntityProps = {
   workspaceSlug: string;
@@ -104,6 +110,16 @@ export const useWorkItemFiltersConfig = (props: TUseWorkItemFiltersConfigProps):
   const operatorConfigs = useFiltersOperatorConfigs({ workspaceSlug });
   const filtersToShow = useMemo(() => new Set(allowedFilters), [allowedFilters]);
   const project = useMemo(() => getProjectById(projectId), [projectId, getProjectById]);
+  const { data: projectWorkItemTypes } = useSWR(
+    workspaceSlug && projectId && project?.is_issue_type_enabled
+      ? `PROJECT_WORK_ITEM_TYPES_${workspaceSlug}_${projectId}`
+      : null,
+    workspaceSlug && projectId ? () => workItemTypeService.getProjectTypes(workspaceSlug, projectId) : null
+  );
+  const workItemTypes: TProjectWorkItemType[] | undefined = useMemo(
+    () => projectWorkItemTypes?.filter((projectType) => projectType.work_item_type.is_active),
+    [projectWorkItemTypes]
+  );
   const members: IUserLite[] | undefined = useMemo(
     () =>
       memberIds
@@ -315,6 +331,20 @@ export const useWorkItemFiltersConfig = (props: TUseWorkItemFiltersConfigProps):
     [isFilterEnabled, operatorConfigs, t]
   );
 
+  // work item type filter config
+  const workItemTypeFilterConfig = useMemo(
+    () =>
+      getWorkItemTypeFilterConfig<TWorkItemFilterProperty>("type_id")({
+        isEnabled: isFilterEnabled("type_id") && project?.is_issue_type_enabled === true && workItemTypes !== undefined,
+        label: t("issue.display.properties.issue_type"),
+        filterIcon: Shapes,
+        workItemTypes: workItemTypes ?? [],
+        getOptionIcon: (projectType) => <Logo logo={projectType.work_item_type.logo_props} size={12} />,
+        ...operatorConfigs,
+      }),
+    [isFilterEnabled, operatorConfigs, project?.is_issue_type_enabled, t, workItemTypes]
+  );
+
   // start date filter config
   const startDateFilterConfig = useMemo(
     () =>
@@ -384,6 +414,7 @@ export const useWorkItemFiltersConfig = (props: TUseWorkItemFiltersConfigProps):
       stateGroupFilterConfig,
       assigneeFilterConfig,
       priorityFilterConfig,
+      workItemTypeFilterConfig,
       projectFilterConfig,
       mentionFilterConfig,
       labelFilterConfig,
@@ -408,6 +439,7 @@ export const useWorkItemFiltersConfig = (props: TUseWorkItemFiltersConfigProps):
       created_by_id: createdByFilterConfig,
       subscriber_id: subscriberFilterConfig,
       priority: priorityFilterConfig,
+      type_id: workItemTypeFilterConfig,
       start_date: startDateFilterConfig,
       target_date: targetDateFilterConfig,
       created_at: createdAtFilterConfig,
