@@ -87,13 +87,13 @@ export const SubIssuesCollapsibleContent = observer(function SubIssuesCollapsibl
     const currentSubIssueHelpers = subIssueHelpersByIssueId(`${parentIssueId}_root`);
     if (!currentSubIssueHelpers.issue_visibility.includes(parentIssueId)) {
       try {
-        setSubIssueHelpers(`${parentIssueId}_root`, "preview_loader", parentIssueId);
+        setSubIssueHelpers(`${parentIssueId}_root`, "preview_loader", parentIssueId, true);
         await subIssueOperations.fetchSubIssues(workspaceSlug, projectId, parentIssueId);
-        setSubIssueHelpers(`${parentIssueId}_root`, "issue_visibility", parentIssueId);
+        setSubIssueHelpers(`${parentIssueId}_root`, "issue_visibility", parentIssueId, true);
       } catch (error) {
         console.error("Error fetching sub-work items:", error);
       } finally {
-        setSubIssueHelpers(`${parentIssueId}_root`, "preview_loader", "");
+        setSubIssueHelpers(`${parentIssueId}_root`, "preview_loader", parentIssueId, false);
       }
     }
   }, [parentIssueId, projectId, setSubIssueHelpers, subIssueHelpersByIssueId, subIssueOperations, workspaceSlug]);

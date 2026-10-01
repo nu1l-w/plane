@@ -60,7 +60,7 @@ export interface IIssueSubIssuesStore extends IIssueSubIssuesStoreActions {
   subIssueHelpersByIssueId: (issueId: string) => TSubIssueHelpers;
   // actions
   fetchOtherProjectProperties: (workspaceSlug: string, projectIds: string[]) => Promise<void>;
-  setSubIssueHelpers: (parentIssueId: string, key: TSubIssueHelpersKeys, value: string) => void;
+  setSubIssueHelpers: (parentIssueId: string, key: TSubIssueHelpersKeys, value: string, enabled?: boolean) => void;
 }
 
 export class IssueSubIssuesStore implements IIssueSubIssuesStore {
@@ -116,11 +116,15 @@ export class IssueSubIssuesStore implements IIssueSubIssuesStore {
   });
 
   // actions
-  setSubIssueHelpers = (parentIssueId: string, key: TSubIssueHelpersKeys, value: string) => {
+  setSubIssueHelpers = (parentIssueId: string, key: TSubIssueHelpersKeys, value: string, enabled?: boolean) => {
     if (!parentIssueId || !key || !value) return;
 
     update(this.subIssueHelpers, [parentIssueId, key], (_subIssueHelpers: string[] = []) => {
-      if (_subIssueHelpers.includes(value)) return pull(_subIssueHelpers, value);
+      const isEnabled = _subIssueHelpers.includes(value);
+      // Async completion must be idempotent; omit enabled to toggle for user interactions.
+      const shouldEnable = enabled ?? !isEnabled;
+      if (!shouldEnable) return pull(_subIssueHelpers, value);
+      if (isEnabled) return _subIssueHelpers;
       return concat(_subIssueHelpers, value);
     });
   };
@@ -186,10 +190,10 @@ export class IssueSubIssuesStore implements IIssueSubIssuesStore {
         });
       });
 
-      const issueIds = subIssues.map((issue) => issue.id);
+      const subIssueIds = subIssues.map((issue) => issue.id);
       update(this.subIssues, [parentIssueId], (issues) => {
-        if (!issues) return issueIds;
-        return concat(issues, issueIds);
+        if (!issues) return subIssueIds;
+        return concat(issues, subIssueIds);
       });
     });
 
