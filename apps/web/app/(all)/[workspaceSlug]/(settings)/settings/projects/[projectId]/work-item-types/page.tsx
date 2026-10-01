@@ -104,6 +104,18 @@ function WorkItemTypesSettingsPage({ params }: Route.ComponentProps) {
     }
   };
 
+  const toggleDefectType = async (projectType: TProjectWorkItemType) => {
+    if (!workspaceSlug || !projectId) return;
+    try {
+      await workItemTypeService.updateProjectType(workspaceSlug, projectId, projectType.id, {
+        is_defect: !projectType.is_defect,
+      });
+      await mutateProjectTypes();
+    } catch {
+      showError();
+    }
+  };
+
   const removeType = async (projectType: TProjectWorkItemType) => {
     if (!workspaceSlug || !projectId) return;
     try {
@@ -156,8 +168,25 @@ function WorkItemTypesSettingsPage({ params }: Route.ComponentProps) {
                           {t("work_item_types.settings.set_as_default")}
                         </p>
                       )}
+                      {projectType.is_defect && (
+                        <p className="mt-0.5 text-caption-sm-regular text-tertiary">
+                          {t("work_item_types.settings.defect_type")}
+                        </p>
+                      )}
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        disabled={!canManageProject}
+                        onClick={() => toggleDefectType(projectType)}
+                      >
+                        {t(
+                          projectType.is_defect
+                            ? "work_item_types.settings.unset_as_defect"
+                            : "work_item_types.settings.set_as_defect"
+                        )}
+                      </Button>
                       {!projectType.is_default && (
                         <Button
                           variant="secondary"

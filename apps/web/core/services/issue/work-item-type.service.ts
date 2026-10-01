@@ -51,7 +51,7 @@ export class WorkItemTypeService extends APIService {
     workspaceSlug: string,
     projectId: string,
     projectTypeId: string,
-    data: Partial<Pick<TProjectWorkItemType, "is_default" | "level">>
+    data: Partial<Pick<TProjectWorkItemType, "is_default" | "is_defect" | "level">>
   ): Promise<TProjectWorkItemType> {
     return this.patch(`/api/workspaces/${workspaceSlug}/projects/${projectId}/work-item-types/${projectTypeId}/`, data)
       .then((response) => response?.data)

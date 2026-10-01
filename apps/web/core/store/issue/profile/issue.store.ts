@@ -101,6 +101,13 @@ export class ProfileIssues extends BaseIssuesStore implements IProfileIssues {
     };
   }
 
+  protected override shouldSkipSubIssueFromList(issue: Partial<TIssue> | undefined) {
+    // The defects profile intentionally lists child work items even when the general
+    // "show sub work items" display option is disabled.
+    if (this.currentView === "defects") return false;
+    return super.shouldSkipSubIssueFromList(issue);
+  }
+
   setViewId(viewId: TProfileViews) {
     this.currentView = viewId;
   }
@@ -151,6 +158,7 @@ export class ProfileIssues extends BaseIssuesStore implements IProfileIssues {
       if (this.currentView === "assigned") params = { ...params, assignees: userId };
       else if (this.currentView === "created") params = { ...params, created_by: userId };
       else if (this.currentView === "subscribed") params = { ...params, subscriber: userId };
+      else if (this.currentView === "defects") params = { ...params, assignees: userId, assigned_defects: "true" };
 
       // call the fetch issues API with the params
       controller = this.controller;
@@ -206,6 +214,7 @@ export class ProfileIssues extends BaseIssuesStore implements IProfileIssues {
       if (this.currentView === "assigned") params = { ...params, assignees: userId };
       else if (this.currentView === "created") params = { ...params, created_by: userId };
       else if (this.currentView === "subscribed") params = { ...params, subscriber: userId };
+      else if (this.currentView === "defects") params = { ...params, assignees: userId, assigned_defects: "true" };
 
       // call the fetch issues API with the params for next page in issues
       const response = await this.userService.getUserProfileIssues(workspaceSlug, userId, params);

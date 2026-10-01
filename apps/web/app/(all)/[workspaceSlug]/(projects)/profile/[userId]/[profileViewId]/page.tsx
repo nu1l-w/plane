@@ -14,6 +14,7 @@ const ProfilePageHeader = {
   assigned: "Profile - Assigned",
   created: "Profile - Created",
   subscribed: "Profile - Subscribed",
+  defects: "Profile - Open defects",
 };
 
 function isValidProfileViewId(viewId: string): viewId is keyof typeof ProfilePageHeader {

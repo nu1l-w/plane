@@ -6,6 +6,9 @@
       "description": "Configure work item categories and the default type for a project. Custom fields are not available yet.",
       "cant_delete_default_message": "This work item type cannot be deleted because it's set as the default for this project",
       "set_as_default": "Set as default",
+      "set_as_defect": "Set as defect type",
+      "unset_as_defect": "Unset defect type",
+      "defect_type": "Defect type",
       "cant_set_default_inactive_message": "Activate this type before setting it as default",
       "set_default_confirmation": {
         "title": "Set as default work item type",

@@ -51,6 +51,31 @@ class TestWorkItemTypeAPI:
         assert response.data["is_default"] is True
         assert response.data["work_item_type"]["name"] == "Project type"
 
+    def test_session_api_marks_only_one_project_type_as_defect(self, session_client, workspace, project):
+        issue_types = [IssueType.objects.create(workspace=workspace, name=f"Type {index}") for index in range(2)]
+        project_type_ids = []
+        for issue_type in issue_types:
+            response = session_client.post(
+                f"/api/workspaces/{workspace.slug}/projects/{project.id}/work-item-types/",
+                {"issue_type_id": str(issue_type.id)},
+                format="json",
+            )
+            assert response.status_code == status.HTTP_201_CREATED
+            project_type_ids.append(response.data["id"])
+
+        for project_type_id in project_type_ids:
+            response = session_client.patch(
+                f"/api/workspaces/{workspace.slug}/projects/{project.id}/work-item-types/{project_type_id}/",
+                {"is_defect": True},
+                format="json",
+            )
+            assert response.status_code == status.HTTP_200_OK
+            assert response.data["is_defect"] is True
+
+        assert list(
+            ProjectIssueType.objects.filter(project=project, is_defect=True).values_list("issue_type_id", flat=True)
+        ) == [issue_types[1].id]
+
     def test_internal_work_item_serializer_uses_project_default_type(self, workspace, project):
         issue_type = IssueType.objects.create(workspace=workspace, name="Default type")
         ProjectIssueType.objects.create(
@@ -108,6 +133,30 @@ class TestWorkItemTypeAPI:
         assert response.status_code == status.HTTP_201_CREATED
         assert response.data["is_default"] is True
         assert response.data["work_item_type"]["id"] == issue_type.id
+
+    def test_external_api_updates_defect_type_mapping(self, api_key_client, workspace, project):
+        issue_types = [
+            IssueType.objects.create(workspace=workspace, name=f"External type {index}") for index in range(2)
+        ]
+        project_type_ids = []
+        for issue_type in issue_types:
+            response = api_key_client.post(
+                self.project_types_url(workspace, project),
+                {"issue_type_id": str(issue_type.id)},
+                format="json",
+            )
+            assert response.status_code == status.HTTP_201_CREATED
+            project_type_ids.append(response.data["id"])
+
+        response = api_key_client.patch(
+            f"{self.project_types_url(workspace, project)}{project_type_ids[1]}/",
+            {"is_defect": True},
+            format="json",
+        )
+
+        assert response.status_code == status.HTTP_200_OK
+        assert response.data["is_defect"] is True
+        assert ProjectIssueType.objects.filter(project=project, is_defect=True).count() == 1
 
     def test_project_types_cannot_use_a_type_from_another_workspace(
         self, api_key_client, workspace, project, create_user

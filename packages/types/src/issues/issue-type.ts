@@ -21,4 +21,5 @@ export type TProjectWorkItemType = {
   work_item_type: TWorkItemType;
   level: number;
   is_default: boolean;
+  is_defect: boolean;
 };

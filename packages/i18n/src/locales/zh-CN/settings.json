@@ -81,6 +81,7 @@
       "created": "已创建的工作项",
       "assigned": "已分配的工作项",
       "subscribed": "已订阅的工作项",
+      "defects": "待处理缺陷",
       "state_distribution": {
         "title": "按状态分类的工作项",
         "empty": "创建工作项以在图表中查看按状态分类的工作项，以便更好地分析。"
@@ -110,6 +111,7 @@
       "assigned": "已分配",
       "created": "已创建",
       "subscribed": "已订阅",
+      "defects": "待处理缺陷",
       "activity": "活动"
     },
     "empty_state": {
@@ -128,6 +130,10 @@
       "subscribed": {
         "title": "尚无工作项",
         "description": "订阅您感兴趣的工作项，在这里跟踪所有这些工作项。"
+      },
+      "defects": {
+        "title": "没有分配给此用户的待处理缺陷",
+        "description": "分配给此用户且尚未完成或取消的缺陷工作项会显示在这里。"
       }
     }
   },

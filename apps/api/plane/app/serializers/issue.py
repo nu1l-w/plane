@@ -920,6 +920,11 @@ class IssueListDetailSerializer(serializers.Serializer):
             "link_count": instance.link_count,
         }
 
+        if hasattr(instance, "defect_count"):
+            data["defect_count"] = instance.defect_count
+            data["open_defect_count"] = instance.open_defect_count
+            data["my_open_defect_count"] = instance.my_open_defect_count
+
         # Handle expanded fields only when requested - using direct field access
         if self.expand:
             if "issue_relation" in self.expand:

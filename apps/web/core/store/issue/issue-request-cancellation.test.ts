@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { TIssuesResponse } from "@plane/types";
+import type { TIssue, TIssuesResponse } from "@plane/types";
 import { ProjectIssues } from "./project/issue.store";
 import { ProfileIssues } from "./profile/issue.store";
 
@@ -66,6 +66,23 @@ describe("work item request cancellation", () => {
     expect(root.issues.addIssue).toHaveBeenCalledTimes(1);
   });
 
+  it("requests the assigned open defects profile view", async () => {
+    const store = new ProfileIssues(
+      makeRootStore() as unknown as ConstructorParameters<typeof ProfileIssues>[0],
+      { getFilterParams: () => ({}) } as unknown as ConstructorParameters<typeof ProfileIssues>[1]
+    );
+    const getProfileIssues = vi.spyOn(store.userService, "getUserProfileIssues").mockResolvedValue(response);
+
+    await store.fetchIssues("workspace", "user", "init-loader", options, "defects");
+
+    expect(getProfileIssues).toHaveBeenCalledWith(
+      "workspace",
+      "user",
+      expect.objectContaining({ assignees: "user", assigned_defects: "true" }),
+      expect.objectContaining({ signal: expect.any(AbortSignal) })
+    );
+  });
+
   it("still reports a real project request failure", async () => {
     const store = new ProjectIssues(
       makeRootStore() as unknown as ConstructorParameters<typeof ProjectIssues>[0],
@@ -75,5 +92,46 @@ describe("work item request cancellation", () => {
     vi.spyOn(store.issueService, "getIssues").mockRejectedValueOnce(error);
 
     await expect(store.fetchIssues("workspace", "project", "init-loader", options)).rejects.toBe(error);
+  });
+});
+
+describe("defect profile board updates", () => {
+  const createProfileStore = () => {
+    const store = new ProfileIssues(
+      makeRootStore() as unknown as ConstructorParameters<typeof ProfileIssues>[0],
+      {
+        getFilterParams: () => ({}),
+        issueFilters: {
+          displayFilters: { layout: "kanban", group_by: "priority", sub_issue: false },
+        },
+      } as unknown as ConstructorParameters<typeof ProfileIssues>[1]
+    );
+    vi.spyOn(store, "issuesSortWithOrderBy").mockImplementation((issueIds) => issueIds);
+    return store;
+  };
+
+  it("moves an assigned defect into its new priority group immediately", () => {
+    const store = createProfileStore();
+    store.setViewId("defects");
+
+    const defect = { id: "defect-1", parent_id: "parent-1", priority: "urgent" } as TIssue;
+    store.groupedIssueIds = { urgent: [defect.id] };
+    store.groupedIssueCount = { urgent: 1 };
+
+    store.updateIssueList({ ...defect, priority: "high" }, defect);
+
+    expect(store.getIssueIds("urgent")).toEqual([]);
+    expect(store.getIssueIds("high")).toEqual([defect.id]);
+    expect(store.groupedIssueCount).toMatchObject({ urgent: 0, high: 1 });
+  });
+
+  it("keeps hiding child work items in profile views other than defects", () => {
+    const store = createProfileStore();
+    const childIssue = { id: "child-1", parent_id: "parent-1", priority: "urgent" } as TIssue;
+    store.groupedIssueIds = {};
+
+    store.updateIssueList(childIssue);
+
+    expect(store.getIssueIds("urgent")).toBeUndefined();
   });
 });

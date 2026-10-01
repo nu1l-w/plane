@@ -36,6 +36,12 @@ export const PROFILE_ADMINS_TAB = [
     selected: "/subscribed/",
   },
   {
+    key: "defects",
+    route: "defects",
+    i18n_label: "profile.tabs.defects",
+    selected: "/defects/",
+  },
+  {
     key: "activity",
     route: "activity",
     i18n_label: "profile.tabs.activity",

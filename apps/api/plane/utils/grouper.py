@@ -135,6 +135,8 @@ def issue_on_results(
         "archived_at",
         "state__group",
     ]
+    if "defect_count" in issues.query.annotations:
+        required_fields.extend(["defect_count", "open_defect_count", "my_open_defect_count"])
 
     if group_by in FIELD_MAPPER:
         original_list.remove(FIELD_MAPPER[group_by])

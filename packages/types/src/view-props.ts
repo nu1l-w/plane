@@ -86,6 +86,7 @@ export type TIssueParams =
   | "issue_type"
   | "layout"
   | "expand"
+  | "assigned_defects"
   | "filters";
 
 export type TCalendarLayouts = "month" | "week";

@@ -55,6 +55,9 @@ export type TBaseIssue = {
   estimate_point: string | null;
 
   sub_issues_count: number;
+  defect_count?: number;
+  open_defect_count?: number;
+  my_open_defect_count?: number;
   attachment_count: number;
   link_count: number;
 

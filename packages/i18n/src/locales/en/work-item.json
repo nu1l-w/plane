@@ -58,6 +58,7 @@
         "id": "ID",
         "issue_type": "Work item Type",
         "parent": "Parent",
+        "defect_summary": "Defects {total} · Open {open} · Assigned to this user {mine}",
         "sub_issue_count": "Sub-work item count",
         "attachment_count": "Attachment count",
         "created_on": "Created on",

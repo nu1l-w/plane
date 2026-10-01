@@ -12,6 +12,7 @@ from dateutil.relativedelta import relativedelta
 from django.db.models import (
     Case,
     Count,
+    Exists,
     F,
     Func,
     IntegerField,
@@ -22,7 +23,7 @@ from django.db.models import (
     Subquery,
 )
 from django.db.models.fields import DateField
-from django.db.models.functions import Cast, ExtractWeek
+from django.db.models.functions import Cast, Coalesce, ExtractWeek
 from django.utils import timezone
 
 # Third party modules
@@ -47,7 +48,9 @@ from plane.db.models import (
     IssueLink,
     IssueSubscriber,
     Project,
+    ProjectIssueType,
     ProjectMember,
+    StateGroup,
     User,
     Workspace,
     WorkspaceMember,
@@ -101,7 +104,42 @@ class WorkspaceUserProfileIssuesEndpoint(BaseAPIView):
     filter_backends = (ComplexFilterBackend,)
     filterset_class = IssueFilterSet
 
-    def apply_annotations(self, issues):
+    def apply_annotations(self, issues, slug, viewer_id, target_user_id):
+        visible_child_defects = Issue.issue_objects.filter(
+            parent_id=OuterRef("pk"),
+            workspace__slug=slug,
+            project__is_issue_type_enabled=True,
+            project__project_projectmember__member_id=viewer_id,
+            project__project_projectmember__is_active=True,
+            archived_at__isnull=True,
+            is_draft=False,
+        ).filter(
+            Exists(
+                ProjectIssueType.objects.filter(
+                    project_id=OuterRef("project_id"),
+                    issue_type_id=OuterRef("type_id"),
+                    is_defect=True,
+                    deleted_at__isnull=True,
+                )
+            )
+        )
+
+        def count_child_defects(queryset):
+            return Coalesce(
+                Subquery(
+                    queryset.order_by()
+                    .values("parent_id")
+                    .annotate(count=Count("id", distinct=True))
+                    .values("count")[:1],
+                    output_field=IntegerField(),
+                ),
+                Value(0),
+                output_field=IntegerField(),
+            )
+
+        unresolved_child_defects = visible_child_defects.exclude(
+            state__group__in=[StateGroup.COMPLETED, StateGroup.CANCELLED]
+        )
         return (
             issues.annotate(
                 cycle_id=Subquery(
@@ -129,22 +167,55 @@ class WorkspaceUserProfileIssuesEndpoint(BaseAPIView):
                 .annotate(count=Func(F("id"), function="Count"))
                 .values("count")
             )
+            .annotate(
+                defect_count=count_child_defects(visible_child_defects),
+                open_defect_count=count_child_defects(unresolved_child_defects),
+                my_open_defect_count=count_child_defects(unresolved_child_defects.filter(assignees__id=target_user_id)),
+            )
             .prefetch_related("assignees", "labels", "issue_module__module")
         )
 
     def get(self, request, slug, user_id):
-        filters = issue_filters(request.query_params, "GET")
-
         order_by_param = request.GET.get("order_by", "-created_at")
-        issue_queryset = Issue.issue_objects.filter(
-            id__in=Issue.issue_objects.filter(
-                Q(assignees__in=[user_id]) | Q(created_by_id=user_id) | Q(issue_subscribers__subscriber_id=user_id),
+        is_defect_view = request.query_params.get("assigned_defects") == "true"
+        filter_params = request.query_params
+        if is_defect_view and filter_params.get("sub_issue") == "false":
+            # Defects are commonly tracked as sub-issues, so the generic list
+            # preference to hide sub-issues must not hide them from this view.
+            filter_params = filter_params.copy()
+            filter_params["sub_issue"] = "true"
+        filters = issue_filters(filter_params, "GET")
+
+        if is_defect_view:
+            issue_queryset = Issue.issue_objects.filter(
                 workspace__slug=slug,
-            ).values_list("id", flat=True),
-            workspace__slug=slug,
-            project__project_projectmember__member=request.user,
-            project__project_projectmember__is_active=True,
-        )
+                project__is_issue_type_enabled=True,
+                project__project_projectmember__member=request.user,
+                project__project_projectmember__is_active=True,
+                assignees__id=user_id,
+                archived_at__isnull=True,
+                is_draft=False,
+            ).exclude(state__group__in=[StateGroup.COMPLETED, StateGroup.CANCELLED])
+            issue_queryset = issue_queryset.filter(
+                Exists(
+                    ProjectIssueType.objects.filter(
+                        project_id=OuterRef("project_id"),
+                        issue_type_id=OuterRef("type_id"),
+                        is_defect=True,
+                        deleted_at__isnull=True,
+                    )
+                )
+            ).distinct()
+        else:
+            issue_queryset = Issue.issue_objects.filter(
+                id__in=Issue.issue_objects.filter(
+                    Q(assignees__in=[user_id]) | Q(created_by_id=user_id) | Q(issue_subscribers__subscriber_id=user_id),
+                    workspace__slug=slug,
+                ).values_list("id", flat=True),
+                workspace__slug=slug,
+                project__project_projectmember__member=request.user,
+                project__project_projectmember__is_active=True,
+            )
 
         # Apply filtering from filterset
         issue_queryset = self.filter_queryset(issue_queryset)
@@ -156,7 +227,7 @@ class WorkspaceUserProfileIssuesEndpoint(BaseAPIView):
         total_issue_queryset = copy.deepcopy(issue_queryset)
 
         # Apply annotations to the issue queryset
-        issue_queryset = self.apply_annotations(issue_queryset)
+        issue_queryset = self.apply_annotations(issue_queryset, slug, request.user.id, user_id)
 
         # Issue queryset
         issue_queryset, order_by_param = order_issue_queryset(
@@ -515,6 +586,31 @@ class WorkspaceUserProfileStatsEndpoint(BaseAPIView):
             .count()
         )
 
+        assigned_defects_count = (
+            Issue.issue_objects.filter(
+                Q(assignees__in=[user_id]) & Q(issue_assignee__deleted_at__isnull=True),
+                workspace__slug=slug,
+                project__is_issue_type_enabled=True,
+                project__project_projectmember__member=request.user,
+                project__project_projectmember__is_active=True,
+                archived_at__isnull=True,
+                is_draft=False,
+            )
+            .exclude(state__group__in=[StateGroup.COMPLETED, StateGroup.CANCELLED])
+            .filter(
+                Exists(
+                    ProjectIssueType.objects.filter(
+                        project_id=OuterRef("project_id"),
+                        issue_type_id=OuterRef("type_id"),
+                        is_defect=True,
+                        deleted_at__isnull=True,
+                    )
+                )
+            )
+            .distinct()
+            .count()
+        )
+
         upcoming_cycles = CycleIssue.objects.filter(
             workspace__slug=slug,
             cycle__start_date__gt=timezone.now(),
@@ -537,6 +633,7 @@ class WorkspaceUserProfileStatsEndpoint(BaseAPIView):
                 "completed_issues": completed_issues_count,
                 "pending_issues": pending_issues_count,
                 "subscribed_issues": subscribed_issues_count,
+                "assigned_defects": assigned_defects_count,
                 "present_cycles": present_cycle,
                 "upcoming_cycles": upcoming_cycles,
             }

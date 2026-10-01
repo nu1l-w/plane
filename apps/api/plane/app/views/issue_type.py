@@ -137,6 +137,11 @@ class ProjectIssueTypeViewSet(BaseViewSet):
                 is_default=False
             )
 
+        if serializer.validated_data.get("is_defect"):
+            ProjectIssueType.objects.filter(project_id=project_id).exclude(pk=project_issue_type.pk).update(
+                is_defect=False
+            )
+
         project_issue_type = serializer.save()
         return Response(ProjectIssueTypeSerializer(project_issue_type).data, status=status.HTTP_200_OK)
 

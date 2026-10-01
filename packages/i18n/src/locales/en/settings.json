@@ -81,6 +81,7 @@
       "created": "Work items created",
       "assigned": "Work items assigned",
       "subscribed": "Work items subscribed",
+      "defects": "Open defects",
       "state_distribution": {
         "title": "Work items by state",
         "empty": "Create work items to view the them by states in the graph for better analysis."
@@ -110,6 +111,7 @@
       "assigned": "Assigned",
       "created": "Created",
       "subscribed": "Subscribed",
+      "defects": "Open defects",
       "activity": "Activity"
     },
     "empty_state": {
@@ -128,6 +130,10 @@
       "subscribed": {
         "title": "No work items yet",
         "description": "Subscribe to work items you are interested in, track all of them here."
+      },
+      "defects": {
+        "title": "No open defects assigned to this user",
+        "description": "Assigned defect work items that are not completed or cancelled appear here."
       }
     }
   },

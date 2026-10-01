@@ -6,6 +6,7 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { Bug } from "lucide-react";
 
 // ui
 import { useTranslation } from "@plane/i18n";
@@ -42,13 +43,19 @@ export function ProfileStats({ userProfile }: Props) {
       i18n_title: "profile.stats.subscribed",
       value: userProfile?.subscribed_issues ?? "...",
     },
+    {
+      icon: Bug,
+      route: "defects",
+      i18n_title: "profile.stats.defects",
+      value: userProfile?.assigned_defects ?? "...",
+    },
   ];
 
   return (
     <div className="space-y-2">
       <h3 className="text-16 font-medium">{t("profile.stats.overview")}</h3>
       {userProfile ? (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
           {overviewCards.map((card) => (
             <Link key={card.route} href={`/${workspaceSlug}/profile/${userId}/${card.route}`}>
               <Card direction={ECardDirection.ROW} spacing={ECardSpacing.SM} className="h-full">
@@ -64,7 +71,8 @@ export function ProfileStats({ userProfile }: Props) {
           ))}
         </div>
       ) : (
-        <Loader className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <Loader className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <Loader.Item height="80px" />
           <Loader.Item height="80px" />
           <Loader.Item height="80px" />
           <Loader.Item height="80px" />

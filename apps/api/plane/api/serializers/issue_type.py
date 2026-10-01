@@ -38,7 +38,7 @@ class ProjectIssueTypeSerializer(BaseSerializer):
 
     class Meta:
         model = ProjectIssueType
-        fields = ["id", "issue_type", "work_item_type", "level", "is_default"]
+        fields = ["id", "issue_type", "work_item_type", "level", "is_default", "is_defect"]
         read_only_fields = ["id", "work_item_type"]
 
 
@@ -62,4 +62,4 @@ class ProjectIssueTypeCreateSerializer(BaseSerializer):
 class ProjectIssueTypeUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProjectIssueType
-        fields = ["level", "is_default"]
+        fields = ["level", "is_default", "is_defect"]

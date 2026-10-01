@@ -154,6 +154,7 @@ export type TOnboardingSteps = {
 };
 
 export interface IUserProfileData {
+  assigned_defects: number;
   assigned_issues: number;
   completed_issues: number;
   created_issues: number;
@@ -189,7 +190,7 @@ export interface IUserEmailNotificationSettings {
   issue_completed: boolean;
 }
 
-export type TProfileViews = "assigned" | "created" | "subscribed";
+export type TProfileViews = "assigned" | "created" | "subscribed" | "defects";
 
 export type TPublicMember = {
   id: string;
