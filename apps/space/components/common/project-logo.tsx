@@ -6,6 +6,7 @@
 
 // types
 import type { TLogoProps } from "@plane/types";
+import { Logo } from "@plane/propel/emoji-icon-picker";
 // helpers
 import { cn } from "@plane/utils";
 
@@ -16,6 +17,13 @@ type Props = {
 
 export function ProjectLogo(props: Props) {
   const { className, logo } = props;
+
+  if (logo.in_use === "image")
+    return (
+      <span className={cn("inline-flex", className)}>
+        <Logo logo={logo} size={14} />
+      </span>
+    );
 
   if (logo.in_use === "icon" && logo.icon)
     return (

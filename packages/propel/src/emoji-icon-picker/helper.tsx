@@ -37,6 +37,7 @@ export type TCustomEmojiPicker = {
   disabled?: boolean;
   dropdownClassName?: string;
   label: React.ReactNode;
+  footer?: React.ReactNode;
   onChange: (value: TChangeHandlerProps) => void;
   placement?: TPlacement;
   searchDisabled?: boolean;
@@ -52,6 +53,8 @@ export type TIconsListProps = {
   onChange: (val: { name: string; color: string }) => void;
   searchDisabled?: boolean;
 };
+
+const toHex = (value: number): string => value.toString(16).padStart(2, "0");
 
 /**
  * Adjusts the given hex color to ensure it has enough contrast.
@@ -89,11 +92,6 @@ export const adjustColorForContrast = (hex: string): string => {
   }
 
   // Convert RGB back to hex
-  const toHex = (value: number): string => {
-    const hex = value.toString(16);
-    return hex.length === 1 ? "0" + hex : hex;
-  };
-
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 };
 

@@ -24,19 +24,6 @@ import { useDropdown } from "@/hooks/use-dropdown";
 // plane web imports
 import { StateOption } from "@/components/workflow";
 
-const STATE_NAME_MAP: Record<string, string> = {
-  Backlog: "待办",
-  Todo: "未开始",
-  "In Progress": "进行中",
-  Done: "已完成",
-  Cancelled: "已取消",
-};
-
-const getStateDisplayName = (name: string | undefined): string => {
-  if (!name) return "";
-  return STATE_NAME_MAP[name] ?? name;
-};
-
 export type TWorkItemStateDropdownBaseProps = TDropdownProps & {
   alwaysAllowStateChange?: boolean;
   button?: ReactNode;
@@ -125,7 +112,7 @@ export const WorkItemStateDropdownBase = observer(function WorkItemStateDropdown
   // derived values
   const options = statesList?.map((state) => ({
     value: state?.id,
-    query: `${getStateDisplayName(state?.name)}`,
+    query: state.name,
     content: (
       <div className="flex items-center gap-2">
         <StateGroupIcon
@@ -134,7 +121,7 @@ export const WorkItemStateDropdownBase = observer(function WorkItemStateDropdown
           className={cn("flex-shrink-0", iconSize)}
           percentage={state?.order}
         />
-        <span className="flex-grow truncate text-left">{getStateDisplayName(state?.name)}</span>
+        <span className="flex-grow truncate text-left">{state.name}</span>
       </div>
     ),
   }));
@@ -182,7 +169,7 @@ export const WorkItemStateDropdownBase = observer(function WorkItemStateDropdown
             className={buttonClassName}
             isActive={isOpen}
             tooltipHeading={t("state")}
-            tooltipContent={getStateDisplayName(selectedState?.name) ?? t("state")}
+            tooltipContent={selectedState?.name ?? t("state")}
             showTooltip={showTooltip}
             variant={buttonVariant}
             renderToolTipByDefault={renderByDefault}
@@ -200,9 +187,7 @@ export const WorkItemStateDropdownBase = observer(function WorkItemStateDropdown
                   />
                 )}
                 {BUTTON_VARIANTS_WITH_TEXT.includes(buttonVariant) && (
-                  <span className="flex-grow truncate text-left">
-                    {getStateDisplayName(selectedState?.name) ?? t("state")}
-                  </span>
+                  <span className="flex-grow truncate text-left">{selectedState?.name ?? t("state")}</span>
                 )}
                 {dropdownArrow && (
                   <ChevronDownIcon

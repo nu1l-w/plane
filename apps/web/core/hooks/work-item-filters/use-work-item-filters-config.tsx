@@ -134,7 +134,7 @@ export const useWorkItemFiltersConfig = (props: TUseWorkItemFiltersConfigProps):
   );
   const projects = useMemo(
     () =>
-      projectIds ? (projectIds.map((id) => getProjectById(id)).filter((projectItem) => projectItem) as IProject[]) : [],
+      projectIds ? (projectIds.map((id) => getProjectById(id)).filter((candidate) => candidate) as IProject[]) : [],
     [projectIds, getProjectById]
   );
   const areAllConfigsInitialized = useMemo(() => isLoaderReady(projectLoader), [projectLoader]);
@@ -166,21 +166,6 @@ export const useWorkItemFiltersConfig = (props: TUseWorkItemFiltersConfigProps):
       getStateFilterConfig<TWorkItemFilterProperty>("state_id")({
         isEnabled: isFilterEnabled("state_id") && workItemStates !== undefined,
         label: t("common.state"),
-        getStateLabel: (state) => {
-          const normalizedName = state.name.trim().toLowerCase().replace(/\s+/g, "_");
-          const stateTranslationKeys: Record<string, string> = {
-            backlog: "project_modules.status.backlog",
-            todo: "project_modules.status.backlog",
-            unstarted: "project_modules.status.backlog",
-            in_progress: "project_modules.status.in_progress",
-            started: "project_modules.status.in_progress",
-            done: "project_modules.status.completed",
-            completed: "project_modules.status.completed",
-            cancelled: "project_modules.status.cancelled",
-          };
-          const translationKey = stateTranslationKeys[normalizedName];
-          return translationKey ? t(translationKey) : state.name;
-        },
         filterIcon: StatePropertyIcon,
         getOptionIcon: (state) => <StateGroupIcon stateGroup={state.group} color={state.color} />,
         states: workItemStates ?? [],
@@ -386,7 +371,7 @@ export const useWorkItemFiltersConfig = (props: TUseWorkItemFiltersConfigProps):
         label: t("common.projects"),
         filterIcon: Briefcase,
         projects: projects,
-        getOptionIcon: (projectItem) => <Logo logo={projectItem.logo_props} size={12} />,
+        getOptionIcon: (optionProject) => <Logo logo={optionProject.logo_props} size={12} />,
         ...operatorConfigs,
       }),
     [isFilterEnabled, projects, operatorConfigs, t]

@@ -76,16 +76,6 @@ import {
 export const HIGHLIGHT_CLASS = "highlight";
 export const HIGHLIGHT_WITH_LINE = "highlight-with-line";
 
-const STATE_NAME_MAP: Record<string, string> = {
-  Backlog: "待办",
-  Todo: "未开始",
-  "In Progress": "进行中",
-  Done: "已完成",
-  Cancelled: "已取消",
-};
-
-const getStateDisplayName = (name: string): string => STATE_NAME_MAP[name] ?? name;
-
 export type GroupDropLocation = {
   columnId: string;
   groupId: string;
@@ -255,7 +245,7 @@ const getStateColumns = ({ projectId }: TGetColumns): IGroupByColumn[] | undefin
   // map project states to group by columns
   return _states.map((state) => ({
     id: state.id,
-    name: getStateDisplayName(state.name),
+    name: state.name,
     icon: (
       <div className="size-4 rounded-full">
         <StateGroupIcon stateGroup={state.group} color={state.color} size={EIconSize.LG} percentage={state.order} />

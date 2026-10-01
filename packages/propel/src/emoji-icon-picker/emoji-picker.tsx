@@ -25,6 +25,7 @@ export function EmojiPicker(props: TCustomEmojiPicker) {
     disabled = false,
     dropdownClassName,
     label,
+    footer,
     onChange,
     placement = "bottom-start",
     searchDisabled = false,
@@ -148,6 +149,7 @@ export function EmojiPicker(props: TCustomEmojiPicker) {
             </Tabs.Panel>
           ))}
         </Tabs.Root>
+        {footer && <div className="border-t border-subtle p-3.5">{footer}</div>}
       </Popover.Panel>
     </Popover>
   );

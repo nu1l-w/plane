@@ -8,7 +8,7 @@ import { useState, useRef } from "react";
 import { observer } from "mobx-react";
 
 // plane imports
-import { EIconSize, STATE_TRACKER_ELEMENTS } from "@plane/constants";
+import { EIconSize, STATE_GROUPS, STATE_TRACKER_ELEMENTS } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 import { PlusIcon, StateGroupIcon, ChevronDownIcon } from "@plane/propel/icons";
 import type { IState, TStateGroups, TStateOperationsCallbacks } from "@plane/types";
@@ -53,6 +53,7 @@ export const GroupItem = observer(function GroupItem(props: TGroupItem) {
   // derived values
   const currentStateExpanded = groupsExpanded.includes(groupKey);
   const shouldShowEmptyState = states.length === 0 && currentStateExpanded && !createState;
+  const groupLabel = STATE_GROUPS[groupKey].label;
 
   return (
     <div
@@ -60,11 +61,13 @@ export const GroupItem = observer(function GroupItem(props: TGroupItem) {
       ref={dropElementRef}
     >
       <div className="flex items-center justify-between gap-2">
-        <div
+        <button
+          type="button"
+          aria-expanded={currentStateExpanded}
           className="flex w-full cursor-pointer items-center py-1"
           onClick={() => (!currentStateExpanded ? handleExpand(groupKey) : handleGroupCollapse(groupKey))}
         >
-          <div
+          <span
             className={cn(
               "flex h-5 w-5 flex-shrink-0 items-center justify-center overflow-hidden rounded-sm transition-all",
               {
@@ -74,12 +77,12 @@ export const GroupItem = observer(function GroupItem(props: TGroupItem) {
             )}
           >
             <ChevronDownIcon className="h-4 w-4" />
-          </div>
-          <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center overflow-hidden rounded-sm">
+          </span>
+          <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center overflow-hidden rounded-sm">
             <StateGroupIcon stateGroup={groupKey} size={EIconSize.XL} />
-          </div>
-          <div className="px-1 text-14 font-medium text-secondary capitalize">{groupKey}</div>
-        </div>
+          </span>
+          <span className="px-1 text-14 font-medium text-secondary">{groupLabel}</span>
+        </button>
         <button
           type="button"
           data-ph-element={STATE_TRACKER_ELEMENTS.STATE_GROUP_ADD_BUTTON}
@@ -101,7 +104,7 @@ export const GroupItem = observer(function GroupItem(props: TGroupItem) {
 
       {shouldShowEmptyState && (
         <div className="flex h-full flex-col items-center justify-center py-4 text-13 text-tertiary">
-          <div>{t("project_settings.states.empty_state.title", { groupKey })}</div>
+          <div>{t("project_settings.states.empty_state.title", { groupKey: groupLabel })}</div>
           {isEditable && <div>{t("project_settings.states.empty_state.description")}</div>}
         </div>
       )}

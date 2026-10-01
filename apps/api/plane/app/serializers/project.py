@@ -11,6 +11,8 @@ import re
 # Module imports
 from .base import BaseSerializer, DynamicBaseSerializer
 from django.db.models import Max
+from django.db import transaction
+from django.utils import timezone
 from plane.app.serializers.workspace import WorkspaceLiteSerializer
 from plane.app.serializers.user import UserLiteSerializer, UserAdminLiteSerializer
 from plane.db.models import (
@@ -21,6 +23,7 @@ from plane.db.models import (
     DeployBoard,
     ProjectPublicMember,
     IssueSequence,
+    FileAsset,
 )
 from plane.utils.content_validator import (
     validate_html_content,
@@ -35,6 +38,48 @@ class ProjectSerializer(BaseSerializer):
         model = Project
         fields = "__all__"
         read_only_fields = ["workspace", "deleted_at"]
+
+    def validate_logo_props(self, value):
+        if not isinstance(value, dict):
+            raise serializers.ValidationError("Invalid project logo.")
+        if value.get("in_use") != "image":
+            return value
+
+        image = value.get("image")
+        if not self.instance or not isinstance(image, dict):
+            raise serializers.ValidationError("Upload a logo for an existing project first.")
+        asset_id = serializers.UUIDField().run_validation(image.get("asset_id"))
+        asset = FileAsset.objects.filter(
+            id=asset_id,
+            project_id=self.instance.id,
+            workspace_id=self.instance.workspace_id,
+            entity_type=FileAsset.EntityTypeContext.PROJECT_LOGO,
+            is_uploaded=True,
+            is_deleted=False,
+        ).first()
+        if not asset:
+            raise serializers.ValidationError("The uploaded project logo could not be found.")
+        # Never persist client-provided URLs or temporary browser preview URLs.
+        return {"in_use": "image", "image": {"asset_id": str(asset.id), "url": asset.asset_url}}
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        previous_logo = instance.logo_props or {}
+        instance = super().update(instance, validated_data)
+        if "logo_props" in validated_data and previous_logo.get("in_use") == "image":
+            previous_asset_id = (previous_logo.get("image") or {}).get("asset_id")
+            current_asset_id = (
+                (instance.logo_props.get("image") or {}).get("asset_id")
+                if instance.logo_props.get("in_use") == "image"
+                else None
+            )
+            if previous_asset_id and previous_asset_id != current_asset_id:
+                FileAsset.objects.filter(
+                    id=previous_asset_id,
+                    project_id=instance.id,
+                    entity_type=FileAsset.EntityTypeContext.PROJECT_LOGO,
+                ).update(is_deleted=True, deleted_at=timezone.now())
+        return instance
 
     def validate_name(self, name):
         project_id = self.instance.id if self.instance else None

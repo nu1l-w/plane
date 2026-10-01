@@ -46,16 +46,6 @@ type TProps = TStickiesLayout & {
   columnCount: number;
 };
 
-const getColumnCount = (width: number | null): number => {
-  if (width === null) return 4;
-
-  if (width < 640) return 2; // sm
-  if (width < 850) return 3; // md
-  if (width < 1024) return 4; // lg
-  if (width < 1280) return 5; // xl
-  return 6; // 2xl and above
-};
-
 export const StickiesList = observer(function StickiesList(props: TProps) {
   const { workspaceSlug, intersectionElement, columnCount } = props;
   // navigation
@@ -176,6 +166,16 @@ export const StickiesList = observer(function StickiesList(props: TProps) {
     </div>
   );
 });
+
+const getColumnCount = (width: number | null): number => {
+  if (width === null) return 4;
+
+  if (width < 640) return 2; // sm
+  if (width < 850) return 3; // md
+  if (width < 1024) return 4; // lg
+  if (width < 1280) return 5; // xl
+  return 6; // 2xl and above
+};
 
 export function StickiesLayout(props: TStickiesLayout) {
   // states

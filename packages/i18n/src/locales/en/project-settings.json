@@ -3,6 +3,15 @@
     "general": {
       "enter_project_id": "Enter project ID",
       "please_select_a_timezone": "Please select a timezone",
+      "logo": {
+        "label": "Project icon",
+        "upload": "Upload image",
+        "hint": "PNG, JPG or WebP, up to 5 MB. Click Update project to save your selection.",
+        "pending": "Unsaved",
+        "invalid_format": "Please upload a PNG, JPG or WebP image.",
+        "invalid_size": "The image must be non-empty and no larger than 5 MB.",
+        "upload_failed": "Could not upload the project icon. Please try again."
+      },
       "archive_project": {
         "title": "Archive project",
         "description": "Archiving a project will unlist your project from your side navigation although you will still be able to access it from your projects page. You can restore the project or delete it whenever you want.",

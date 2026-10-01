@@ -7,9 +7,11 @@
 // Due to some weird issue with the import order, the import of useFontFaceObserver
 // should be after the imported here rather than some below helper functions as it is in the original file
 
+import { useState } from "react";
 import useFontFaceObserver from "use-font-face-observer";
 // plane imports
 import type { TLogoProps } from "@plane/types";
+import { getFileURL } from "@plane/utils";
 // local imports
 import { getEmojiSize, stringToEmoji } from "./helper";
 import { LUCIDE_ICONS_LIST } from "./lucide-icons";
@@ -21,6 +23,7 @@ type Props = {
 };
 
 export function Logo({ logo, size = 16, type = "material" }: Props) {
+  const [failedImageUrl, setFailedImageUrl] = useState<string>();
   const isMaterialSymbolsFontLoaded = useFontFaceObserver([
     {
       family: "Material Symbols Rounded",
@@ -35,6 +38,22 @@ export function Logo({ logo, size = 16, type = "material" }: Props) {
 
   // Early returns for loading/empty states
   if (!logo || !logo.in_use) return loadingSkeleton;
+
+  if (logo.in_use === "image") {
+    const src = logo.image?.url ? getFileURL(logo.image.url) : undefined;
+    if (!src || failedImageUrl === src) return loadingSkeleton;
+    return (
+      <img
+        src={src}
+        alt=""
+        width={size}
+        height={size}
+        className="shrink-0 rounded-sm object-contain"
+        style={{ height: size, width: size }}
+        onError={() => setFailedImageUrl(src)}
+      />
+    );
+  }
 
   const { in_use, emoji, icon } = logo;
   const value = in_use === "emoji" ? emoji?.value : icon?.name;

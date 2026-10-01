@@ -3,6 +3,15 @@
     "general": {
       "enter_project_id": "输入项目 ID",
       "please_select_a_timezone": "请选择时区",
+      "logo": {
+        "label": "项目图标",
+        "upload": "上传图片",
+        "hint": "支持 PNG、JPG、WebP，最大 5 MB。选图后点击“更新项目”保存。",
+        "pending": "待保存",
+        "invalid_format": "请上传 PNG、JPG 或 WebP 图片。",
+        "invalid_size": "图片不能为空，且大小不能超过 5 MB。",
+        "upload_failed": "项目图标上传失败，请重试。"
+      },
       "archive_project": {
         "title": "归档项目",
         "description": "归档项目将从您的侧边导航中取消列出您的项目，但您仍然可以从项目页面访问它。您可以随时恢复或删除项目。",

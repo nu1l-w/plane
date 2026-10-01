@@ -89,9 +89,9 @@ export function CustomSearchSelect(props: ICustomSearchSelectProps) {
   return (
     <Combobox
       as="div"
+      role="group"
       ref={dropdownRef}
       tabIndex={tabIndex}
-      role="group"
       className={cn("relative flex-shrink-0 text-left", className)}
       onKeyDown={handleKeyDown}
       {...comboboxProps}

@@ -11,7 +11,6 @@ import { NETWORK_CHOICES } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
 // plane imports
 import { Button } from "@plane/propel/button";
-import { EmojiPicker, EmojiIconPickerTypes, Logo } from "@plane/propel/emoji-icon-picker";
 import { LockIcon } from "@plane/propel/icons";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import { Tooltip } from "@plane/propel/tooltip";
@@ -31,6 +30,8 @@ import { usePlatformOS } from "@/hooks/use-platform-os";
 import { ProjectService } from "@/services/project";
 // local imports
 import { ProjectNetworkIcon } from "./project-network-icon";
+import { ProjectLogoPicker } from "./logo-picker";
+import { uploadProjectLogo } from "./logo-upload";
 
 export interface IProjectDetailsForm {
   project: IProject;
@@ -44,7 +45,7 @@ export function ProjectDetailsForm(props: IProjectDetailsForm) {
   const { project, workspaceSlug, projectId, isAdmin } = props;
   const { t } = useTranslation();
   // states
-  const [isOpen, setIsOpen] = useState(false);
+  const [logoImage, setLogoImage] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   // store hooks
   const { updateProject } = useProject();
@@ -72,6 +73,7 @@ export function ProjectDetailsForm(props: IProjectDetailsForm) {
 
   useEffect(() => {
     if (project && projectId !== getValues("id")) {
+      setLogoImage(null);
       reset({
         ...project,
         workspace: (project.workspace as IWorkspace).id,
@@ -97,6 +99,7 @@ export function ProjectDetailsForm(props: IProjectDetailsForm) {
           title: t("toast.success"),
           message: t("project_settings.general.toast.success"),
         });
+        return undefined;
       })
       .catch((err) => {
         try {
@@ -151,7 +154,7 @@ export function ProjectDetailsForm(props: IProjectDetailsForm) {
   };
 
   const onSubmit = async (formData: IProject) => {
-    if (!workspaceSlug) return;
+    if (!workspaceSlug || !isAdmin || isLoading) return;
     setIsLoading(true);
     const payload: Partial<IProject> = {
       name: formData.name,
@@ -186,17 +189,44 @@ export function ProjectDetailsForm(props: IProjectDetailsForm) {
       return;
     }
 
-    if (project.identifier !== formData.identifier)
-      await projectService
-        .checkProjectIdentifierAvailability(workspaceSlug, payload.identifier ?? "")
-        .then(async (res) => {
-          if (res.exists) setError("identifier", { message: t("common.identifier_already_exists") });
-          else await handleUpdateChange(payload);
+    if (logoImage) {
+      try {
+        const logo = await uploadProjectLogo(workspaceSlug, project.id, logoImage);
+        payload.logo_props = logo;
+        // Retain the uploaded asset for retries if saving the project fails.
+        setValue("logo_props", logo, { shouldDirty: true });
+        setLogoImage(null);
+      } catch (error) {
+        console.error("Error uploading project logo:", error);
+        setToast({
+          type: TOAST_TYPE.ERROR,
+          title: t("toast.error"),
+          message: t("project_settings.general.logo.upload_failed"),
         });
-    else await handleUpdateChange(payload);
-    setTimeout(() => {
+        setIsLoading(false);
+        return;
+      }
+    }
+
+    try {
+      if (project.identifier !== formData.identifier) {
+        const result = await projectService.checkProjectIdentifierAvailability(workspaceSlug, payload.identifier ?? "");
+        if (result.exists) {
+          setError("identifier", { message: t("common.identifier_already_exists") });
+          return;
+        }
+      }
+      await handleUpdateChange(payload);
+    } catch (error) {
+      console.error("Error saving project:", error);
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: t("toast.error"),
+        message: t("project_settings.general.toast.error"),
+      });
+    } finally {
       setIsLoading(false);
-    }, 300);
+    }
   };
 
   return (
@@ -210,35 +240,13 @@ export function ProjectDetailsForm(props: IProjectDetailsForm) {
               control={control}
               name="logo_props"
               render={({ field: { value, onChange } }) => (
-                <EmojiPicker
-                  iconType="material"
-                  closeOnSelect={false}
-                  isOpen={isOpen}
-                  handleToggle={(val: boolean) => setIsOpen(val)}
-                  className="flex items-center justify-center"
-                  buttonClassName="flex h-[52px] w-[52px] flex-shrink-0 items-center justify-center rounded-lg bg-white/10"
-                  label={<Logo logo={value} size={28} />}
-                  // TODO: fix types
-                  onChange={(val: any) => {
-                    let logoValue = {};
-
-                    if (val?.type === "emoji")
-                      logoValue = {
-                        value: val.value,
-                      };
-                    else if (val?.type === "icon") logoValue = val.value;
-
-                    onChange({
-                      in_use: val?.type,
-                      [val?.type]: logoValue,
-                    });
-                    setIsOpen(false);
-                  }}
-                  defaultIconColor={value?.in_use && value.in_use === "icon" ? value?.icon?.color : undefined}
-                  defaultOpen={
-                    value.in_use && value.in_use === "emoji" ? EmojiIconPickerTypes.EMOJI : EmojiIconPickerTypes.ICON
-                  }
-                  disabled={!isAdmin}
+                <ProjectLogoPicker
+                  key={project.id}
+                  value={value}
+                  image={logoImage}
+                  onChange={onChange}
+                  onImageChange={setLogoImage}
+                  disabled={!isAdmin || isLoading}
                 />
               )}
             />
@@ -423,8 +431,8 @@ export function ProjectDetailsForm(props: IProjectDetailsForm) {
                 <>
                   <TimezoneSelect
                     value={value}
-                    onChange={(value: string) => {
-                      onChange(value);
+                    onChange={(timezone: string) => {
+                      onChange(timezone);
                     }}
                     error={Boolean(errors.timezone)}
                     buttonClassName="!border-subtle !shadow-none font-medium rounded-md"

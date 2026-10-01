@@ -17,7 +17,11 @@ export type TPaginationInfo = {
 };
 
 export type TLogoProps = {
-  in_use: "emoji" | "icon";
+  in_use: "emoji" | "icon" | "image";
+  image?: {
+    asset_id?: string;
+    url: string;
+  };
   emoji?: {
     value?: string;
     url?: string;

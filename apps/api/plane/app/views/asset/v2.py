@@ -28,6 +28,24 @@ from plane.bgtasks.storage_metadata_task import get_asset_object_metadata
 from plane.throttles.asset import AssetRateThrottle
 
 
+def can_manage_project_logo(request, slug, project_id):
+    return (
+        ProjectMember.objects.filter(
+            member=request.user,
+            workspace__slug=slug,
+            project_id=project_id,
+            role=ROLE.ADMIN.value,
+            is_active=True,
+        ).exists()
+        or WorkspaceMember.objects.filter(
+            member=request.user,
+            workspace__slug=slug,
+            role=ROLE.ADMIN.value,
+            is_active=True,
+        ).exists()
+    )
+
+
 class UserAssetsV2Endpoint(BaseAPIView):
     """This endpoint is used to upload user profile images."""
 
@@ -323,6 +341,9 @@ class WorkspaceFileAssetEndpoint(BaseAPIView):
         (WORKSPACE_LOGO, USER_AVATAR, USER_COVER) have project_id=None and are
         always allowed.
         """
+        if asset.entity_type == FileAsset.EntityTypeContext.PROJECT_LOGO and request.method != "GET":
+            # Logo mutations must use the project-scoped endpoint.
+            return False
         if asset.project_id is None:
             return True
         # Scope the membership lookup to the asset's workspace as well as its
@@ -344,6 +365,12 @@ class WorkspaceFileAssetEndpoint(BaseAPIView):
         size = int(request.data.get("size", settings.FILE_SIZE_LIMIT))
         entity_type = request.data.get("entity_type")
         entity_identifier = request.data.get("entity_identifier", False)
+
+        if entity_type == FileAsset.EntityTypeContext.PROJECT_LOGO:
+            return Response(
+                {"error": "Upload project logos through the project asset endpoint."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         # Check if the entity type is allowed
         if entity_type not in FileAsset.EntityTypeContext.values:
@@ -510,6 +537,7 @@ class StaticFileAssetEndpoint(BaseAPIView):
             FileAsset.EntityTypeContext.USER_COVER,
             FileAsset.EntityTypeContext.WORKSPACE_LOGO,
             FileAsset.EntityTypeContext.PROJECT_COVER,
+            FileAsset.EntityTypeContext.PROJECT_LOGO,
         ]:
             return Response(
                 {"error": "Invalid entity type.", "status": False},
@@ -521,9 +549,7 @@ class StaticFileAssetEndpoint(BaseAPIView):
         # same-origin XSS when assets are served on the application's origin.
         storage = S3Storage(request=request)
         asset_mime_type = (asset.attributes.get("type") or "").split(";")[0].strip().lower()
-        disposition = (
-            "attachment" if asset_mime_type in settings.SCRIPT_CAPABLE_MIME_TYPES else "inline"
-        )
+        disposition = "attachment" if asset_mime_type in settings.SCRIPT_CAPABLE_MIME_TYPES else "inline"
         # Generate a presigned URL to share an S3 object
         signed_url = storage.generate_presigned_url(
             object_name=asset.asset.name,
@@ -581,9 +607,28 @@ class ProjectAssetEndpoint(BaseAPIView):
     def post(self, request, slug, project_id):
         name = sanitize_filename(request.data.get("name")) or "unnamed"
         type = request.data.get("type", "image/jpeg")
-        size = int(request.data.get("size", settings.FILE_SIZE_LIMIT))
+        try:
+            size = int(request.data.get("size", settings.FILE_SIZE_LIMIT))
+        except (TypeError, ValueError):
+            return Response({"error": "Invalid file size."}, status=status.HTTP_400_BAD_REQUEST)
         entity_type = request.data.get("entity_type", "")
         entity_identifier = request.data.get("entity_identifier")
+
+        if entity_type == FileAsset.EntityTypeContext.PROJECT_LOGO:
+            if not can_manage_project_logo(request, slug, project_id):
+                return Response(
+                    {"error": "Only project admins can upload a project logo."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+            if str(entity_identifier) != str(project_id):
+                return Response({"error": "Invalid project."}, status=status.HTTP_400_BAD_REQUEST)
+            if type not in ["image/jpeg", "image/png", "image/webp"]:
+                return Response(
+                    {"error": "Project logos must be JPEG, PNG or WebP images."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            if size <= 0 or size > min(settings.FILE_SIZE_LIMIT, 5 * 1024 * 1024):
+                return Response({"error": "Invalid logo file size."}, status=status.HTTP_400_BAD_REQUEST)
 
         # Check if the entity type is allowed
         if entity_type not in FileAsset.EntityTypeContext.values:
@@ -648,6 +693,11 @@ class ProjectAssetEndpoint(BaseAPIView):
     def patch(self, request, slug, project_id, pk):
         # get the asset id
         asset = FileAsset.objects.get(id=pk, workspace__slug=slug, project_id=project_id)
+        if asset.entity_type == FileAsset.EntityTypeContext.PROJECT_LOGO:
+            if not can_manage_project_logo(request, slug, project_id):
+                return Response({"error": "Only project admins can update a logo."}, status=status.HTTP_403_FORBIDDEN)
+            if "attributes" in request.data:
+                return Response({"error": "Logo attributes cannot be changed."}, status=status.HTTP_400_BAD_REQUEST)
         # get the storage metadata
         asset.is_uploaded = True
         # get the storage metadata
@@ -664,6 +714,16 @@ class ProjectAssetEndpoint(BaseAPIView):
     def delete(self, request, slug, project_id, pk):
         # Get the asset
         asset = FileAsset.objects.get(id=pk, workspace__slug=slug, project_id=project_id)
+        if asset.entity_type == FileAsset.EntityTypeContext.PROJECT_LOGO:
+            if not can_manage_project_logo(request, slug, project_id):
+                return Response({"error": "Only project admins can delete a logo."}, status=status.HTTP_403_FORBIDDEN)
+            if Project.objects.filter(
+                id=project_id, logo_props__in_use="image", logo_props__image__asset_id=str(asset.id)
+            ).exists():
+                return Response(
+                    {"error": "Replace the project logo before deleting its image."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
         # Check deleted assets
         asset.is_deleted = True
         asset.deleted_at = timezone.now()
@@ -817,6 +877,12 @@ class DuplicateAssetEndpoint(BaseAPIView):
         project_id = request.data.get("project_id", None)
         entity_id = request.data.get("entity_id", None)
         entity_type = request.data.get("entity_type", None)
+
+        if entity_type == FileAsset.EntityTypeContext.PROJECT_LOGO:
+            return Response(
+                {"error": "Project logos must be uploaded through the project asset endpoint."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         if not entity_type or entity_type not in FileAsset.EntityTypeContext.values:
             return Response(
