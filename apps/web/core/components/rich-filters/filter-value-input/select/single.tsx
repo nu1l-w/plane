@@ -4,9 +4,10 @@
  * See the LICENSE file for details.
  */
 
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { observer } from "mobx-react";
 // plane imports
+import { useTranslation } from "@plane/i18n";
 import type {
   IFilterOption,
   TFilterProperty,
@@ -29,6 +30,7 @@ export const SingleSelectFilterValueInput = observer(function SingleSelectFilter
   props: TSingleSelectFilterValueInputProps<P>
 ) {
   const { config, condition, onChange, isDisabled } = props;
+  const { t } = useTranslation();
   // states
   const [options, setOptions] = useState<IFilterOption<string>[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -50,6 +52,7 @@ export const SingleSelectFilterValueInput = observer(function SingleSelectFilter
   return (
     <CustomSearchSelect
       {...getCommonCustomSearchSelectProps(isDisabled)}
+      searchPlaceholder={t("search")}
       value={condition.value}
       onChange={handleSelectChange}
       options={formattedOptions}

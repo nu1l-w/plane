@@ -6,7 +6,7 @@
 
 import { useState } from "react";
 import { observer } from "mobx-react";
-import { HelpCircle } from "lucide-react";
+import { Info } from "lucide-react";
 import { useTranslation } from "@plane/i18n";
 // ui
 import { CustomMenu } from "@plane/ui";
@@ -33,7 +33,7 @@ export const HelpMenuRoot = observer(function HelpMenuRoot() {
         customButtonClassName={`group flex size-8 flex-col items-center justify-center rounded-md text-tertiary ${
           isNeedHelpOpen ? "bg-layer-transparent-selected text-secondary" : "hover:bg-layer-transparent-hover"
         }`}
-        customButton={<AppSidebarItem.Icon icon={<HelpCircle className="size-5" />} highlight={isNeedHelpOpen} />}
+        customButton={<AppSidebarItem.Icon icon={<Info className="size-5" />} highlight={isNeedHelpOpen} />}
         menuButtonOnClick={() => !isNeedHelpOpen && setIsNeedHelpOpen(true)}
         onMenuClose={() => setIsNeedHelpOpen(false)}
         placement="bottom-end"

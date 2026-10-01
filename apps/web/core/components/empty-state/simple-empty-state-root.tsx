@@ -15,6 +15,7 @@ type Props = {
   description?: string;
   assetPath?: string;
   size?: EmptyStateSize;
+  imageClassName?: string;
 };
 
 const sizeConfig = {
@@ -35,12 +36,12 @@ const getTitleClassName = (hasDescription: boolean) =>
   });
 
 export const SimpleEmptyState = observer(function SimpleEmptyState(props: Props) {
-  const { title, description, size = "sm", assetPath } = props;
+  const { title, description, size = "sm", assetPath, imageClassName } = props;
 
   return (
     <div className="flex flex-col items-center gap-2.5 text-center">
       {assetPath && (
-        <div className={sizeConfig[size].container}>
+        <div className={cn(sizeConfig[size].container, imageClassName)}>
           <img src={assetPath} alt={title} className="h-full w-full object-contain" />
         </div>
       )}

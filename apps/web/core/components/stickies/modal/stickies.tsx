@@ -46,10 +46,10 @@ export const Stickies = observer(function Stickies(props: TProps) {
               toggleShowNewSticky(true);
               stickyOperations.create();
             }}
-            className="my-auto flex gap-1 text-13 font-medium text-accent-primary"
+            className="my-auto flex items-center gap-1.5 rounded bg-accent-primary px-3 py-1.5 text-14 font-medium text-white transition-colors hover:bg-accent-primary/90"
             disabled={creatingSticky}
           >
-            <PlusIcon className="my-auto size-4" /> <span>添加便签</span>
+            <PlusIcon className="my-auto size-4.5" /> <span>添加便签</span>
             {creatingSticky && (
               <div className="ml-2 flex items-center justify-center">
                 <div

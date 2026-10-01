@@ -31,6 +31,7 @@ type Props = {
   customPrimaryButton?: React.ReactNode;
   customSecondaryButton?: React.ReactNode;
   className?: string;
+  imageClassName?: string;
 };
 
 const sizeClasses = {
@@ -73,6 +74,7 @@ export const DetailedEmptyState = observer(function DetailedEmptyState(props: Pr
     customSecondaryButton,
     assetPath,
     className,
+    imageClassName,
   } = props;
 
   const hasButtons = primaryButton || secondaryButton || customPrimaryButton || customSecondaryButton;
@@ -90,7 +92,9 @@ export const DetailedEmptyState = observer(function DetailedEmptyState(props: Pr
           {description && <p className="text-13">{description}</p>}
         </div>
 
-        {assetPath && <img src={assetPath} alt={title} className="h-auto w-full" loading="lazy" />}
+        {assetPath && (
+          <img src={assetPath} alt={title} className={cn("h-auto w-full", imageClassName)} loading="lazy" />
+        )}
 
         {hasButtons && (
           <div className="relative flex w-full flex-shrink-0 items-center justify-center gap-2">

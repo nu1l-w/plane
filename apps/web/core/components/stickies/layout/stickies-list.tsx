@@ -20,8 +20,8 @@ import { useTranslation } from "@plane/i18n";
 import { PlusIcon } from "@plane/propel/icons";
 import { EUserWorkspaceRoles } from "@plane/types";
 // assets
-import darkStickiesAsset from "@/app/assets/empty-state/stickies/stickies-dark.webp?url";
-import lightStickiesAsset from "@/app/assets/empty-state/stickies/stickies-light.webp?url";
+import darkStickiesAsset from "@/app/assets/empty-state/stickies/sticky_note.png";
+import lightStickiesAsset from "@/app/assets/empty-state/stickies/sticky_note.png";
 import darkStickiesSearchAsset from "@/app/assets/empty-state/stickies/stickies-search-dark.webp?url";
 import lightStickiesSearchAsset from "@/app/assets/empty-state/stickies/stickies-search-light.webp?url";
 // components
@@ -44,6 +44,16 @@ type TStickiesLayout = {
 
 type TProps = TStickiesLayout & {
   columnCount: number;
+};
+
+const getColumnCount = (width: number | null): number => {
+  if (width === null) return 4;
+
+  if (width < 640) return 2; // sm
+  if (width < 850) return 3; // md
+  if (width < 1024) return 4; // lg
+  if (width < 1280) return 5; // xl
+  return 6; // 2xl and above
 };
 
 export const StickiesList = observer(function StickiesList(props: TProps) {
@@ -111,14 +121,17 @@ export const StickiesList = observer(function StickiesList(props: TProps) {
                 title={t("stickies.empty_state.search.title")}
                 description={t("stickies.empty_state.search.description")}
                 assetPath={stickiesSearchResolvedPath}
+                imageClassName="mx-auto w-60"
               />
             ) : (
               <DetailedEmptyState
                 title={t("stickies.empty_state.general.title")}
                 description={t("stickies.empty_state.general.description")}
                 assetPath={stickiesResolvedPath}
+                size="lg"
+                imageClassName="mx-auto w-60"
                 primaryButton={{
-                  prependIcon: <PlusIcon className="size-4" />,
+                  prependIcon: <PlusIcon className="size-5" />,
                   text: t("stickies.empty_state.general.primary_button.text"),
                   onClick: () => {
                     toggleShowNewSticky(true);
@@ -185,15 +198,6 @@ export function StickiesLayout(props: TStickiesLayout) {
     return () => resizeObserver.disconnect();
   }, []);
 
-  const getColumnCount = (width: number | null): number => {
-    if (width === null) return 4;
-
-    if (width < 640) return 2; // sm
-    if (width < 850) return 3; // md
-    if (width < 1024) return 4; // lg
-    if (width < 1280) return 5; // xl
-    return 6; // 2xl and above
-  };
   const columnCount = getColumnCount(containerWidth);
 
   return (

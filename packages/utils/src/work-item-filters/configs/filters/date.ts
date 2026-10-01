@@ -23,7 +23,7 @@ export const getStartDateFilterConfig =
   (params: TCreateDateFilterParams) =>
     createFilterConfig<P>({
       id: key,
-      label: "Start date",
+      label: params.label ?? "Start date",
       ...params,
       icon: params.filterIcon,
       allowMultipleFilters: true,
@@ -41,7 +41,7 @@ export const getTargetDateFilterConfig =
   (params: TCreateDateFilterParams) =>
     createFilterConfig<P>({
       id: key,
-      label: "Target date",
+      label: params.label ?? "Target date",
       ...params,
       icon: params.filterIcon,
       allowMultipleFilters: true,
@@ -59,7 +59,7 @@ export const getCreatedAtFilterConfig =
   (params: TCreateDateFilterParams) =>
     createFilterConfig<P>({
       id: key,
-      label: "Created at",
+      label: params.label ?? "Created at",
       ...params,
       icon: params.filterIcon,
       allowMultipleFilters: true,
@@ -77,7 +77,7 @@ export const getUpdatedAtFilterConfig =
   (params: TCreateDateFilterParams) =>
     createFilterConfig<P>({
       id: key,
-      label: "Updated at",
+      label: params.label ?? "Updated at",
       ...params,
       icon: params.filterIcon,
       allowMultipleFilters: true,
