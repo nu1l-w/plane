@@ -297,6 +297,24 @@ class TestProjectAPIGet(TestProjectBase):
         assert data[0]["identifier"] == "TP"
 
     @pytest.mark.django_db
+    def test_list_projects_includes_issue_type_feature_flag(self, session_client, workspace, create_user):
+        """The project summary must expose fields used to hydrate workspace-level work item views."""
+        project = Project.objects.create(
+            name="Typed Project",
+            identifier="TYP",
+            workspace=workspace,
+            is_issue_type_enabled=True,
+        )
+        ProjectMember.objects.create(project=project, member=create_user, role=20, is_active=True)
+
+        response = session_client.get(self.get_project_url(workspace.slug))
+
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        typed_project = next(item for item in data if item["id"] == str(project.id))
+        assert typed_project["is_issue_type_enabled"] is True
+
+    @pytest.mark.django_db
     def test_list_projects_authenticated_guest(self, session_client, workspace):
         """Test listing projects as workspace guest"""
         # Create a guest user

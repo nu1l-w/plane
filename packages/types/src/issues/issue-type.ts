@@ -4,11 +4,13 @@
  * See the LICENSE file for details.
  */
 
+import type { TLogoProps } from "../common";
+
 export type TWorkItemType = {
   id: string;
   name: string;
   description: string;
-  logo_props: Record<string, unknown>;
+  logo_props: Partial<TLogoProps>;
   is_epic: boolean;
   is_active: boolean;
   level: number;

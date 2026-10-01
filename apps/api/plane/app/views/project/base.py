@@ -185,6 +185,7 @@ class ProjectViewSet(BaseViewSet):
             "workspace",
             "cycle_view",
             "issue_views_view",
+            "is_issue_type_enabled",
             "module_view",
             "page_view",
             "inbox_view",

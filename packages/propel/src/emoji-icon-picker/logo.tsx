@@ -17,7 +17,7 @@ import { getEmojiSize, stringToEmoji } from "./helper";
 import { LUCIDE_ICONS_LIST } from "./lucide-icons";
 
 type Props = {
-  logo?: TLogoProps;
+  logo?: Partial<TLogoProps>;
   size?: number;
   type?: "lucide" | "material";
 };

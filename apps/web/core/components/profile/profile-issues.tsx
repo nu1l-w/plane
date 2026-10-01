@@ -20,6 +20,7 @@ import { WorkItemFiltersRow } from "@/components/work-item-filters/filters-row";
 // hooks
 import { useIssues } from "@/hooks/store/use-issues";
 import { IssuesStoreContext } from "@/hooks/use-issue-layout-store";
+import { useWorkspaceIssueProperties } from "@/hooks/use-workspace-issue-properties";
 
 type Props = {
   type: "assigned" | "subscribed" | "created" | "defects";
@@ -33,6 +34,7 @@ export const ProfileIssuesPage = observer(function ProfileIssuesPage(props: Prop
     issues: { setViewId },
     issuesFilter: { issueFilters, fetchFilters, updateFilterExpression },
   } = useIssues(EIssuesStoreType.PROFILE);
+  useWorkspaceIssueProperties(workspaceSlug);
   // derived values
   const activeLayout = issueFilters?.displayFilters?.layout || undefined;
 
