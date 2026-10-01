@@ -95,11 +95,11 @@ export const messages = (activity: TProjectActivity): { message: string | ReactN
   switch (activityType) {
     case "priority":
       const priorityMap: Record<string, string> = {
-        urgent: "紧急",
-        high: "高",
-        medium: "中",
-        low: "低",
-        none: "无",
+        urgent: "P0",
+        high: "P1",
+        medium: "P2",
+        low: "P3",
+        none: "P4",
       };
       const translatedPriority =
         newValue && priorityMap[newValue.toLowerCase()] ? priorityMap[newValue.toLowerCase()] : newValue || "无";

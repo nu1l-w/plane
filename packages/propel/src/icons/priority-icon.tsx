@@ -5,7 +5,6 @@
  */
 
 import * as React from "react";
-import { AlertCircle, Ban, SignalHigh, SignalLow, SignalMedium } from "lucide-react";
 import { cn } from "../utils";
 
 export type TIssuePriorities = "urgent" | "high" | "medium" | "low" | "none";
@@ -29,45 +28,37 @@ export function PriorityIcon(props: IPriorityIcon) {
     none: "bg-layer-2 text-priority-none border-priority-none",
   };
 
-  // get priority icon
-  const icons = {
-    urgent: AlertCircle,
-    high: SignalHigh,
-    medium: SignalMedium,
-    low: SignalLow,
-    none: Ban,
+  // priority labels
+  const priorityLabels = {
+    urgent: "P0",
+    high: "P1",
+    medium: "P2",
+    low: "P3",
+    none: "P4",
   };
-  const Icon = icons[priority ?? "none"];
 
-  if (!Icon) return null;
+  const label = priorityLabels[priority ?? "none"];
 
   return (
     <>
       {withContainer ? (
         <div
           className={cn(
-            "flex flex-shrink-0 items-center justify-center rounded-sm border p-0.5",
+            "flex flex-shrink-0 items-center justify-center rounded-sm border p-0.5 font-bold",
             priorityClasses[priority ?? "none"],
             containerClassName
           )}
+          style={{ width: size + 4, height: size + 4 }}
         >
-          <Icon
-            size={size}
-            className={cn(
-              {
-                "translate-x-[0.0625rem]": priority === "high",
-                "translate-x-0.5": priority === "medium",
-                "translate-x-1": priority === "low",
-              },
-              className
-            )}
-          />
+          <span style={{ fontSize: `${size * 0.7}px`, lineHeight: 1 }} className={cn("flex-shrink-0", className)}>
+            {label}
+          </span>
         </div>
       ) : (
-        <Icon
-          size={size}
+        <span
+          style={{ fontSize: `${size * 0.8}px`, width: size, height: size, lineHeight: 1 }}
           className={cn(
-            "flex-shrink-0",
+            "flex flex-shrink-0 items-center justify-center font-bold",
             {
               "text-priority-urgent": priority === "urgent",
               "text-priority-high": priority === "high",
@@ -77,7 +68,9 @@ export function PriorityIcon(props: IPriorityIcon) {
             },
             className
           )}
-        />
+        >
+          {label}
+        </span>
       )}
     </>
   );

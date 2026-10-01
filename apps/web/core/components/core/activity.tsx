@@ -565,11 +565,11 @@ const activityDetails: {
   priority: {
     message: (activity, showIssue) => {
       const priorityMap: Record<string, string> = {
-        urgent: "紧急",
-        high: "高",
-        medium: "中",
-        low: "低",
-        none: "无",
+        urgent: "P0",
+        high: "P1",
+        medium: "P2",
+        low: "P3",
+        none: "P4",
       };
       const translatedPriority =
         activity.new_value && priorityMap[activity.new_value.toLowerCase()]

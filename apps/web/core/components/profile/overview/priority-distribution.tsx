@@ -10,7 +10,6 @@ import { BarChart } from "@plane/propel/charts/bar-chart";
 import { EmptyStateCompact } from "@plane/propel/empty-state";
 import type { IUserProfileData } from "@plane/types";
 import { Loader, Card } from "@plane/ui";
-import { capitalizeFirstLetter } from "@plane/utils";
 
 type Props = {
   userProfile: IUserProfileData | undefined;
@@ -25,11 +24,11 @@ const priorityColors = {
 };
 
 const priorityLabels: Record<string, string> = {
-  urgent: "紧急",
-  high: "高",
-  medium: "中",
-  low: "低",
-  none: "未设置",
+  urgent: "P0",
+  high: "P1",
+  medium: "P2",
+  low: "P3",
+  none: "P4",
 };
 
 export function ProfilePriorityDistribution({ userProfile }: Props) {

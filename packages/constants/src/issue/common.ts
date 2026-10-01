@@ -33,9 +33,9 @@ export enum EIssueGroupByToServerOptions {
   "cycle" = "cycle_id",
   "module" = "issue_module__module_id",
   "target_date" = "target_date",
+  // oxlint-disable-next-line typescript-eslint/no-duplicate-enum-values -- Both UI groupings map to the server's project_id value.
   "project" = "project_id",
   "created_by" = "created_by",
-  // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
   "team_project" = "project_id",
 }
 
@@ -70,23 +70,23 @@ export const ISSUE_PRIORITIES: {
 }[] = [
   {
     key: "urgent",
-    title: "紧急",
+    title: "P0",
   },
   {
     key: "high",
-    title: "高",
+    title: "P1",
   },
   {
     key: "medium",
-    title: "中",
+    title: "P2",
   },
   {
     key: "low",
-    title: "低",
+    title: "P3",
   },
   {
     key: "none",
-    title: "无",
+    title: "P4",
   },
 ];
 
@@ -296,9 +296,9 @@ export const SPREADSHEET_PROPERTY_DETAILS: {
   priority: {
     i18n_title: "common.priority",
     ascendingOrderKey: "priority",
-    ascendingOrderTitle: "无",
+    ascendingOrderTitle: "P4",
     descendingOrderKey: "-priority",
-    descendingOrderTitle: "紧急",
+    descendingOrderTitle: "P0",
     icon: "PriorityPropertyIcon",
   },
   start_date: {
