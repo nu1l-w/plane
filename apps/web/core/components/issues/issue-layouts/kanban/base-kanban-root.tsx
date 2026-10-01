@@ -12,6 +12,7 @@ import { autoScrollForElements } from "@atlaskit/pragmatic-drag-and-drop-auto-sc
 import { observer } from "mobx-react";
 import { useParams } from "next/navigation";
 import { EIssueFilterType, EUserPermissions, EUserPermissionsLevel } from "@plane/constants";
+import { useTranslation } from "@plane/i18n";
 import type { EIssuesStoreType } from "@plane/types";
 import { EIssueServiceType, EIssueLayoutTypes } from "@plane/types";
 //hooks
@@ -61,6 +62,7 @@ export const BaseKanBanRoot = observer(function BaseKanBanRoot(props: IBaseKanBa
     viewId,
     isEpic = false,
   } = props;
+  const { t } = useTranslation();
   // router
   const { workspaceSlug, projectId } = useParams();
   // store hooks
@@ -105,7 +107,7 @@ export const BaseKanBanRoot = observer(function BaseKanBanRoot(props: IBaseKanBa
         fetchNextIssues(groupId, subgroupId);
       }
     },
-    [fetchNextIssues]
+    [fetchNextIssues, issues]
   );
 
   const groupedIssueIds = issues?.groupedIssueIds;
@@ -130,9 +132,11 @@ export const BaseKanBanRoot = observer(function BaseKanBanRoot(props: IBaseKanBa
   const handleOnDrop = useGroupIssuesDragNDrop(storeType, orderBy, group_by, sub_group_by);
 
   const canEditProperties = useCallback(
-    (projectId: string | undefined) => {
+    (targetProjectId: string | undefined) => {
       const isEditingAllowedBasedOnProject =
-        canEditPropertiesBasedOnProject && projectId ? canEditPropertiesBasedOnProject(projectId) : isEditingAllowed;
+        canEditPropertiesBasedOnProject && targetProjectId
+          ? canEditPropertiesBasedOnProject(targetProjectId)
+          : isEditingAllowed;
 
       return enableInlineEditing && isEditingAllowedBasedOnProject;
     },
@@ -256,7 +260,7 @@ export const BaseKanBanRoot = observer(function BaseKanBanRoot(props: IBaseKanBa
             isDragOverDelete ? "bg-danger-primary blur-2xl" : ""
           } transition duration-300`}
         >
-          Drop here to delete the work item.
+          {t("entity.drop_here_to_delete", { entity: t(isEpic ? "epic" : "work_item").toLocaleLowerCase() })}
         </div>
       </div>
       <IssueLayoutHOC layout={EIssueLayoutTypes.KANBAN}>

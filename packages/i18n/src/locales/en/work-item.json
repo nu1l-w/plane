@@ -187,6 +187,7 @@
       "relates_to": "Relates to",
       "duplicate": "Duplicate of",
       "blocked_by": "Blocked by",
+      "blocked": "Blocked",
       "blocking": "Blocking",
       "start_before": "Starts Before",
       "start_after": "Starts After",

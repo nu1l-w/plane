@@ -735,6 +735,7 @@
     "priority": "{entity}优先级",
     "all": "所有{entity}",
     "drop_here_to_move": "拖放到此处以移动{entity}",
+    "drop_here_to_delete": "拖放到此处以删除{entity}。",
     "delete": {
       "label": "删除{entity}",
       "success": "{entity}删除成功",

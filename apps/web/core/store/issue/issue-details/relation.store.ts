@@ -249,9 +249,9 @@ export class IssueRelationStore implements IIssueRelationStore {
       // While removing one relation, reverse of the relation should also be removed
       const reverseRelatedType = REVERSE_RELATIONS[relationType];
       const relatedIndex = this.relationMap[related_issue]?.[reverseRelatedType]?.findIndex(
-        (_issueId) => _issueId === related_issue
+        (_issueId) => _issueId === issueId
       );
-      if (relationIndex >= 0)
+      if (relatedIndex >= 0)
         runInAction(() => {
           this.relationMap[related_issue]?.[reverseRelatedType]?.splice(relatedIndex, 1);
         });
@@ -273,6 +273,9 @@ export class IssueRelationStore implements IIssueRelationStore {
       runInAction(() => {
         for (const issue of issues) {
           const { issue_relation, issue_related, id: issueId } = issue;
+
+          // Responses from layouts without expanded relations must not clear known relations.
+          if (issue_relation === undefined && issue_related === undefined) continue;
 
           const issueRelations: { [key in TIssueRelationTypes]?: string[] } = {};
 
@@ -300,6 +303,9 @@ export class IssueRelationStore implements IIssueRelationStore {
             }
           }
 
+          for (const key of Object.keys(issueRelations) as TIssueRelationTypes[]) {
+            issueRelations[key] = uniq(issueRelations[key]);
+          }
           set(this.relationMap, [issueId], issueRelations);
         }
       });

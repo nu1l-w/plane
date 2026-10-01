@@ -119,7 +119,10 @@ export class IssueFilterHelperStore implements IIssueFilterHelperStore {
 
     if (displayFilters?.layout) issueFiltersParams.layout = displayFilters?.layout;
 
-    if (ENABLE_ISSUE_DEPENDENCIES && displayFilters?.layout === EIssueLayoutTypes.GANTT)
+    if (
+      displayFilters?.layout === EIssueLayoutTypes.KANBAN ||
+      (ENABLE_ISSUE_DEPENDENCIES && displayFilters?.layout === EIssueLayoutTypes.GANTT)
+    )
       issueFiltersParams["expand"] = "issue_relation,issue_related";
 
     return issueFiltersParams;

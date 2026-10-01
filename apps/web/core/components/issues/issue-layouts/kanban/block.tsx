@@ -34,6 +34,7 @@ import { usePlatformOS } from "@/hooks/use-platform-os";
 // local components
 import type { TRenderQuickActions } from "../list/list-view-types";
 import { IssueProperties } from "../properties/all-properties";
+import { KanbanBlockedBadge } from "./blocked-badge";
 
 interface IssueBlockProps {
   issueId: string;
@@ -125,6 +126,8 @@ const KanbanIssueDetailsBlock = observer(function KanbanIssueDetailsBlock(props:
           <span>{issue.name}</span>
         </div>
       </Tooltip>
+
+      <KanbanBlockedBadge issue={issue} isEpic={isEpic} />
 
       <IssueProperties
         className="flex flex-wrap items-center gap-2 pt-1.5 whitespace-nowrap text-tertiary"

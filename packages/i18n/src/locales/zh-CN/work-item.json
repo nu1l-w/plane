@@ -187,6 +187,7 @@
       "relates_to": "关联到",
       "duplicate": "重复于",
       "blocked_by": "被阻止于",
+      "blocked": "被阻塞",
       "blocking": "阻止",
       "start_before": "开始于之前",
       "start_after": "开始于之后",

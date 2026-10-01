@@ -85,6 +85,8 @@ type IssueRelation = {
   project_id: string;
   relation_type: TIssueRelationTypes;
   sequence_id: number;
+  state_id?: string | null;
+  state__group?: TStateGroups | null;
 };
 
 export type TIssue = TBaseIssue & {

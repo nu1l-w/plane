@@ -156,7 +156,11 @@ class CycleIssueViewSet(BaseViewSet):
                         queryset=issue_queryset,
                         total_count_queryset=total_issue_queryset,
                         on_results=lambda issues: issue_on_results(
-                            group_by=group_by, issues=issues, sub_group_by=sub_group_by
+                            group_by=group_by,
+                            issues=issues,
+                            sub_group_by=sub_group_by,
+                            expand=self.expand,
+                            user=request.user,
                         ),
                         paginator_cls=SubGroupedOffsetPaginator,
                         group_by_fields=issue_group_values(
@@ -191,7 +195,11 @@ class CycleIssueViewSet(BaseViewSet):
                     queryset=issue_queryset,
                     total_count_queryset=total_issue_queryset,
                     on_results=lambda issues: issue_on_results(
-                        group_by=group_by, issues=issues, sub_group_by=sub_group_by
+                        group_by=group_by,
+                        issues=issues,
+                        sub_group_by=sub_group_by,
+                        expand=self.expand,
+                        user=request.user,
                     ),
                     paginator_cls=GroupedOffsetPaginator,
                     group_by_fields=issue_group_values(
@@ -217,7 +225,13 @@ class CycleIssueViewSet(BaseViewSet):
                 request=request,
                 queryset=issue_queryset,
                 total_count_queryset=total_issue_queryset,
-                on_results=lambda issues: issue_on_results(group_by=group_by, issues=issues, sub_group_by=sub_group_by),
+                on_results=lambda issues: issue_on_results(
+                    group_by=group_by,
+                    issues=issues,
+                    sub_group_by=sub_group_by,
+                    expand=self.expand,
+                    user=request.user,
+                ),
             )
 
     @allow_permission([ROLE.ADMIN, ROLE.MEMBER])

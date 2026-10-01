@@ -5,7 +5,7 @@
 # Django imports
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.fields import ArrayField
-from django.db.models import Q, UUIDField, Value, QuerySet, OuterRef, Subquery
+from django.db.models import F, Q, UUIDField, Value, QuerySet, OuterRef, Subquery
 from django.db.models.functions import Coalesce
 
 # Module imports
@@ -21,6 +21,7 @@ from plane.db.models import (
     IssueAssignee,
     ModuleIssue,
     IssueLabel,
+    IssueRelation,
 )
 from typing import Optional, Dict, Tuple, Any, Union, List
 
@@ -94,6 +95,8 @@ def issue_on_results(
     issues: QuerySet[Issue],
     group_by: Optional[str],
     sub_group_by: Optional[str],
+    expand=None,
+    user=None,
 ) -> List[Dict[str, Any]]:
     FIELD_MAPPER: Dict[str, str] = {
         "labels__id": "label_ids",
@@ -138,7 +141,79 @@ def issue_on_results(
         original_list.append(sub_group_by)
 
     required_fields.extend(original_list)
-    return list(issues.values(*required_fields))
+    results = list(issues.values(*required_fields))
+    expand_issue_relations(results, expand, user)
+    return results
+
+
+def expand_issue_relations(results, expand, user):
+    """Batch-load visible relations for the current page, before grouping it."""
+    fields = set(expand or []) & {"issue_relation", "issue_related"}
+    if not results or not fields or user is None or not user.is_authenticated:
+        return
+
+    rows_by_id = {}
+    for row in results:
+        rows_by_id.setdefault(row["id"], []).append(row)
+        for field in fields:
+            row[field] = []
+
+    memberships = ProjectMember.objects.filter(
+        member=user,
+        is_active=True,
+        workspace_id__in=WorkspaceMember.objects.filter(member=user, is_active=True).values("workspace_id"),
+    )
+    restricted_projects = memberships.filter(role=5, project__guest_view_all_features=False).values("project_id")
+    visible_issues = Issue.issue_objects.filter(project_id__in=memberships.values("project_id")).filter(
+        ~Q(project_id__in=restricted_projects) | Q(created_by=user)
+    )
+    relations = (
+        IssueRelation.objects.filter(
+            Q(issue_id__in=rows_by_id) | Q(related_issue_id__in=rows_by_id),
+            issue_id__in=visible_issues.values("id"),
+            related_issue_id__in=visible_issues.values("id"),
+            issue__workspace_id=F("workspace_id"),
+            related_issue__workspace_id=F("workspace_id"),
+        )
+        .select_related("issue__state", "related_issue__state")
+        .only(
+            "issue_id",
+            "related_issue_id",
+            "relation_type",
+            "issue__id",
+            "issue__name",
+            "issue__project_id",
+            "issue__sequence_id",
+            "issue__state_id",
+            "issue__state__group",
+            "related_issue__id",
+            "related_issue__name",
+            "related_issue__project_id",
+            "related_issue__sequence_id",
+            "related_issue__state_id",
+            "related_issue__state__group",
+        )
+        .order_by("id")
+    )
+    for relation in relations:
+        for field, source_id, target in (
+            ("issue_relation", relation.issue_id, relation.related_issue),
+            ("issue_related", relation.related_issue_id, relation.issue),
+        ):
+            if field not in fields:
+                continue
+            for row in rows_by_id.get(source_id, []):
+                row[field].append(
+                    {
+                        "id": target.id,
+                        "name": target.name,
+                        "project_id": target.project_id,
+                        "sequence_id": target.sequence_id,
+                        "relation_type": relation.relation_type,
+                        "state_id": target.state_id,
+                        "state__group": target.state.group if target.state else None,
+                    }
+                )
 
 
 def issue_group_values(

@@ -735,6 +735,7 @@
     "priority": "{entity} Priority",
     "all": "All {entity}",
     "drop_here_to_move": "Drop here to move the {entity}",
+    "drop_here_to_delete": "Drop here to delete the {entity}.",
     "delete": {
       "label": "Delete {entity}",
       "success": "{entity} deleted successfully",
