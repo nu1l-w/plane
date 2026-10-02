@@ -10,8 +10,11 @@ import { HydratedRouter } from "react-router/dom";
 
 import polyfills from "@/lib/polyfills";
 import { isStaleAssetErrorMessage, recoverFromStaleAsset } from "@/lib/stale-asset-error";
+import { detachUnexpectedDocumentElements } from "./hydration";
 
 void polyfills;
+
+detachUnexpectedDocumentElements();
 
 // Production-only: in dev these errors come from the dev server itself (restarts,
 // stale optimized deps) and auto-reloading would mask them.

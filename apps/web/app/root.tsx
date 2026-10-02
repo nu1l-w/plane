@@ -4,6 +4,7 @@
  * See the LICENSE file for details.
  */
 
+import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import Script from "next/script";
 import { Links, Meta, Outlet, Scripts } from "react-router";
@@ -28,6 +29,7 @@ import { LogoSpinner } from "@/components/common/logo-spinner";
 import { isStaleAssetError, recoverFromStaleAsset } from "@/lib/stale-asset-error";
 // local
 import { CustomErrorComponent } from "./error";
+import { restoreUnexpectedDocumentElements } from "./hydration";
 import { AppProvider } from "./provider";
 // fonts
 // oxlint-disable-next-line eslint-plugin-import/no-unassigned-import -- Font CSS must load globally for its side effects.
@@ -61,6 +63,10 @@ export const links: LinksFunction = () => [
 
 export function Layout({ children }: { children: ReactNode }) {
   const isSessionRecorderEnabled = parseInt(process.env.VITE_ENABLE_SESSION_RECORDER || "0");
+
+  useEffect(() => {
+    restoreUnexpectedDocumentElements();
+  }, []);
 
   return (
     <html lang="zh-CN" suppressHydrationWarning>
@@ -134,9 +140,15 @@ export default function Root() {
 }
 
 export function HydrateFallback() {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   return (
     <div className="relative flex h-screen w-full items-center justify-center bg-canvas">
-      <LogoSpinner />
+      {isMounted && <LogoSpinner />}
     </div>
   );
 }

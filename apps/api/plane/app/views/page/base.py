@@ -506,8 +506,19 @@ class WorkspacePageViewSet(BaseViewSet):
             workspace__slug=self.kwargs.get("slug"),
             is_global=True,
             parent__isnull=True,
-            archived_at__isnull=True,
         )
+
+        if self.action == "list":
+            page_type = self.request.query_params.get("type")
+            if page_type == "archived":
+                queryset = queryset.filter(archived_at__isnull=False)
+            else:
+                queryset = queryset.filter(archived_at__isnull=True)
+                if page_type == "public":
+                    queryset = queryset.filter(access=Page.PUBLIC_ACCESS)
+                elif page_type == "private":
+                    queryset = queryset.filter(access=Page.PRIVATE_ACCESS)
+
         if membership and membership.role != ROLE.ADMIN.value:
             queryset = queryset.filter(Q(owned_by=self.request.user) | Q(access=Page.PUBLIC_ACCESS))
 
@@ -604,6 +615,40 @@ class WorkspacePageViewSet(BaseViewSet):
                 page_id=page_id,
             )
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def archive(self, request, slug, page_id):
+        page = self.get_object()
+        archived_at = timezone.now()
+        page.archived_at = archived_at
+        page.save(update_fields=["archived_at", "updated_at"])
+        return Response({"archived_at": str(archived_at)}, status=status.HTTP_200_OK)
+
+    def unarchive(self, request, slug, page_id):
+        page = self.get_object()
+        page.archived_at = None
+        page.save(update_fields=["archived_at", "updated_at"])
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def destroy(self, request, slug, page_id):
+        page = self.get_object()
+        if page.archived_at is None:
+            return Response(
+                {"error": "The page should be archived before deleting"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        page.delete()
+        UserFavorite.objects.filter(
+            workspace__slug=slug,
+            entity_identifier=page_id,
+            entity_type="page",
+        ).delete()
+        UserRecentVisit.objects.filter(
+            workspace__slug=slug,
+            entity_identifier=page_id,
+            entity_name="page",
+        ).delete(soft=False)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     def move(self, request, slug, page_id):
         page = self.get_object()

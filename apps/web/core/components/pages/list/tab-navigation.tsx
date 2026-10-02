@@ -5,6 +5,7 @@
  */
 
 import Link from "next/link";
+import { useTranslation } from "@plane/i18n";
 // types
 import type { TPageNavigationTabs } from "@plane/types";
 // helpers
@@ -12,28 +13,15 @@ import { cn } from "@plane/utils";
 
 type TPageTabNavigation = {
   workspaceSlug: string;
-  projectId: string;
+  projectId?: string;
   pageType: TPageNavigationTabs;
 };
 
-// pages tab options
-const pageTabs: { key: TPageNavigationTabs; label: string }[] = [
-  {
-    key: "public",
-    label: "Public",
-  },
-  {
-    key: "private",
-    label: "Private",
-  },
-  {
-    key: "archived",
-    label: "Archived",
-  },
-];
+const pageTabs: TPageNavigationTabs[] = ["public", "private", "archived"];
 
 export function PageTabNavigation(props: TPageTabNavigation) {
   const { workspaceSlug, projectId, pageType } = props;
+  const { t } = useTranslation();
 
   const handleTabClick = (e: React.MouseEvent<HTMLAnchorElement>, tabKey: TPageNavigationTabs) => {
     if (tabKey === pageType) e.preventDefault();
@@ -43,21 +31,25 @@ export function PageTabNavigation(props: TPageTabNavigation) {
     <div className="relative flex h-full items-center">
       {pageTabs.map((tab) => (
         <Link
-          key={tab.key}
-          href={`/${workspaceSlug}/projects/${projectId}/pages?type=${tab.key}`}
-          onClick={(e) => handleTabClick(e, tab.key)}
+          key={tab}
+          href={
+            projectId
+              ? `/${workspaceSlug}/projects/${projectId}/pages?type=${tab}`
+              : `/${workspaceSlug}/pages?type=${tab}`
+          }
+          onClick={(e) => handleTabClick(e, tab)}
           className="flex h-full flex-col"
         >
           <div
             className={cn(`flex flex-1 items-center justify-center px-4 text-13 font-medium transition-all`, {
-              "text-accent-primary": tab.key === pageType,
+              "text-accent-primary": tab === pageType,
             })}
           >
-            {tab.label}
+            {t(tab === "archived" ? "archived" : tab)}
           </div>
           <div
             className={cn(`w-full rounded-t border-t-2 border-transparent transition-all`, {
-              "border-accent-strong": tab.key === pageType,
+              "border-accent-strong": tab === pageType,
             })}
           />
         </Link>

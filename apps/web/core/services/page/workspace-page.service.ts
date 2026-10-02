@@ -5,7 +5,7 @@
  */
 
 import { API_BASE_URL } from "@plane/constants";
-import type { TDocumentPayload, TPage } from "@plane/types";
+import type { TDocumentPayload, TPage, TPageNavigationTabs } from "@plane/types";
 import { APIService } from "@/services/api.service";
 
 export class WorkspacePageService extends APIService {
@@ -13,8 +13,10 @@ export class WorkspacePageService extends APIService {
     super(API_BASE_URL);
   }
 
-  async fetchAll(workspaceSlug: string): Promise<TPage[]> {
-    return this.get(`/api/workspaces/${workspaceSlug}/pages/`)
+  async fetchAll(workspaceSlug: string, pageType?: TPageNavigationTabs): Promise<TPage[]> {
+    return this.get(`/api/workspaces/${workspaceSlug}/pages/`, {
+      params: pageType ? { type: pageType } : undefined,
+    })
       .then((response) => response?.data)
       .catch((error) => {
         throw error?.response?.data;
@@ -39,6 +41,30 @@ export class WorkspacePageService extends APIService {
 
   async update(workspaceSlug: string, pageId: string, data: Partial<TPage>): Promise<TPage> {
     return this.patch(`/api/workspaces/${workspaceSlug}/pages/${pageId}/`, data)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  async archive(workspaceSlug: string, pageId: string): Promise<{ archived_at: string }> {
+    return this.post(`/api/workspaces/${workspaceSlug}/pages/${pageId}/archive/`)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  async restore(workspaceSlug: string, pageId: string): Promise<void> {
+    return this.delete(`/api/workspaces/${workspaceSlug}/pages/${pageId}/archive/`)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  async remove(workspaceSlug: string, pageId: string): Promise<void> {
+    return this.delete(`/api/workspaces/${workspaceSlug}/pages/${pageId}/`)
       .then((response) => response?.data)
       .catch((error) => {
         throw error?.response?.data;

@@ -5,44 +5,55 @@
  */
 
 import { observer } from "mobx-react";
-import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import useSWR from "swr";
-import { LockKeyhole } from "lucide-react";
 import { EUserPermissionsLevel, EPageAccess } from "@plane/constants";
 import { useTranslation } from "@plane/i18n";
+import { EmptyStateDetailed } from "@plane/propel/empty-state";
 import { PageIcon } from "@plane/propel/icons";
 import { Button } from "@plane/propel/button";
+import type { TPageNavigationTabs } from "@plane/types";
 import { EUserWorkspaceRoles } from "@plane/types";
 import { Breadcrumbs, Header } from "@plane/ui";
-import { getPageName } from "@plane/utils";
 import { AppHeader } from "@/components/core/app-header";
 import { ContentWrapper } from "@/components/core/content-wrapper";
+import { ListLayout } from "@/components/core/list";
 import { PageHead } from "@/components/core/page-title";
 import { BreadcrumbLink } from "@/components/common/breadcrumb-link";
+import { PageListBlock } from "@/components/pages/list/block";
+import { PageTabNavigation } from "@/components/pages/list/tab-navigation";
 import { EPageStoreType, usePageStore } from "@/hooks/store";
 import { useUserPermissions } from "@/hooks/store/user";
 import { useAppRouter } from "@/hooks/use-app-router";
 
+const getPageType = (pageType?: string | null): TPageNavigationTabs => {
+  if (pageType === "private") return "private";
+  if (pageType === "archived") return "archived";
+  return "public";
+};
+
 function WorkspacePagesPage() {
   const { workspaceSlug } = useParams();
+  const searchParams = useSearchParams();
   const slug = workspaceSlug.toString();
+  const pageType = getPageType(searchParams.get("type"));
   const router = useAppRouter();
   const { t } = useTranslation();
-  const { fetchWorkspacePages, createWorkspacePage } = usePageStore(EPageStoreType.PROJECT);
+  const { fetchWorkspacePages, createWorkspacePage, getWorkspacePageIdsByTab } = usePageStore(EPageStoreType.PROJECT);
   const { allowPermissions } = useUserPermissions();
+  const pageIds = getWorkspacePageIdsByTab(slug, pageType);
   const canCreatePage = allowPermissions(
     [EUserWorkspaceRoles.ADMIN, EUserWorkspaceRoles.MEMBER],
     EUserPermissionsLevel.WORKSPACE,
     slug
   );
 
-  const { data: pages = [], isLoading } = useSWR(`WORKSPACE_PAGES_${slug}`, () => fetchWorkspacePages(slug));
+  const { isLoading } = useSWR(`WORKSPACE_PAGES_${slug}_${pageType}`, () => fetchWorkspacePages(slug, pageType));
 
   const handleCreatePage = async () => {
     const page = await createWorkspacePage(slug, {
       name: "",
-      access: EPageAccess.PUBLIC,
+      access: pageType === "private" ? EPageAccess.PRIVATE : EPageAccess.PUBLIC,
       description_html: "<p></p>",
       description_json: {},
     });
@@ -64,7 +75,7 @@ function WorkspacePagesPage() {
             {canCreatePage && (
               <Header.RightItem>
                 <Button variant="primary" size="lg" onClick={handleCreatePage}>
-                  {t("workspace_pages.empty_state.public.primary_button.text")}
+                  {t("workspace_pages.create_page")}
                 </Button>
               </Header.RightItem>
             )}
@@ -73,40 +84,38 @@ function WorkspacePagesPage() {
       />
       <ContentWrapper>
         <PageHead title={t("sidebar.pages")} />
-        <div className="mx-auto w-full max-w-4xl py-6">
-          {isLoading ? (
-            <div className="py-8 text-center text-secondary">{t("common.loading")}</div>
-          ) : pages.length === 0 ? (
-            <div className="flex flex-col items-center gap-4 py-16 text-center">
-              <PageIcon className="h-8 w-8 text-tertiary" />
-              <div>
-                <h2 className="text-16 font-medium">{t("workspace_pages.empty_state.public.title")}</h2>
-                <p className="mt-1 text-13 text-secondary">{t("workspace_pages.empty_state.public.description")}</p>
-              </div>
-              {canCreatePage && (
-                <Button variant="primary" onClick={handleCreatePage}>
-                  {t("workspace_pages.empty_state.public.primary_button.text")}
-                </Button>
-              )}
-            </div>
-          ) : (
-            <div className="divide-y divide-subtle">
-              {pages.map((page) => (
-                <Link
-                  key={page.id}
-                  href={`/${slug}/pages/${page.id}`}
-                  className="flex items-center gap-3 py-4 text-13 hover:text-accent-primary"
-                >
-                  {page.access === EPageAccess.PRIVATE ? (
-                    <LockKeyhole className="h-4 w-4 text-tertiary" />
-                  ) : (
-                    <PageIcon className="h-4 w-4 text-tertiary" />
-                  )}
-                  <span>{getPageName(page.name)}</span>
-                </Link>
-              ))}
-            </div>
-          )}
+        <div className="flex h-full w-full flex-col overflow-hidden">
+          <div className="h-12 flex-shrink-0 border-b border-subtle px-4">
+            <PageTabNavigation workspaceSlug={slug} pageType={pageType} />
+          </div>
+          <div className="h-full w-full overflow-hidden">
+            {isLoading ? (
+              <div className="py-8 text-center text-secondary">{t("common.loading")}</div>
+            ) : pageIds.length === 0 ? (
+              <EmptyStateDetailed
+                assetKey="page"
+                title={t(`workspace_pages.empty_state.${pageType}.title`)}
+                description={t(`workspace_pages.empty_state.${pageType}.description`)}
+                actions={
+                  pageType !== "archived" && canCreatePage
+                    ? [
+                        {
+                          label: t("workspace_pages.create_page"),
+                          onClick: handleCreatePage,
+                          variant: "primary",
+                        },
+                      ]
+                    : undefined
+                }
+              />
+            ) : (
+              <ListLayout>
+                {pageIds.map((pageId) => (
+                  <PageListBlock key={pageId} pageId={pageId} storeType={EPageStoreType.PROJECT} />
+                ))}
+              </ListLayout>
+            )}
+          </div>
         </div>
       </ContentWrapper>
     </>

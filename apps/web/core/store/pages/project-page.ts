@@ -58,14 +58,14 @@ export class ProjectPage extends BasePage implements TProjectPage {
         await projectPageService.unlock(workspaceSlug, projectId, page.id);
       },
       archive: async () => {
-        if (isWorkspacePage) throw new Error("Archiving workspace pages is not available yet.");
-        if (!workspaceSlug || !projectId || !page.id) throw new Error("Missing required fields.");
-        return await projectPageService.archive(workspaceSlug, projectId, page.id);
+        if (!workspaceSlug || !page.id || (!isWorkspacePage && !projectId)) throw new Error("Missing required fields.");
+        if (isWorkspacePage) return await workspacePageService.archive(workspaceSlug, page.id);
+        return await projectPageService.archive(workspaceSlug, projectId!, page.id);
       },
       restore: async () => {
-        if (isWorkspacePage) throw new Error("Archiving workspace pages is not available yet.");
-        if (!workspaceSlug || !projectId || !page.id) throw new Error("Missing required fields.");
-        await projectPageService.restore(workspaceSlug, projectId, page.id);
+        if (!workspaceSlug || !page.id || (!isWorkspacePage && !projectId)) throw new Error("Missing required fields.");
+        if (isWorkspacePage) return await workspacePageService.restore(workspaceSlug, page.id);
+        await projectPageService.restore(workspaceSlug, projectId!, page.id);
       },
       duplicate: async () => {
         if (isWorkspacePage) throw new Error("Duplicating workspace pages is not available yet.");
@@ -166,7 +166,7 @@ export class ProjectPage extends BasePage implements TProjectPage {
    * @description returns true if the current logged in user can archive the page
    */
   get canCurrentUserArchivePage() {
-    if (this.is_global) return false;
+    if (this.is_global) return this.isWorkspacePageOwnerOrAdmin;
     const highestRole = this.getHighestRoleAcrossProjects();
     return this.isCurrentUserOwner || highestRole === EUserPermissions.ADMIN;
   }
@@ -175,7 +175,7 @@ export class ProjectPage extends BasePage implements TProjectPage {
    * @description returns true if the current logged in user can delete the page
    */
   get canCurrentUserDeletePage() {
-    if (this.is_global) return false;
+    if (this.is_global) return this.isWorkspacePageOwnerOrAdmin;
     const highestRole = this.getHighestRoleAcrossProjects();
     return this.isCurrentUserOwner || highestRole === EUserPermissions.ADMIN;
   }

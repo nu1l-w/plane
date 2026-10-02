@@ -287,6 +287,7 @@
     }
   },
   "workspace_pages": {
+    "create_page": "Create page",
     "empty_state": {
       "general": {
         "title": "Write a note, a doc, or a full knowledge base. Get Galileo, Plane's AI assistant, to help you get started",

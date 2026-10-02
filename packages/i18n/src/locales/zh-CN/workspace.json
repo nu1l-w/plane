@@ -287,6 +287,7 @@
     }
   },
   "workspace_pages": {
+    "create_page": "创建页面",
     "empty_state": {
       "general": {
         "title": "写笔记、文档或完整的知识库。让 Galileo，Plane 的 AI 助手，帮助您开始",

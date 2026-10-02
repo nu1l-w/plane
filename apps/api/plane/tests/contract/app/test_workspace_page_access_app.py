@@ -5,6 +5,7 @@
 import json
 
 import pytest
+from django.utils import timezone
 from rest_framework import status
 
 from plane.bgtasks.page_version_task import track_page_version
@@ -25,6 +26,10 @@ def _page_version_url(slug, page_id, version_id):
 
 def _page_move_url(slug, page_id):
     return f"{_page_url(slug, page_id)}move/"
+
+
+def _page_archive_url(slug, page_id):
+    return f"{_page_url(slug, page_id)}archive/"
 
 
 def _make_project(workspace, identifier):
@@ -133,6 +138,68 @@ class TestWorkspacePageAccess:
         assert update_response.status_code == status.HTTP_200_OK
         page.refresh_from_db()
         assert page.name == "Admin edit"
+
+    @pytest.mark.django_db
+    def test_owner_can_filter_workspace_pages_by_type(self, api_client, workspace):
+        owner = User.objects.create(email="wiki-owner@plane.so", username="wiki_owner")
+        WorkspaceMember.objects.create(workspace=workspace, member=owner, role=15, is_active=True)
+        public_page = _make_page(workspace, owner, "Public")
+        private_page = _make_page(workspace, owner, "Private", Page.PRIVATE_ACCESS)
+        archived_page = _make_page(workspace, owner, "Archived")
+        archived_page.archived_at = timezone.now()
+        archived_page.save(update_fields=["archived_at"])
+        api_client.force_authenticate(user=owner)
+
+        public_response = api_client.get(f"{_pages_url(workspace.slug)}?type=public")
+        private_response = api_client.get(f"{_pages_url(workspace.slug)}?type=private")
+        archived_response = api_client.get(f"{_pages_url(workspace.slug)}?type=archived")
+
+        assert public_response.status_code == status.HTTP_200_OK
+        assert private_response.status_code == status.HTTP_200_OK
+        assert archived_response.status_code == status.HTTP_200_OK
+        assert {item["id"] for item in public_response.json()} == {str(public_page.id)}
+        assert {item["id"] for item in private_response.json()} == {str(private_page.id)}
+        assert {item["id"] for item in archived_response.json()} == {str(archived_page.id)}
+
+    @pytest.mark.django_db
+    def test_owner_can_archive_restore_and_delete_workspace_page(self, api_client, workspace):
+        owner = User.objects.create(email="wiki-owner@plane.so", username="wiki_owner")
+        WorkspaceMember.objects.create(workspace=workspace, member=owner, role=15, is_active=True)
+        page = _make_page(workspace, owner, "Lifecycle")
+        api_client.force_authenticate(user=owner)
+
+        delete_active_response = api_client.delete(_page_url(workspace.slug, page.id))
+        archive_response = api_client.post(_page_archive_url(workspace.slug, page.id))
+        page.refresh_from_db()
+
+        assert delete_active_response.status_code == status.HTTP_400_BAD_REQUEST
+        assert archive_response.status_code == status.HTTP_200_OK
+        assert page.archived_at is not None
+
+        restore_response = api_client.delete(_page_archive_url(workspace.slug, page.id))
+        page.refresh_from_db()
+
+        assert restore_response.status_code == status.HTTP_204_NO_CONTENT
+        assert page.archived_at is None
+
+        api_client.post(_page_archive_url(workspace.slug, page.id))
+        delete_response = api_client.delete(_page_url(workspace.slug, page.id))
+
+        assert delete_response.status_code == status.HTTP_204_NO_CONTENT
+        assert not Page.objects.filter(pk=page.id).exists()
+
+    @pytest.mark.django_db
+    def test_member_cannot_archive_another_owners_workspace_page(self, api_client, workspace, create_user):
+        member = User.objects.create(email="wiki-member@plane.so", username="wiki_member")
+        WorkspaceMember.objects.create(workspace=workspace, member=member, role=15, is_active=True)
+        page = _make_page(workspace, create_user, "Shared")
+        api_client.force_authenticate(user=member)
+
+        response = api_client.post(_page_archive_url(workspace.slug, page.id))
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+        page.refresh_from_db()
+        assert page.archived_at is None
 
     @pytest.mark.django_db
     def test_member_cannot_restore_another_owners_page_version(self, api_client, workspace):

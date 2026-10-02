@@ -45,6 +45,7 @@ export interface IProjectPageStore {
   canCurrentUserCreatePage: boolean;
   // helper actions
   getCurrentProjectPageIdsByTab: (pageType: TPageNavigationTabs) => string[] | undefined;
+  getWorkspacePageIdsByTab: (workspaceSlug: string, pageType: TPageNavigationTabs) => string[];
   getCurrentProjectPageIds: (projectId: string) => string[];
   getCurrentProjectFilteredPageIdsByTab: (pageType: TPageNavigationTabs) => string[] | undefined;
   getPageById: (pageId: string) => TProjectPage | undefined;
@@ -56,7 +57,7 @@ export interface IProjectPageStore {
     projectId: string,
     pageType?: TPageNavigationTabs
   ) => Promise<TPage[] | undefined>;
-  fetchWorkspacePages: (workspaceSlug: string) => Promise<TPage[] | undefined>;
+  fetchWorkspacePages: (workspaceSlug: string, pageType?: TPageNavigationTabs) => Promise<TPage[] | undefined>;
   fetchPageDetails: (
     workspaceSlug: string,
     projectId: string,
@@ -160,6 +161,14 @@ export class ProjectPageStore implements IProjectPageStore {
     return pages ?? undefined;
   });
 
+  getWorkspacePageIdsByTab = computedFn((workspaceSlug: string, pageType: TPageNavigationTabs) => {
+    const workspaceId = this.rootStore.workspaceRoot.getWorkspaceBySlug(workspaceSlug)?.id;
+    const pages = filterPagesByPageType(pageType, Object.values(this.data)).filter(
+      (page) => page.is_global && page.workspace === workspaceId
+    );
+    return orderPages(pages, this.filters.sortKey, this.filters.sortBy).map((page) => page.id) as string[];
+  });
+
   /**
    * @description get the current project page ids
    * @param {string} projectId
@@ -258,7 +267,7 @@ export class ProjectPageStore implements IProjectPageStore {
     }
   };
 
-  fetchWorkspacePages = async (workspaceSlug: string) => {
+  fetchWorkspacePages = async (workspaceSlug: string, pageType?: TPageNavigationTabs) => {
     try {
       if (!workspaceSlug) return undefined;
       runInAction(() => {
@@ -266,7 +275,7 @@ export class ProjectPageStore implements IProjectPageStore {
         this.error = undefined;
       });
 
-      const pages = await this.workspacePageService.fetchAll(workspaceSlug);
+      const pages = await this.workspacePageService.fetchAll(workspaceSlug, pageType);
       runInAction(() => {
         for (const page of pages) {
           if (!page?.id) continue;
@@ -432,9 +441,11 @@ export class ProjectPageStore implements IProjectPageStore {
   removePage = async ({ pageId, shouldSync: _shouldSync = true }: { pageId: string; shouldSync?: boolean }) => {
     try {
       const { workspaceSlug, projectId } = this.store.router;
-      if (!workspaceSlug || !projectId || !pageId) return undefined;
+      const page = this.getPageById(pageId);
+      if (!workspaceSlug || !pageId || (!page?.is_global && !projectId)) return undefined;
 
-      await this.service.remove(workspaceSlug, projectId, pageId);
+      if (page?.is_global) await this.workspacePageService.remove(workspaceSlug, pageId);
+      else await this.service.remove(workspaceSlug, projectId!, pageId);
       runInAction(() => {
         unset(this.data, [pageId]);
         if (this.rootStore.favorite.entityMap[pageId]) this.rootStore.favorite.removeFavoriteFromStore(pageId);

@@ -24,8 +24,13 @@ urlpatterns = [
     ),
     path(
         "workspaces/<str:slug>/pages/<uuid:page_id>/",
-        WorkspacePageViewSet.as_view({"get": "retrieve", "patch": "partial_update"}),
+        WorkspacePageViewSet.as_view({"get": "retrieve", "patch": "partial_update", "delete": "destroy"}),
         name="workspace-page-detail",
+    ),
+    path(
+        "workspaces/<str:slug>/pages/<uuid:page_id>/archive/",
+        WorkspacePageViewSet.as_view({"post": "archive", "delete": "unarchive"}),
+        name="workspace-page-archive-unarchive",
     ),
     path(
         "workspaces/<str:slug>/pages/<uuid:page_id>/move/",
