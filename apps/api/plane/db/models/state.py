@@ -90,6 +90,10 @@ class State(ProjectBaseModel):
     )
     is_triage = models.BooleanField(default=False)
     default = models.BooleanField(default=False)
+    # Retained for databases that previously enabled the defect workbench.
+    # A project always creates its default states in bulk, so this model-level
+    # default must be present even when the feature itself is not in use.
+    defect_stage = models.CharField(max_length=16, blank=True, default="")
     external_source = models.CharField(max_length=255, null=True, blank=True)
     external_id = models.CharField(max_length=255, blank=True, null=True)
 

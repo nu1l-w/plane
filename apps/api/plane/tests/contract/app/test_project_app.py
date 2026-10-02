@@ -97,6 +97,7 @@ class TestProjectAPIPost(TestProjectBase):
         expected_states = ["待办", "未开始", "进行中", "已完成", "已取消"]
         state_names = list(states.values_list("name", flat=True))
         assert set(state_names) == set(expected_states)
+        assert set(states.values_list("defect_stage", flat=True)) == {""}
 
     @pytest.mark.django_db
     def test_default_state_failure_rolls_back_project(self, session_client, workspace):
