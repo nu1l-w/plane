@@ -8,7 +8,12 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useSearchParams } from "react-router";
 import useSWR from "swr";
+import { AlertTriangle } from "lucide-react";
 import { useTranslation } from "@plane/i18n";
+import { Button, getButtonStyling } from "@plane/propel/button";
+import { ChevronLeftIcon, ChevronRightIcon, CloseIcon, FilterIcon, InfoIcon } from "@plane/propel/icons";
+import { CustomSelect, Loader } from "@plane/ui";
+import { cn } from "@plane/utils";
 import { DashboardService } from "@/services/dashboard.service";
 import type {
   IDashboardRiskItem,
@@ -37,6 +42,38 @@ const STATE_COLORS: Record<string, string> = {
 const RISK_KINDS: TDashboardRisk[] = ["overdue", "due_soon", "stale", "high_priority_unassigned"];
 const DETAIL_KINDS: TDashboardDetail[] = ["total", "backlog", "unstarted", "in_progress", "completed", "cancelled"];
 const PRIORITIES: TDashboardPriority[] = ["urgent", "high", "medium", "low", "none"];
+const CARD_CLASS = "rounded-lg border border-subtle bg-surface-1";
+
+function DashboardFilter({
+  label,
+  value,
+  displayValue,
+  onChange,
+  children,
+}: {
+  label: string;
+  value: string;
+  displayValue: string;
+  onChange: (value: string) => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex w-full min-w-0 flex-col gap-1 sm:w-auto sm:min-w-40">
+      <span className="text-11 font-medium text-tertiary">{label}</span>
+      <CustomSelect
+        value={value}
+        label={<span className="min-w-0 flex-1 truncate text-left">{displayValue}</span>}
+        onChange={(selectedValue: string) => onChange(selectedValue)}
+        className="w-full"
+        buttonClassName="h-8 border-subtle bg-surface-1 text-primary shadow-raised-100 transition-colors hover:bg-layer-1"
+        optionsClassName="min-w-56"
+        maxHeight="lg"
+      >
+        {children}
+      </CustomSelect>
+    </div>
+  );
+}
 
 function SummaryCard({
   label,
@@ -50,13 +87,38 @@ function SummaryCard({
   active?: boolean;
 }) {
   const card = (
-    <div className={`rounded-xl border bg-surface-1 p-5 ${active ? "border-accent-primary" : "border-subtle"}`}>
-      <p className="text-13 text-tertiary">{label}</p>
-      <p className="mt-3 text-28 font-semibold text-primary">{value}</p>
+    <div
+      className={cn(
+        CARD_CLASS,
+        "relative h-full overflow-hidden p-4 transition-all duration-200",
+        href && "group-hover:border-strong group-hover:bg-layer-1 group-hover:shadow-raised-100",
+        active && "border-accent-strong bg-accent-primary/5 shadow-raised-100"
+      )}
+    >
+      {active && <span className="absolute inset-y-0 left-0 w-0.5 bg-accent-primary" aria-hidden="true" />}
+      <div className="flex items-start justify-between gap-3">
+        <p className={cn("text-12 font-medium text-tertiary", active && "text-accent-primary")}>{label}</p>
+        {href && (
+          <ChevronRightIcon
+            className={cn(
+              "mt-0.5 size-3.5 shrink-0 text-placeholder transition-all",
+              active
+                ? "translate-x-0 text-accent-primary"
+                : "-translate-x-1 opacity-0 group-hover:translate-x-0 group-hover:opacity-100"
+            )}
+            aria-hidden="true"
+          />
+        )}
+      </div>
+      <p className="mt-2 text-24 font-semibold tracking-tight text-primary">{value.toLocaleString()}</p>
     </div>
   );
   return href ? (
-    <Link href={href} className="block rounded-xl hover:opacity-80">
+    <Link
+      href={href}
+      className="group block h-full rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-accent-strong"
+      aria-current={active ? "page" : undefined}
+    >
       {card}
     </Link>
   ) : (
@@ -73,29 +135,34 @@ function ProjectProgress({
 }) {
   const { t } = useTranslation();
   return (
-    <section className="rounded-xl border border-subtle bg-surface-1 p-5">
-      <div className="mb-5 flex items-center justify-between gap-3">
+    <section className={cn(CARD_CLASS, "p-4 md:p-5")}>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-16 font-semibold text-primary">{t("dashboard_overview.project_progress")}</h2>
         <span className="text-12 text-tertiary">{t("dashboard_overview.progress_hint")}</span>
       </div>
       {projects.length === 0 ? (
         <p className="py-10 text-center text-13 text-tertiary">{t("dashboard_overview.no_projects")}</p>
       ) : (
-        <div className="max-h-[420px] space-y-5 overflow-y-auto">
+        <div className="-mx-2 max-h-[420px] space-y-1 overflow-y-auto px-2">
           {projects.map((project) => {
             const actionable = getActionableTotal(project.total, project.cancelled);
             const percentage = getCompletionPercentage(project.completed, project.total, project.cancelled);
             return (
-              <div key={project.id}>
+              <Link
+                key={project.id}
+                href={`/${workspaceSlug}/projects/${project.id}/issues`}
+                className="group block rounded-md px-2 py-2.5 transition-colors outline-none hover:bg-layer-1 focus-visible:ring-2 focus-visible:ring-accent-strong"
+              >
                 <div className="mb-2 flex items-center justify-between gap-3 text-13">
-                  <Link
-                    href={`/${workspaceSlug}/projects/${project.id}/issues`}
-                    className="truncate font-medium text-primary hover:text-accent-primary"
-                  >
+                  <span className="min-w-0 truncate font-medium text-primary transition-colors group-hover:text-accent-primary">
                     {project.name}
-                  </Link>
-                  <span className="shrink-0 text-secondary">
+                  </span>
+                  <span className="flex shrink-0 items-center gap-1.5 text-secondary">
                     {project.completed}/{actionable} ({percentage}%)
+                    <ChevronRightIcon
+                      className="size-3 text-placeholder opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100"
+                      aria-hidden="true"
+                    />
                   </span>
                 </div>
                 <div
@@ -113,7 +180,7 @@ function ProjectProgress({
                     {t("dashboard_overview.project_overdue", { count: project.overdue })}
                   </p>
                 )}
-              </div>
+              </Link>
             );
           })}
         </div>
@@ -138,36 +205,95 @@ function StateDistribution({
   const total = distribution.reduce((sum, item) => sum + item.count, 0);
 
   return (
-    <section className="rounded-xl border border-subtle bg-surface-1 p-5">
-      <h2 className="mb-5 text-16 font-semibold text-primary">{t("dashboard_overview.state_distribution")}</h2>
+    <section className={cn(CARD_CLASS, "p-4 md:p-5")}>
+      <h2 className="mb-4 text-16 font-semibold text-primary">{t("dashboard_overview.state_distribution")}</h2>
       {total === 0 ? (
         <p className="py-10 text-center text-13 text-tertiary">{t("dashboard_overview.no_work_items")}</p>
       ) : (
-        <div className="space-y-4">
-          {distribution.map(({ group, count }) => (
-            <Link
-              key={group}
-              href={getDashboardHref(workspaceSlug, searchParams, {
-                detail: group === "started" ? "in_progress" : group,
-                risk: null,
-                page: null,
-              })}
-              aria-current={activeDetail === (group === "started" ? "in_progress" : group) ? "page" : undefined}
-              className="flex items-center gap-3 rounded-md hover:text-accent-primary"
-            >
-              <span className="w-16 shrink-0 text-13 text-secondary">{t(`dashboard_overview.states.${group}`)}</span>
-              <div className="h-2 flex-1 overflow-hidden rounded-full bg-layer-1">
-                <div
-                  className={`h-full rounded-full ${STATE_COLORS[group]}`}
-                  style={{ width: `${(count / total) * 100}%` }}
+        <div className="-mx-2 space-y-1">
+          {distribution.map(({ group, count }) => {
+            const detail = group === "started" ? "in_progress" : group;
+            const isActive = activeDetail === detail;
+            return (
+              <Link
+                key={group}
+                href={getDashboardHref(workspaceSlug, searchParams, {
+                  detail,
+                  risk: null,
+                  page: null,
+                })}
+                aria-current={isActive ? "page" : undefined}
+                className={cn(
+                  "group flex items-center gap-3 rounded-md px-2 py-2 transition-colors outline-none hover:bg-layer-1 focus-visible:ring-2 focus-visible:ring-accent-strong",
+                  isActive && "bg-accent-primary/5"
+                )}
+              >
+                <span className={cn("w-20 shrink-0 text-13 text-secondary", isActive && "text-accent-primary")}>
+                  {t(`dashboard_overview.states.${group}`)}
+                </span>
+                <div className="h-2 flex-1 overflow-hidden rounded-full bg-layer-1">
+                  <div
+                    className={cn("h-full rounded-full transition-[width] duration-300", STATE_COLORS[group])}
+                    style={{ width: `${(count / total) * 100}%` }}
+                  />
+                </div>
+                <span className="w-9 text-right text-13 font-medium text-primary">{count}</span>
+                <ChevronRightIcon
+                  className="size-3 shrink-0 text-placeholder opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100"
+                  aria-hidden="true"
                 />
-              </div>
-              <span className="w-9 text-right text-13 text-primary">{count}</span>
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
         </div>
       )}
     </section>
+  );
+}
+
+function DashboardPagination({
+  workspaceSlug,
+  searchParams,
+  page,
+  total,
+}: {
+  workspaceSlug: string;
+  searchParams: URLSearchParams;
+  page: number;
+  total: number;
+}) {
+  const { t } = useTranslation();
+  const pages = Math.ceil(total / 20);
+
+  return (
+    <nav
+      className="mt-4 flex items-center justify-between gap-3 border-t border-subtle pt-4"
+      aria-label={t("dashboard_overview.page_info", { page, pages })}
+    >
+      {page > 1 ? (
+        <Link
+          href={getDashboardHref(workspaceSlug, searchParams, { page: String(page - 1) })}
+          className={cn(getButtonStyling("secondary", "lg"), "gap-1")}
+        >
+          <ChevronLeftIcon className="size-3.5" aria-hidden="true" />
+          {t("dashboard_overview.previous")}
+        </Link>
+      ) : (
+        <span className="h-7 min-w-16" aria-hidden="true" />
+      )}
+      <span className="text-12 text-tertiary">{t("dashboard_overview.page_info", { page, pages })}</span>
+      {page < pages ? (
+        <Link
+          href={getDashboardHref(workspaceSlug, searchParams, { page: String(page + 1) })}
+          className={cn(getButtonStyling("secondary", "lg"), "gap-1")}
+        >
+          {t("dashboard_overview.next")}
+          <ChevronRightIcon className="size-3.5" aria-hidden="true" />
+        </Link>
+      ) : (
+        <span className="h-7 min-w-16" aria-hidden="true" />
+      )}
+    </nav>
   );
 }
 
@@ -193,55 +319,46 @@ function DetailItems({
       : t(`dashboard_overview.states.${detail}`);
 
   return (
-    <section className="rounded-xl border border-subtle bg-surface-1 p-5">
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+    <section className={cn(CARD_CLASS, "p-4 md:p-5")}>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-16 font-semibold text-primary">{title}</h2>
         <Link
           href={getDashboardHref(workspaceSlug, searchParams, { detail: null, page: null })}
-          className="text-13 text-accent-primary"
+          className={getButtonStyling("ghost", "lg")}
         >
           {t("dashboard_overview.back_to_overview")}
+          <CloseIcon className="size-3.5" aria-hidden="true" />
         </Link>
       </div>
       {items.length === 0 ? (
         <p className="py-10 text-center text-13 text-tertiary">{t("dashboard_overview.no_work_items")}</p>
       ) : (
-        <div className="divide-y divide-subtle">
+        <div className="-mx-2 divide-y divide-subtle">
           {items.map((item) => (
             <Link
               key={item.id}
               href={`/${workspaceSlug}/projects/${item.project_id}/issues/${item.id}`}
-              className="flex items-center justify-between gap-4 py-3 text-13 hover:text-accent-primary"
+              className="group flex items-center justify-between gap-4 rounded-sm px-2 py-3 text-13 transition-colors outline-none hover:bg-layer-1 focus-visible:ring-2 focus-visible:ring-accent-strong"
             >
-              <span className="min-w-0 truncate text-primary">
+              <span className="min-w-0 truncate text-primary transition-colors group-hover:text-accent-primary">
                 <span className="mr-2 text-tertiary">
                   {item.project__identifier}-{item.sequence_id}
                 </span>
                 {item.name}
               </span>
-              <span className="shrink-0 text-secondary">{item.target_date ?? ""}</span>
+              <span className="flex shrink-0 items-center gap-2 text-secondary">
+                {item.target_date ?? ""}
+                <ChevronRightIcon
+                  className="size-3 text-placeholder opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100"
+                  aria-hidden="true"
+                />
+              </span>
             </Link>
           ))}
         </div>
       )}
       {total > 20 && (
-        <div className="mt-4 flex items-center justify-between border-t border-subtle pt-4 text-13 text-secondary">
-          {page > 1 ? (
-            <Link href={getDashboardHref(workspaceSlug, searchParams, { page: String(page - 1) })}>
-              {t("dashboard_overview.previous")}
-            </Link>
-          ) : (
-            <span />
-          )}
-          <span>{t("dashboard_overview.page_info", { page, pages: Math.ceil(total / 20) })}</span>
-          {page * 20 < total ? (
-            <Link href={getDashboardHref(workspaceSlug, searchParams, { page: String(page + 1) })}>
-              {t("dashboard_overview.next")}
-            </Link>
-          ) : (
-            <span />
-          )}
-        </div>
+        <DashboardPagination workspaceSlug={workspaceSlug} searchParams={searchParams} page={page} total={total} />
       )}
     </section>
   );
@@ -257,7 +374,7 @@ function WeeklyTrends({ weeks }: { weeks: IWorkspaceDashboardOverview["weekly_tr
   const peak = Math.max(1, ...weeks.flatMap((week) => series.map(({ key }) => week[key])));
 
   return (
-    <section className="rounded-xl border border-subtle bg-surface-1 p-5">
+    <section className={cn(CARD_CLASS, "p-4 md:p-5")}>
       <h2 className="text-16 font-semibold text-primary">{t("dashboard_overview.trends.title")}</h2>
       <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-12 text-secondary">
         {series.map(({ key, color }) => (
@@ -268,22 +385,30 @@ function WeeklyTrends({ weeks }: { weeks: IWorkspaceDashboardOverview["weekly_tr
         ))}
       </div>
       <div className="mt-6 overflow-x-auto">
-        <div className="grid min-w-[400px] grid-cols-8 gap-2">
+        <div className="grid min-w-[560px] grid-cols-8 gap-1">
           {weeks.map((week) => (
-            <div key={week.week_start} className="min-w-0 text-center">
-              <div className="flex h-36 items-end justify-center gap-1">
+            <div
+              key={week.week_start}
+              className="group min-w-0 rounded-md px-1.5 pt-2 text-center transition-colors hover:bg-layer-1"
+            >
+              <div className="mb-1 flex min-h-5 items-center justify-center gap-1 text-10 font-medium text-secondary opacity-0 transition-opacity group-hover:opacity-100">
+                {series.map(({ key }) => (
+                  <span key={key}>{week[key]}</span>
+                ))}
+              </div>
+              <div className="flex h-32 items-end justify-center gap-1">
                 {series.map(({ key, color }) => (
                   <div
                     key={key}
-                    className={`w-2.5 rounded-t-sm ${color}`}
-                    style={{ height: week[key] ? `${Math.max(3, (week[key] / peak) * 128)}px` : 0 }}
+                    className={cn("w-2.5 rounded-t-sm transition-opacity group-hover:opacity-80", color)}
+                    style={{ height: week[key] ? `${Math.max(3, (week[key] / peak) * 112)}px` : 0 }}
                     title={`${t(`dashboard_overview.trends.${key}`)}: ${week[key]}`}
                     role="img"
                     aria-label={`${week.week_start} ${t(`dashboard_overview.trends.${key}`)} ${week[key]}`}
                   />
                 ))}
               </div>
-              <span className="mt-2 block text-12 text-tertiary">{week.week_start.slice(5)}</span>
+              <span className="mt-2 block pb-2 text-12 text-tertiary">{week.week_start.slice(5)}</span>
             </div>
           ))}
         </div>
@@ -310,17 +435,18 @@ function RiskItems({
 }) {
   const { t } = useTranslation();
   return (
-    <section className="rounded-xl border border-subtle bg-surface-1 p-5">
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+    <section className={cn(CARD_CLASS, "p-4 md:p-5")}>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-16 font-semibold text-primary">
           {risk ? t(`dashboard_overview.metrics.${risk}`) : t("dashboard_overview.overdue_list")}
         </h2>
         {risk && searchParams ? (
           <Link
             href={getDashboardHref(workspaceSlug, searchParams, { risk: null, page: null })}
-            className="text-13 text-accent-primary"
+            className={getButtonStyling("ghost", "lg")}
           >
             {t("dashboard_overview.back_to_overview")}
+            <CloseIcon className="size-3.5" aria-hidden="true" />
           </Link>
         ) : (
           items.length > 0 && <span className="text-12 text-tertiary">{t("dashboard_overview.top_ten")}</span>
@@ -331,46 +457,65 @@ function RiskItems({
           {risk ? t("dashboard_overview.no_risk_items") : t("dashboard_overview.no_overdue")}
         </p>
       ) : (
-        <div className="divide-y divide-subtle">
+        <div className="-mx-2 divide-y divide-subtle">
           {items.map((item) => (
             <Link
               key={item.id}
               href={`/${workspaceSlug}/projects/${item.project_id}/issues/${item.id}`}
-              className="flex items-center justify-between gap-4 py-3 text-13 hover:text-accent-primary"
+              className="group flex items-center justify-between gap-4 rounded-sm px-2 py-3 text-13 transition-colors outline-none hover:bg-layer-1 focus-visible:ring-2 focus-visible:ring-accent-strong"
             >
-              <span className="min-w-0 truncate text-primary">
+              <span className="min-w-0 truncate text-primary transition-colors group-hover:text-accent-primary">
                 <span className="mr-2 text-tertiary">
                   {item.project__identifier}-{item.sequence_id}
                 </span>
                 {item.name}
               </span>
-              <span className="shrink-0 text-danger-primary">
+              <span className="flex shrink-0 items-center gap-2 text-danger-primary">
                 {risk === "stale" ? item.updated_at.slice(0, 10) : (item.target_date ?? "")}
+                <ChevronRightIcon
+                  className="size-3 text-placeholder opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100"
+                  aria-hidden="true"
+                />
               </span>
             </Link>
           ))}
         </div>
       )}
       {risk && searchParams && total !== undefined && page !== undefined && total > 20 && (
-        <div className="mt-4 flex items-center justify-between border-t border-subtle pt-4 text-13 text-secondary">
-          {page > 1 ? (
-            <Link href={getDashboardHref(workspaceSlug, searchParams, { page: String(page - 1) })}>
-              {t("dashboard_overview.previous")}
-            </Link>
-          ) : (
-            <span />
-          )}
-          <span>{t("dashboard_overview.page_info", { page, pages: Math.ceil(total / 20) })}</span>
-          {page * 20 < total ? (
-            <Link href={getDashboardHref(workspaceSlug, searchParams, { page: String(page + 1) })}>
-              {t("dashboard_overview.next")}
-            </Link>
-          ) : (
-            <span />
-          )}
-        </div>
+        <DashboardPagination workspaceSlug={workspaceSlug} searchParams={searchParams} page={page} total={total} />
       )}
     </section>
+  );
+}
+
+function DashboardOverviewLoader() {
+  const { t } = useTranslation();
+
+  return (
+    <main className="mx-auto w-full max-w-[1440px] space-y-5 px-4 py-6 md:px-6 md:py-8">
+      <span className="sr-only">{t("dashboard_overview.loading")}</span>
+      <Loader className="space-y-3">
+        <Loader.Item height="28px" width="220px" />
+        <Loader.Item height="16px" width="420px" className="max-w-full" />
+      </Loader>
+      <Loader>
+        <Loader.Item height="92px" width="100%" className="rounded-lg" />
+      </Loader>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {["total", "completed", "in-progress", "projects"].map((key) => (
+          <Loader key={key}>
+            <Loader.Item height="104px" width="100%" className="rounded-lg" />
+          </Loader>
+        ))}
+      </div>
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+        {["project-progress", "state-distribution"].map((key) => (
+          <Loader key={key}>
+            <Loader.Item height="280px" width="100%" className="rounded-lg" />
+          </Loader>
+        ))}
+      </div>
+    </main>
   );
 }
 
@@ -392,28 +537,38 @@ export function WorkspaceDashboardOverview() {
     detail,
     page: risk || detail ? Number(searchParams.get("page") ?? "1") : undefined,
   };
-  const { data, error, isLoading, mutate } = useSWR(
+  const { data, error, isLoading, isValidating, mutate } = useSWR(
     slug ? ["dashboard-overview", slug, searchParams.toString()] : null,
-    () => dashboardService.getWorkspaceOverview(slug as string, filters)
+    () => dashboardService.getWorkspaceOverview(slug as string, filters),
+    { keepPreviousData: true }
   );
   const changeFilter = (key: "project_id" | "assignee_id" | "created_range" | "priority", value: string) => {
     const params = new URLSearchParams(searchParams);
     if (value) params.set(key, value);
     else params.delete(key);
     params.delete("page");
-    setSearchParams(params);
+    setSearchParams(params, { replace: true });
+  };
+  const hasActiveFilters = Boolean(
+    filters.project_id || filters.assignee_id || filters.created_range || filters.priority
+  );
+  const clearFilters = () => {
+    const params = new URLSearchParams(searchParams);
+    ["project_id", "assignee_id", "created_range", "priority", "page"].forEach((key) => params.delete(key));
+    setSearchParams(params, { replace: true });
   };
 
-  if (isLoading) {
-    return <div className="px-6 py-12 text-13 text-secondary">{t("dashboard_overview.loading")}</div>;
-  }
-  if (error || !data) {
+  if (isLoading && !data) return <DashboardOverviewLoader />;
+  if (!data) {
     return (
-      <div className="px-6 py-12 text-13 text-danger-primary">
-        {t("dashboard_overview.load_error")}
-        <button type="button" className="ml-3 underline" onClick={() => void mutate()}>
+      <div className="flex min-h-[360px] w-full flex-col items-center justify-center gap-3 px-6 text-center">
+        <span className="grid size-10 place-items-center rounded-full bg-danger-subtle text-danger-primary">
+          <AlertTriangle className="size-5" aria-hidden="true" />
+        </span>
+        <p className="text-14 font-medium text-primary">{t("dashboard_overview.load_error")}</p>
+        <Button variant="secondary" size="lg" onClick={() => void mutate()}>
           {t("dashboard_overview.retry")}
-        </button>
+        </Button>
       </div>
     );
   }
@@ -424,81 +579,107 @@ export function WorkspaceDashboardOverview() {
     ["completed", data.summary.completed],
     ["in_progress", data.summary.in_progress],
   ] as const;
+  const selectedProject = data.available_projects.find((project) => project.id === filters.project_id);
+  const selectedAssignee = data.assignees.find((member) => member.member_id === filters.assignee_id);
+  const createdRangeLabel = filters.created_range
+    ? t(`dashboard_overview.filters.${filters.created_range}`)
+    : t("dashboard_overview.filters.all_time");
 
   return (
-    <main className="mx-auto w-full max-w-[1440px] space-y-6 px-6 py-8">
+    <main className="mx-auto w-full max-w-[1440px] space-y-5 px-4 py-6 md:px-6 md:py-8">
       <div>
         <h1 className="text-24 font-semibold text-primary">{t("dashboard_overview.title")}</h1>
         <p className="mt-1 text-13 text-secondary">{t("dashboard_overview.description")}</p>
       </div>
-      <div className="flex flex-wrap gap-3">
-        <label className="flex flex-col gap-1 text-12 text-secondary">
-          {t("dashboard_overview.filters.project")}
-          <select
-            aria-label={t("dashboard_overview.filters.project")}
+      <section className={cn(CARD_CLASS, "relative overflow-hidden p-4")} aria-label={t("common.filters")}>
+        {isValidating && (
+          <>
+            <span className="absolute inset-x-0 top-0 h-0.5 animate-pulse bg-accent-primary" aria-hidden="true" />
+            <span className="sr-only" role="status">
+              {t("dashboard_overview.loading")}
+            </span>
+          </>
+        )}
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-13 font-medium text-secondary">
+            <FilterIcon className="size-4" aria-hidden="true" />
+            {t("common.filters")}
+          </div>
+          {hasActiveFilters && (
+            <Button variant="ghost" size="lg" prependIcon={<CloseIcon />} onClick={clearFilters}>
+              {t("common.clear_all")}
+            </Button>
+          )}
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <DashboardFilter
+            label={t("dashboard_overview.filters.project")}
             value={filters.project_id ?? ""}
-            onChange={(event) => changeFilter("project_id", event.target.value)}
-            className="max-w-56 rounded-md border border-subtle bg-surface-1 px-3 py-2 text-13 text-primary"
+            displayValue={selectedProject?.name ?? t("dashboard_overview.filters.all_projects")}
+            onChange={(value) => changeFilter("project_id", value)}
           >
-            <option value="">{t("dashboard_overview.filters.all_projects")}</option>
+            <CustomSelect.Option value="">{t("dashboard_overview.filters.all_projects")}</CustomSelect.Option>
             {data.available_projects.map((project) => (
-              <option key={project.id} value={project.id}>
+              <CustomSelect.Option key={project.id} value={project.id}>
                 {project.name}
-              </option>
+              </CustomSelect.Option>
             ))}
-          </select>
-        </label>
-        <label className="flex flex-col gap-1 text-12 text-secondary">
-          {t("dashboard_overview.filters.assignee")}
-          <select
-            aria-label={t("dashboard_overview.filters.assignee")}
+          </DashboardFilter>
+          <DashboardFilter
+            label={t("dashboard_overview.filters.assignee")}
             value={filters.assignee_id ?? ""}
-            onChange={(event) => changeFilter("assignee_id", event.target.value)}
-            className="max-w-56 rounded-md border border-subtle bg-surface-1 px-3 py-2 text-13 text-primary"
+            displayValue={
+              filters.assignee_id === "unassigned"
+                ? t("dashboard_overview.filters.unassigned")
+                : selectedAssignee?.member__display_name || t("dashboard_overview.filters.all_assignees")
+            }
+            onChange={(value) => changeFilter("assignee_id", value)}
           >
-            <option value="">{t("dashboard_overview.filters.all_assignees")}</option>
-            <option value="unassigned">{t("dashboard_overview.filters.unassigned")}</option>
+            <CustomSelect.Option value="">{t("dashboard_overview.filters.all_assignees")}</CustomSelect.Option>
+            <CustomSelect.Option value="unassigned">{t("dashboard_overview.filters.unassigned")}</CustomSelect.Option>
             {data.assignees.map((member) => (
-              <option key={member.member_id} value={member.member_id}>
+              <CustomSelect.Option key={member.member_id} value={member.member_id}>
                 {member.member__display_name || member.member_id}
-              </option>
+              </CustomSelect.Option>
             ))}
-          </select>
-        </label>
-        <label className="flex flex-col gap-1 text-12 text-secondary">
-          {t("dashboard_overview.filters.created_range")}
-          <select
-            aria-label={t("dashboard_overview.filters.created_range")}
+          </DashboardFilter>
+          <DashboardFilter
+            label={t("dashboard_overview.filters.created_range")}
             value={filters.created_range ?? ""}
-            onChange={(event) => changeFilter("created_range", event.target.value)}
-            className="rounded-md border border-subtle bg-surface-1 px-3 py-2 text-13 text-primary"
+            displayValue={createdRangeLabel}
+            onChange={(value) => changeFilter("created_range", value)}
           >
-            <option value="">{t("dashboard_overview.filters.all_time")}</option>
+            <CustomSelect.Option value="">{t("dashboard_overview.filters.all_time")}</CustomSelect.Option>
             {["last_7_days", "last_30_days", "last_90_days"].map((range) => (
-              <option key={range} value={range}>
+              <CustomSelect.Option key={range} value={range}>
                 {t(`dashboard_overview.filters.${range}`)}
-              </option>
+              </CustomSelect.Option>
             ))}
-          </select>
-        </label>
-        <label className="flex flex-col gap-1 text-12 text-secondary">
-          {t("common.priority")}
-          <select
-            aria-label={t("common.priority")}
+          </DashboardFilter>
+          <DashboardFilter
+            label={t("common.priority")}
             value={filters.priority ?? ""}
-            onChange={(event) => changeFilter("priority", event.target.value)}
-            className="rounded-md border border-subtle bg-surface-1 px-3 py-2 text-13 text-primary"
+            displayValue={filters.priority ? t(`common.${filters.priority}`) : t("common.all")}
+            onChange={(value) => changeFilter("priority", value)}
           >
-            <option value="">{t("common.all")}</option>
+            <CustomSelect.Option value="">{t("common.all")}</CustomSelect.Option>
             {PRIORITIES.map((priority) => (
-              <option key={priority} value={priority}>
+              <CustomSelect.Option key={priority} value={priority}>
                 {t(`common.${priority}`)}
-              </option>
+              </CustomSelect.Option>
             ))}
-          </select>
-        </label>
-      </div>
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          </DashboardFilter>
+        </div>
+      </section>
+      {error && (
+        <div className="flex items-center justify-between gap-3 rounded-md border border-danger-subtle bg-danger-subtle px-3 py-2 text-12 text-danger-primary">
+          <span>{t("dashboard_overview.load_error")}</span>
+          <Button variant="ghost" size="sm" onClick={() => void mutate()}>
+            {t("dashboard_overview.retry")}
+          </Button>
+        </div>
+      )}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {summaryCards.map(([key, value]) => (
           <SummaryCard
             key={key}
@@ -524,8 +705,14 @@ export function WorkspaceDashboardOverview() {
         />
       )}
       <section>
-        <h2 className="mb-3 text-16 font-semibold text-primary">{t("dashboard_overview.risks_title")}</h2>
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-16 font-semibold text-primary">{t("dashboard_overview.risks_title")}</h2>
+          <p className="flex items-center gap-1.5 text-12 text-tertiary">
+            <InfoIcon className="size-3.5 shrink-0" aria-hidden="true" />
+            {t("dashboard_overview.risks_hint")}
+          </p>
+        </div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {RISK_KINDS.map((kind) => (
             <SummaryCard
               key={kind}
@@ -536,7 +723,6 @@ export function WorkspaceDashboardOverview() {
             />
           ))}
         </div>
-        <p className="mt-2 text-12 text-tertiary">{t("dashboard_overview.risks_hint")}</p>
       </section>
       {risk && (
         <RiskItems
@@ -548,6 +734,7 @@ export function WorkspaceDashboardOverview() {
           searchParams={searchParams}
         />
       )}
+      {!risk && !detail && <RiskItems workspaceSlug={slug as string} items={data.overdue_items} />}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <ProjectProgress workspaceSlug={slug as string} projects={data.projects} />
         <StateDistribution
@@ -558,13 +745,21 @@ export function WorkspaceDashboardOverview() {
         />
       </div>
       <WeeklyTrends weeks={data.weekly_trends} />
-      <section className="rounded-xl border border-subtle bg-surface-1 p-5 text-12 leading-6 text-secondary">
-        <h2 className="mb-1 text-14 font-semibold text-primary">{t("dashboard_overview.definition.title")}</h2>
-        <p>{t("dashboard_overview.definition.progress")}</p>
-        <p>{t("dashboard_overview.definition.stale")}</p>
-        <p>{t("dashboard_overview.definition.created_filter")}</p>
-      </section>
-      {!risk && !detail && <RiskItems workspaceSlug={slug as string} items={data.overdue_items} />}
+      <details className={cn(CARD_CLASS, "group overflow-hidden")}>
+        <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-3 text-13 font-medium text-secondary transition-colors outline-none hover:bg-layer-1 focus-visible:ring-2 focus-visible:ring-accent-strong focus-visible:ring-inset [&::-webkit-details-marker]:hidden">
+          <InfoIcon className="size-4 shrink-0 text-tertiary" aria-hidden="true" />
+          <span className="flex-1">{t("dashboard_overview.definition.title")}</span>
+          <ChevronRightIcon
+            className="size-3.5 text-placeholder transition-transform group-open:rotate-90"
+            aria-hidden="true"
+          />
+        </summary>
+        <div className="space-y-1 border-t border-subtle px-4 py-3 text-12 leading-6 text-secondary">
+          <p>{t("dashboard_overview.definition.progress")}</p>
+          <p>{t("dashboard_overview.definition.stale")}</p>
+          <p>{t("dashboard_overview.definition.created_filter")}</p>
+        </div>
+      </details>
     </main>
   );
 }
