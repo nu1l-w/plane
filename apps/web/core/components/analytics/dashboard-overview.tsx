@@ -11,6 +11,7 @@ import useSWR from "swr";
 import { AlertTriangle } from "lucide-react";
 import { useTranslation } from "@plane/i18n";
 import { Button, getButtonStyling } from "@plane/propel/button";
+import { Dialog } from "@plane/propel/dialog";
 import { ChevronLeftIcon, ChevronRightIcon, CloseIcon, FilterIcon, InfoIcon } from "@plane/propel/icons";
 import { CustomSelect, Loader, Tag } from "@plane/ui";
 import { cn } from "@plane/utils";
@@ -300,36 +301,19 @@ function DashboardPagination({
 function DetailItems({
   workspaceSlug,
   items,
-  detail,
   total,
   page,
   searchParams,
 }: {
   workspaceSlug: string;
   items: IDashboardRiskItem[];
-  detail: TDashboardDetail;
   total: number;
   page: number;
   searchParams: URLSearchParams;
 }) {
   const { t } = useTranslation();
-  const title =
-    detail === "total" || detail === "in_progress"
-      ? t(`dashboard_overview.metrics.${detail}`)
-      : t(`dashboard_overview.states.${detail}`);
-
   return (
-    <section className={cn(CARD_CLASS, "p-4 md:p-5")}>
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-16 font-semibold text-primary">{title}</h2>
-        <Link
-          href={getDashboardHref(workspaceSlug, searchParams, { detail: null, page: null })}
-          className={getButtonStyling("ghost", "lg")}
-        >
-          {t("dashboard_overview.back_to_overview")}
-          <CloseIcon className="size-3.5" aria-hidden="true" />
-        </Link>
-      </div>
+    <div>
       {items.length === 0 ? (
         <p className="py-10 text-center text-13 text-tertiary">{t("dashboard_overview.no_work_items")}</p>
       ) : (
@@ -360,7 +344,74 @@ function DetailItems({
       {total > 20 && (
         <DashboardPagination workspaceSlug={workspaceSlug} searchParams={searchParams} page={page} total={total} />
       )}
-    </section>
+    </div>
+  );
+}
+
+function DashboardDetailDrawer({
+  workspaceSlug,
+  items,
+  detail,
+  risk,
+  total,
+  page,
+  searchParams,
+  onClose,
+}: {
+  workspaceSlug: string;
+  items: IDashboardRiskItem[];
+  detail?: TDashboardDetail;
+  risk?: TDashboardRisk;
+  total: number;
+  page: number;
+  searchParams: URLSearchParams;
+  onClose: () => void;
+}) {
+  const { t } = useTranslation();
+  const title = risk
+    ? t(`dashboard_overview.metrics.${risk}`)
+    : detail === "total" || detail === "in_progress"
+      ? t(`dashboard_overview.metrics.${detail}`)
+      : t(`dashboard_overview.states.${detail}`);
+
+  return (
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <Dialog.Panel
+        aria-labelledby="dashboard-detail-title"
+        className="!fixed !inset-y-0 !top-0 !right-0 !left-auto flex !h-screen !w-full !max-w-none !translate-x-0 !translate-y-0 flex-col overflow-hidden !rounded-none !border-y-0 !border-r-0 p-0 sm:!w-[min(48rem,calc(100vw-1rem))] sm:!rounded-l-lg"
+      >
+        <div className="flex shrink-0 items-center justify-between gap-4 border-b border-subtle px-5 py-4">
+          <Dialog.Title id="dashboard-detail-title" className="text-16 font-semibold text-primary">
+            {title}
+          </Dialog.Title>
+          <Button variant="ghost" size="lg" prependIcon={<CloseIcon />} onClick={onClose}>
+            {t("common.close")}
+          </Button>
+        </div>
+        <div className="min-h-0 flex-1 overflow-y-auto p-5">
+          {detail && (
+            <DetailItems
+              workspaceSlug={workspaceSlug}
+              items={items}
+              total={total}
+              page={page}
+              searchParams={searchParams}
+            />
+          )}
+          {risk && (
+            <RiskItems
+              workspaceSlug={workspaceSlug}
+              items={items}
+              risk={risk}
+              total={total}
+              page={page}
+              searchParams={searchParams}
+              isDrawer
+            />
+          )}
+        </div>
+      </Dialog.Panel>
+    </Dialog>
   );
 }
 
@@ -425,6 +476,7 @@ function RiskItems({
   total,
   page,
   searchParams,
+  isDrawer = false,
 }: {
   workspaceSlug: string;
   items: IDashboardRiskItem[];
@@ -432,26 +484,17 @@ function RiskItems({
   total?: number;
   page?: number;
   searchParams?: URLSearchParams;
+  isDrawer?: boolean;
 }) {
   const { t } = useTranslation();
   return (
-    <section className={cn(CARD_CLASS, "p-4 md:p-5")}>
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-16 font-semibold text-primary">
-          {risk ? t(`dashboard_overview.metrics.${risk}`) : t("dashboard_overview.overdue_list")}
-        </h2>
-        {risk && searchParams ? (
-          <Link
-            href={getDashboardHref(workspaceSlug, searchParams, { risk: null, page: null })}
-            className={getButtonStyling("ghost", "lg")}
-          >
-            {t("dashboard_overview.back_to_overview")}
-            <CloseIcon className="size-3.5" aria-hidden="true" />
-          </Link>
-        ) : (
-          items.length > 0 && <span className="text-12 text-tertiary">{t("dashboard_overview.top_ten")}</span>
-        )}
-      </div>
+    <section className={isDrawer ? "" : cn(CARD_CLASS, "p-4 md:p-5")}>
+      {!risk && (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-16 font-semibold text-primary">{t("dashboard_overview.overdue_list")}</h2>
+          {items.length > 0 && <span className="text-12 text-tertiary">{t("dashboard_overview.top_ten")}</span>}
+        </div>
+      )}
       {items.length === 0 ? (
         <p className="py-10 text-center text-13 text-tertiary">
           {risk ? t("dashboard_overview.no_risk_items") : t("dashboard_overview.no_overdue")}
@@ -526,7 +569,7 @@ export function WorkspaceOverview() {
   const requestedRisk = searchParams.get("risk");
   const risk = RISK_KINDS.find((kind) => kind === requestedRisk);
   const requestedDetail = searchParams.get("detail");
-  const detail = DETAIL_KINDS.find((kind) => kind === requestedDetail);
+  const detail = risk ? undefined : DETAIL_KINDS.find((kind) => kind === requestedDetail);
   const filters: IWorkspaceDashboardFilters = {
     project_id: searchParams.get("project_id") ?? undefined,
     assignee_id: searchParams.get("assignee_id") ?? undefined,
@@ -554,6 +597,11 @@ export function WorkspaceOverview() {
   const clearFilters = () => {
     const params = new URLSearchParams(searchParams);
     ["project_id", "assignee_id", "created_range", "priority", "page"].forEach((key) => params.delete(key));
+    setSearchParams(params, { replace: true });
+  };
+  const closeDetail = () => {
+    const params = new URLSearchParams(searchParams);
+    ["detail", "risk", "page"].forEach((key) => params.delete(key));
     setSearchParams(params, { replace: true });
   };
 
@@ -744,14 +792,16 @@ export function WorkspaceOverview() {
           />
         ))}
       </div>
-      {detail && (
-        <DetailItems
+      {(detail || risk) && (
+        <DashboardDetailDrawer
           workspaceSlug={slug as string}
-          items={data.detail_items}
+          items={detail ? data.detail_items : data.risk_items}
           detail={detail}
-          total={data.detail_total}
-          page={data.detail_page}
+          risk={risk}
+          total={detail ? data.detail_total : (data.risk_total ?? 0)}
+          page={detail ? data.detail_page : (data.risk_page ?? 1)}
           searchParams={searchParams}
+          onClose={closeDetail}
         />
       )}
       <section>
@@ -774,16 +824,6 @@ export function WorkspaceOverview() {
           ))}
         </div>
       </section>
-      {risk && (
-        <RiskItems
-          workspaceSlug={slug as string}
-          items={data.risk_items}
-          risk={risk}
-          total={data.risk_total}
-          page={data.risk_page}
-          searchParams={searchParams}
-        />
-      )}
       {!risk && !detail && <RiskItems workspaceSlug={slug as string} items={data.overdue_items} />}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <ProjectProgress workspaceSlug={slug as string} projects={data.projects} />
