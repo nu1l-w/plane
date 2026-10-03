@@ -60,7 +60,7 @@ export function LogoSpinner({ onFirstLoopComplete }: LogoSpinnerProps = {}) {
 
   return (
     <div className="flex items-center justify-center" role="status" aria-label="Loading">
-      <div ref={animationContainerRef} aria-hidden="true" className="h-32 w-32 sm:h-40 sm:w-40" />
+      <div ref={animationContainerRef} aria-hidden="true" className="h-60 w-60 sm:h-60 sm:w-60" />
     </div>
   );
 }
