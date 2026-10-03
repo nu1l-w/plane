@@ -4,28 +4,63 @@
  * See the LICENSE file for details.
  */
 
-import { useTheme } from "next-themes";
-// assets
-import LogoSpinnerDark from "@/app/assets/images/logo-spinner-dark.gif?url";
-import LogoSpinnerLight from "@/app/assets/images/logo-spinner-light.gif?url";
+import { useEffect, useRef } from "react";
+import LoadingAnimation from "@/app/assets/animations/loading.json?url";
 
-export function LogoSpinner() {
-  const { resolvedTheme } = useTheme();
+interface LogoSpinnerProps {
+  onFirstLoopComplete?: () => void;
+}
 
-  const logoSrc = resolvedTheme === "dark" ? LogoSpinnerDark : LogoSpinnerLight;
+export function LogoSpinner({ onFirstLoopComplete }: LogoSpinnerProps = {}) {
+  const animationContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let isDisposed = false;
+    let hasNotified = false;
+    let destroyAnimation: (() => void) | undefined;
+    const notifyFirstLoopComplete = () => {
+      if (isDisposed || hasNotified) return;
+      hasNotified = true;
+      onFirstLoopComplete?.();
+    };
+
+    import("lottie-web")
+      .then(({ default: lottie }) => {
+        if (isDisposed || !animationContainerRef.current) return null;
+
+        const animation = lottie.loadAnimation({
+          container: animationContainerRef.current,
+          renderer: "svg",
+          loop: true,
+          autoplay: true,
+          path: LoadingAnimation,
+        });
+
+        animation.setSpeed(1.5);
+        animation.addEventListener("loopComplete", notifyFirstLoopComplete);
+        animation.addEventListener("data_failed", notifyFirstLoopComplete);
+        destroyAnimation = () => {
+          animation.removeEventListener("loopComplete", notifyFirstLoopComplete);
+          animation.removeEventListener("data_failed", notifyFirstLoopComplete);
+          animation.destroy();
+        };
+
+        return animation;
+      })
+      .catch((error: unknown) => {
+        console.error("Failed to load the loading animation.", error);
+        notifyFirstLoopComplete();
+      });
+
+    return () => {
+      isDisposed = true;
+      destroyAnimation?.();
+    };
+  }, [onFirstLoopComplete]);
 
   return (
-    <div className="flex items-center justify-center">
-      <div className="flex items-center gap-2">
-        <img
-          src={logoSrc}
-          alt=""
-          aria-hidden="true"
-          suppressHydrationWarning
-          className="h-6 w-auto object-contain sm:h-11"
-        />
-        <span className="text-14 font-semibold text-primary sm:text-16">星轴科技</span>
-      </div>
+    <div className="flex items-center justify-center" role="status" aria-label="Loading">
+      <div ref={animationContainerRef} aria-hidden="true" className="h-32 w-32 sm:h-40 sm:w-40" />
     </div>
   );
 }

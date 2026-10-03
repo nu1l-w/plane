@@ -4,7 +4,7 @@
  * See the LICENSE file for details.
  */
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import Script from "next/script";
 import { Links, Meta, Outlet, Scripts } from "react-router";
@@ -90,6 +90,7 @@ export function Layout({ children }: { children: ReactNode }) {
         <ThemeProvider themes={["light", "dark", "light-contrast", "dark-contrast", "custom"]} defaultTheme="system">
           {children}
         </ThemeProvider>
+        <InitialLoadingSplash />
         <Scripts />
         {!!isSessionRecorderEnabled && process.env.VITE_SESSION_RECORDER_KEY && (
           <Script id="clarity-tracking">
@@ -149,6 +150,36 @@ export function HydrateFallback() {
   return (
     <div className="relative flex h-screen w-full items-center justify-center bg-canvas">
       {isMounted && <LogoSpinner />}
+    </div>
+  );
+}
+
+function InitialLoadingSplash() {
+  const [isVisible, setIsVisible] = useState(false);
+  const fallbackTimeoutRef = useRef<number | null>(null);
+
+  const hideSplash = useCallback(() => {
+    setIsVisible(false);
+    if (fallbackTimeoutRef.current !== null) {
+      window.clearTimeout(fallbackTimeoutRef.current);
+      fallbackTimeoutRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    setIsVisible(true);
+    fallbackTimeoutRef.current = window.setTimeout(hideSplash, 5000);
+
+    return () => {
+      if (fallbackTimeoutRef.current !== null) window.clearTimeout(fallbackTimeoutRef.current);
+    };
+  }, [hideSplash]);
+
+  if (!isVisible) return null;
+
+  return (
+    <div className="fixed inset-0 z-[9999] flex h-screen w-full items-center justify-center bg-canvas">
+      <LogoSpinner onFirstLoopComplete={hideSplash} />
     </div>
   );
 }
