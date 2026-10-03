@@ -46,8 +46,8 @@ export const GeneralConfigurationForm = observer(function GeneralConfigurationFo
       .then(() =>
         setToast({
           type: TOAST_TYPE.SUCCESS,
-          title: "Success",
-          message: "Settings updated successfully",
+          title: "保存成功",
+          message: "设置已更新。",
         })
       )
       .catch((err) => console.error(err));
@@ -56,27 +56,27 @@ export const GeneralConfigurationForm = observer(function GeneralConfigurationFo
   return (
     <div className="space-y-8">
       <div className="space-y-4">
-        <div className="text-16 font-medium text-primary">Instance details</div>
+        <div className="text-16 font-medium text-primary">实例信息</div>
         <div className="grid-col grid w-full grid-cols-1 items-center justify-between gap-8 md:grid-cols-2 lg:grid-cols-3">
           <ControllerInput
             key="instance_name"
             name="instance_name"
             control={control}
             type="text"
-            label="Name of instance"
-            placeholder="Instance name"
+            label="实例名称"
+            placeholder="请输入实例名称"
             error={Boolean(errors.instance_name)}
             required
           />
 
           <div className="flex flex-col gap-1">
-            <h4 className="text-13 text-tertiary">Email</h4>
+            <h4 className="text-13 text-tertiary">管理员邮箱</h4>
             <Input
               id="email"
               name="email"
               type="email"
               value={instanceAdmins[0]?.user_detail?.email ?? ""}
-              placeholder="Admin email"
+              placeholder="管理员邮箱"
               className="w-full cursor-not-allowed !text-placeholder"
               autoComplete="on"
               disabled
@@ -84,7 +84,7 @@ export const GeneralConfigurationForm = observer(function GeneralConfigurationFo
           </div>
 
           <div className="flex flex-col gap-1">
-            <h4 className="text-13 text-tertiary">Instance ID</h4>
+            <h4 className="text-13 text-tertiary">实例 ID</h4>
             <Input
               id="instance_id"
               name="instance_id"
@@ -107,7 +107,7 @@ export const GeneralConfigurationForm = observer(function GeneralConfigurationFo
               </div>
             </div>
             <div className="grow">
-              <div className="text-13 leading-5 font-medium text-primary">允许收集匿名使用情况数据</div>
+              <div className="text-13 leading-5 font-medium text-primary">收集匿名使用情况数据</div>
               <div className="text-11 leading-5 font-regular text-tertiary">
                 不收集个人身份信息。匿名数据仅用于了解系统使用情况并改进功能。
               </div>
@@ -134,7 +134,7 @@ export const GeneralConfigurationForm = observer(function GeneralConfigurationFo
           }}
           loading={isSubmitting}
         >
-          {isSubmitting ? "Saving" : "Save changes"}
+          {isSubmitting ? "正在保存…" : "保存更改"}
         </Button>
       </div>
     </div>

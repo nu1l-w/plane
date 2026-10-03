@@ -51,6 +51,7 @@ export interface IssueFormProps {
   issueTitleRef: React.MutableRefObject<HTMLInputElement | null>;
   isCreateMoreToggleEnabled: boolean;
   onAssetUpload: (assetId: string) => void;
+  onAssetChange: (assetIds: string[]) => void;
   onCreateMoreToggleChange: (value: boolean) => void;
   onChange?: (formData: Partial<TIssue> | null) => void;
   onClose: () => void;
@@ -77,6 +78,7 @@ export const IssueFormRoot = observer(function IssueFormRoot(props: IssueFormPro
     data,
     issueTitleRef,
     onAssetUpload,
+    onAssetChange,
     onChange,
     onClose,
     onSubmit,
@@ -415,6 +417,7 @@ export const IssueFormRoot = observer(function IssueFormRoot(props: IssueFormPro
                   setGptAssistantModal={setGptAssistantModal}
                   handleGptAssistantClose={() => reset(getValues())}
                   onAssetUpload={onAssetUpload}
+                  onAssetChange={onAssetChange}
                   onClose={onClose}
                 />
               </div>

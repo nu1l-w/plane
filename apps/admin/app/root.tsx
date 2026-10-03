@@ -16,9 +16,12 @@ import globalStyles from "@/styles/globals.css?url";
 import { AppProviders } from "@/providers";
 import type { Route } from "./+types/root";
 // fonts
+// oxlint-disable-next-line eslint-plugin-import/no-unassigned-import -- Font CSS must load globally for its side effects.
 import "@fontsource-variable/inter";
 import interVariableWoff2 from "@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url";
+// oxlint-disable-next-line eslint-plugin-import/no-unassigned-import -- Font CSS must load globally for its side effects.
 import "@fontsource/material-symbols-rounded";
+// oxlint-disable-next-line eslint-plugin-import/no-unassigned-import -- Font CSS must load globally for its side effects.
 import "@fontsource/ibm-plex-mono";
 
 const APP_TITLE = "星轴科技研发管理平台 - 管理后台";
@@ -89,7 +92,7 @@ export function HydrateFallback() {
 export function ErrorBoundary({ error: _error }: Route.ErrorBoundaryProps) {
   return (
     <div>
-      <p>Something went wrong.</p>
+      <p>出了点问题，请刷新页面后重试。</p>
     </div>
   );
 }

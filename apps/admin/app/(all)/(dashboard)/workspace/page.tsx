@@ -53,32 +53,31 @@ const WorkspaceManagementPage = observer(function WorkspaceManagementPage(_props
     const updateConfigPromise = updateInstanceConfigurations(payload);
 
     setPromiseToast(updateConfigPromise, {
-      loading: "Saving configuration",
+      loading: "正在保存配置…",
       success: {
-        title: "Success",
-        message: () => "Configuration saved successfully",
+        title: "保存成功",
+        message: () => "配置已保存。",
       },
       error: {
-        title: "Error",
-        message: () => "Failed to save configuration",
+        title: "保存失败",
+        message: () => "无法保存配置，请重试。",
       },
     });
 
-    await updateConfigPromise
-      .then(() => {
-        setIsSubmitting(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setIsSubmitting(false);
-      });
+    try {
+      await updateConfigPromise;
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <PageWrapper
       header={{
-        title: "Workspaces on this instance",
-        description: "See all workspaces and control who can create them.",
+        title: "此实例中的工作区",
+        description: "查看所有工作区，并管理工作区创建权限。",
       }}
     >
       <div className="space-y-3">
@@ -86,9 +85,9 @@ const WorkspaceManagementPage = observer(function WorkspaceManagementPage(_props
           <div className={cn("flex w-full items-center gap-14 rounded-sm")}>
             <div className="flex grow items-center gap-4">
               <div className="grow">
-                <div className="pb-1 text-16 font-medium">Prevent anyone else from creating a workspace.</div>
+                <div className="pb-1 text-16 font-medium">禁止其他人创建工作区</div>
                 <div className={cn("text-11 leading-5 font-regular text-tertiary")}>
-                  Toggling this on will let only you create workspaces. You will have to invite users to new workspaces.
+                  开启后，只有实例管理员可以创建工作区；其他用户需要由管理员邀请加入。
                 </div>
               </div>
             </div>
@@ -119,19 +118,18 @@ const WorkspaceManagementPage = observer(function WorkspaceManagementPage(_props
             <div className="flex items-center justify-between gap-2 pt-6">
               <div className="flex flex-col items-start gap-x-2">
                 <div className="flex items-center gap-2 text-16 font-medium">
-                  All workspaces on this instance <span className="text-tertiary">• {workspaceIds.length}</span>
+                  此实例中的全部工作区 <span className="text-tertiary">• {workspaceIds.length}</span>
                   {workspaceLoader && ["mutation", "pagination"].includes(workspaceLoader) && (
                     <LoaderIcon className="h-4 w-4 animate-spin" />
                   )}
                 </div>
                 <div className={cn("text-11 leading-5 font-regular text-tertiary")}>
-                  You can&apos;t yet delete workspaces and you can only go to the workspace if you are an Admin or a
-                  Member.
+                  目前无法在此处删除工作区。只有工作区管理员或成员可以进入对应工作区。
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <Link href="/workspace/create" className={getButtonStyling("primary", "base")}>
-                  Create workspace
+                  创建工作区
                 </Link>
               </div>
             </div>
@@ -148,7 +146,7 @@ const WorkspaceManagementPage = observer(function WorkspaceManagementPage(_props
                   onClick={() => fetchNextWorkspaces()}
                   disabled={workspaceLoader === "pagination"}
                 >
-                  Load more
+                  加载更多
                   {workspaceLoader === "pagination" && <LoaderIcon className="h-3 w-3 animate-spin" />}
                 </Button>
               </div>
@@ -167,6 +165,6 @@ const WorkspaceManagementPage = observer(function WorkspaceManagementPage(_props
   );
 });
 
-export const meta: Route.MetaFunction = () => [{ title: "Workspace Management - God Mode" }];
+export const meta: Route.MetaFunction = () => [{ title: "工作区管理 - 实例管理" }];
 
 export default WorkspaceManagementPage;

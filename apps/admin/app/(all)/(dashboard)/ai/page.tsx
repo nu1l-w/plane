@@ -25,8 +25,8 @@ const InstanceAIPage = observer(function InstanceAIPage(_props: Route.ComponentP
   return (
     <PageWrapper
       header={{
-        title: "AI features for all your workspaces",
-        description: "Configure your AI API credentials so Plane AI features are turned on for all your workspaces.",
+        title: "为所有工作区配置 AI 功能",
+        description: "配置 AI API 凭据，为所有工作区启用 Plane AI 功能。",
       }}
     >
       {formattedConfig ? (
@@ -45,6 +45,6 @@ const InstanceAIPage = observer(function InstanceAIPage(_props: Route.ComponentP
   );
 });
 
-export const meta: Route.MetaFunction = () => [{ title: "Artificial Intelligence Settings - God Mode" }];
+export const meta: Route.MetaFunction = () => [{ title: "人工智能设置 - 实例管理" }];
 
 export default InstanceAIPage;

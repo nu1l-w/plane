@@ -34,10 +34,10 @@ export const AdminSidebarHelpSection = observer(function AdminSidebarHelpSection
       )}
     >
       <div className={`flex items-center gap-1 ${isSidebarCollapsed ? "flex-col justify-center" : "w-full"}`}>
-        <Tooltip tooltipContent="Help" position={isSidebarCollapsed ? "right" : "top"} className="ml-4">
+        <Tooltip tooltipContent="帮助" position={isSidebarCollapsed ? "right" : "top"} className="ml-4">
           <button
             type="button"
-            aria-label="Help"
+            aria-label="帮助"
             className={`ml-auto grid place-items-center rounded-md p-1.5 text-secondary outline-none hover:bg-layer-1-hover hover:text-primary ${
               isSidebarCollapsed ? "w-full" : ""
             }`}
@@ -46,10 +46,10 @@ export const AdminSidebarHelpSection = observer(function AdminSidebarHelpSection
             <HelpCircle className="size-4" />
           </button>
         </Tooltip>
-        <Tooltip tooltipContent="Toggle sidebar" position={isSidebarCollapsed ? "right" : "top"} className="ml-4">
+        <Tooltip tooltipContent="折叠或展开侧边栏" position={isSidebarCollapsed ? "right" : "top"} className="ml-4">
           <button
             type="button"
-            aria-label="Toggle sidebar"
+            aria-label="折叠或展开侧边栏"
             className={`grid place-items-center rounded-md p-1.5 text-secondary outline-none hover:bg-layer-1-hover hover:text-primary ${
               isSidebarCollapsed ? "w-full" : ""
             }`}
@@ -79,7 +79,7 @@ export const AdminSidebarHelpSection = observer(function AdminSidebarHelpSection
             <div className="space-y-1 pb-2">
               <div className="px-2 py-1 text-11 text-secondary">星轴科技研发管理平台</div>
             </div>
-            <div className="px-2 pt-2 pb-1 text-10">Version: v{instance?.current_version}</div>
+            <div className="px-2 pt-2 pb-1 text-10">版本：v{instance?.current_version}</div>
           </div>
         </Transition>
       </div>

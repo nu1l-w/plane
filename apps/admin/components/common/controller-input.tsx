@@ -46,7 +46,7 @@ export function ControllerInput(props: Props) {
         <Controller
           control={control}
           name={name}
-          rules={{ required: required ? `${label} is required.` : false }}
+          rules={{ required: required ? `${label}为必填项。` : false }}
           render={({ field: { value, onChange, ref } }) => (
             <Input
               id={name}
@@ -67,7 +67,7 @@ export function ControllerInput(props: Props) {
           (showPassword ? (
             <button
               type="button"
-              aria-label="Hide password"
+              aria-label="隐藏密码"
               className="absolute top-2.5 right-3 flex items-center justify-center text-placeholder"
               onClick={() => setShowPassword(false)}
             >
@@ -76,7 +76,7 @@ export function ControllerInput(props: Props) {
           ) : (
             <button
               type="button"
-              aria-label="Show password"
+              aria-label="显示密码"
               className="absolute top-2.5 right-3 flex items-center justify-center text-placeholder"
               onClick={() => setShowPassword(true)}
             >

@@ -29,6 +29,7 @@ class LLMProvider:
     name: str = ""
     models: List[str] = []
     default_model: str = ""
+    base_url: str | None = None
 
     @classmethod
     def get_config(cls) -> Dict[str, str | List[str]]:
@@ -43,6 +44,13 @@ class OpenAIProvider(LLMProvider):
     name = "OpenAI"
     models = ["gpt-3.5-turbo", "gpt-4o-mini", "gpt-4o", "o1-mini", "o1-preview"]
     default_model = "gpt-4o-mini"
+
+
+class DeepSeekProvider(LLMProvider):
+    name = "DeepSeek"
+    models = ["deepseek-flash", "deepseek-v4-pro"]
+    default_model = "deepseek-flash"
+    base_url = "https://api.deepseek.com"
 
 
 class AnthropicProvider(LLMProvider):
@@ -68,6 +76,7 @@ class GeminiProvider(LLMProvider):
 
 SUPPORTED_PROVIDERS = {
     "openai": OpenAIProvider,
+    "deepseek": DeepSeekProvider,
     "anthropic": AnthropicProvider,
     "gemini": GeminiProvider,
 }
@@ -120,29 +129,94 @@ def get_llm_config() -> Tuple[str | None, str | None, str | None]:
     return api_key, model, provider_key
 
 
-def get_llm_response(task, prompt, api_key: str, model: str, provider: str) -> Tuple[str | None, str | None]:
+def get_llm_error(error: Exception) -> Tuple[str, int]:
+    """Return a safe, actionable message for common provider errors."""
+    error_name = error.__class__.__name__
+    error_code = getattr(error, "code", None)
+    error_type = getattr(error, "type", None)
+    response_status = getattr(error, "status_code", None)
+    details = f"{error_code or ''} {error_type or ''} {error}".lower()
+    normalized_error_code = str(error_code or "").lower()
+    normalized_error_type = str(error_type or "").lower()
+
+    if (
+        response_status == status.HTTP_402_PAYMENT_REQUIRED
+        or normalized_error_code in {"credit_balance_exhausted", "insufficient_balance"}
+        or normalized_error_type == "insufficient_quota"
+        or "no credits remaining" in details
+        or "insufficient balance" in details
+    ):
+        return (
+            "AI 服务账户余额不足或已达到使用额度，请到服务商控制台检查余额和限额。",
+            status.HTTP_402_PAYMENT_REQUIRED,
+        )
+
+    if error_name == "AuthenticationError" or response_status == status.HTTP_401_UNAUTHORIZED:
+        return (
+            "AI API 密钥无效或无权访问所选模型，请检查服务商和密钥配置。",
+            status.HTTP_401_UNAUTHORIZED,
+        )
+
+    if error_name == "RateLimitError" or response_status == status.HTTP_429_TOO_MANY_REQUESTS:
+        return (
+            "AI 服务请求过于频繁，请稍后重试；如果持续发生，请检查服务商的限流设置。",
+            status.HTTP_429_TOO_MANY_REQUESTS,
+        )
+
+    if response_status == status.HTTP_403_FORBIDDEN:
+        return (
+            "当前 API 密钥无权调用此模型，请检查模型权限或服务商账户状态。",
+            status.HTTP_403_FORBIDDEN,
+        )
+
+    if response_status == status.HTTP_404_NOT_FOUND:
+        return (
+            "所选模型不存在或当前服务商暂不支持，请检查模型名称。",
+            status.HTTP_400_BAD_REQUEST,
+        )
+
+    if response_status in {status.HTTP_400_BAD_REQUEST, 422}:
+        return (
+            "AI 服务无法处理此请求，请检查所选模型是否正确，以及输入内容是否过长。",
+            status.HTTP_400_BAD_REQUEST,
+        )
+
+    if error_name in {"APIConnectionError", "APITimeoutError", "ConnectError", "Timeout"}:
+        return "无法连接 AI 服务，请检查服务器网络后重试。", status.HTTP_503_SERVICE_UNAVAILABLE
+
+    if response_status in {status.HTTP_500_INTERNAL_SERVER_ERROR, 502, status.HTTP_503_SERVICE_UNAVAILABLE}:
+        return "AI 服务商暂时不可用，请稍后重试。", status.HTTP_503_SERVICE_UNAVAILABLE
+
+    return (
+        "AI 请求失败，请稍后重试；如果问题持续，请联系实例管理员查看服务端日志。",
+        status.HTTP_502_BAD_GATEWAY,
+    )
+
+
+def get_llm_response(
+    task, prompt, api_key: str, model: str, provider: str
+) -> Tuple[str | None, str | None, int | None]:
     """Helper to get LLM completion response"""
     final_text = task + "\n" + prompt
     try:
+        provider_config = SUPPORTED_PROVIDERS[provider.lower()]
         # For Gemini, prepend provider name to model
         if provider.lower() == "gemini":
             model = f"gemini/{model}"
 
-        client = OpenAI(api_key=api_key)
+        client_options = {"api_key": api_key}
+        if provider_config.base_url:
+            client_options["base_url"] = provider_config.base_url
+        client = OpenAI(**client_options)
         chat_completion = client.chat.completions.create(
             model=model, messages=[{"role": "user", "content": final_text}]
         )
         text = chat_completion.choices[0].message.content
-        return text, None
-    except Exception as e:
-        log_exception(e)
-        error_type = e.__class__.__name__
-        if error_type == "AuthenticationError":
-            return None, f"Invalid API key for {provider}"
-        elif error_type == "RateLimitError":
-            return None, f"Rate limit exceeded for {provider}"
-        else:
-            return None, f"Error occurred while generating response from {provider}"
+        return text, None, None
+    except Exception as error:
+        log_exception(error)
+        message, status_code = get_llm_error(error)
+        return None, message, status_code
 
 
 class GPTIntegrationEndpoint(BaseAPIView):
@@ -152,7 +226,7 @@ class GPTIntegrationEndpoint(BaseAPIView):
 
         if not api_key or not model or not provider:
             return Response(
-                {"error": "LLM provider API key and model are required"},
+                {"error": "AI 配置不完整，请检查服务商、模型和 API 密钥。"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -160,12 +234,11 @@ class GPTIntegrationEndpoint(BaseAPIView):
         if not task:
             return Response({"error": "Task is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        text, error = get_llm_response(task, request.data.get("prompt", False), api_key, model, provider)
+        text, error, error_status = get_llm_response(
+            task, request.data.get("prompt", False), api_key, model, provider
+        )
         if not text and error:
-            return Response(
-                {"error": "An internal error has occurred."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+            return Response({"error": error}, status=error_status or status.HTTP_502_BAD_GATEWAY)
 
         workspace = Workspace.objects.get(slug=slug)
         project = Project.objects.get(pk=project_id)
@@ -188,7 +261,7 @@ class WorkspaceGPTIntegrationEndpoint(BaseAPIView):
 
         if not api_key or not model or not provider:
             return Response(
-                {"error": "LLM provider API key and model are required"},
+                {"error": "AI 配置不完整，请检查服务商、模型和 API 密钥。"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -196,12 +269,11 @@ class WorkspaceGPTIntegrationEndpoint(BaseAPIView):
         if not task:
             return Response({"error": "Task is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        text, error = get_llm_response(task, request.data.get("prompt", False), api_key, model, provider)
+        text, error, error_status = get_llm_response(
+            task, request.data.get("prompt", False), api_key, model, provider
+        )
         if not text and error:
-            return Response(
-                {"error": "An internal error has occurred."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+            return Response({"error": error}, status=error_status or status.HTTP_502_BAD_GATEWAY)
 
         return Response(
             {

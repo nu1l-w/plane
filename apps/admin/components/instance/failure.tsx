@@ -27,15 +27,13 @@ export const InstanceFailureView = observer(function InstanceFailureView() {
       <div className="mt-10 flex w-full flex-grow flex-col items-center justify-center py-6">
         <div className="relative flex w-full max-w-[22.5rem] flex-col gap-6">
           <div className="relative flex flex-col items-center justify-center space-y-4">
-            <img src={instanceImage} alt="Instance failure illustration" />
-            <h3 className="text-center text-20 font-medium text-on-color">Unable to fetch instance details.</h3>
-            <p className="text-center text-14 font-medium">
-              We were unable to fetch the details of the instance. Fret not, it might just be a connectivity issue.
-            </p>
+            <img src={instanceImage} alt="实例加载失败示意图" />
+            <h3 className="text-center text-20 font-medium text-on-color">无法获取实例信息。</h3>
+            <p className="text-center text-14 font-medium">暂时无法获取实例信息，请检查网络连接后重试。</p>
           </div>
           <div className="flex justify-center">
             <Button size="lg" onClick={handleRetry}>
-              Retry
+              重试
             </Button>
           </div>
         </div>

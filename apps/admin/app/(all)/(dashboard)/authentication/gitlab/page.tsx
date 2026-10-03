@@ -43,33 +43,32 @@ const InstanceGitlabAuthenticationPage = observer(function InstanceGitlabAuthent
     const updateConfigPromise = updateInstanceConfigurations(payload);
 
     setPromiseToast(updateConfigPromise, {
-      loading: "Saving Configuration",
+      loading: "正在保存配置…",
       success: {
-        title: "Configuration saved",
-        message: () => `GitLab authentication is now ${value === "1" ? "active" : "disabled"}.`,
+        title: "配置已保存",
+        message: () => `GitLab 登录${value === "1" ? "已启用" : "已停用"}。`,
       },
       error: {
-        title: "Error",
-        message: () => "Failed to save configuration",
+        title: "保存失败",
+        message: () => "无法保存配置，请重试。",
       },
     });
 
-    await updateConfigPromise
-      .then(() => {
-        setIsSubmitting(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setIsSubmitting(false);
-      });
+    try {
+      await updateConfigPromise;
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   return (
     <PageWrapper
       customHeader={
         <AuthenticationMethodCard
           name="GitLab"
-          description="Allow members to login or sign up to plane with their GitLab accounts."
-          icon={<img src={GitlabLogo} height={24} width={24} alt="GitLab Logo" />}
+          description="允许成员使用 GitLab 账号登录或注册 Plane。"
+          icon={<img src={GitlabLogo} height={24} width={24} alt="GitLab 标志" />}
           config={
             <ToggleSwitch
               value={Boolean(parseInt(enableGitlabConfig))}
@@ -104,6 +103,6 @@ const InstanceGitlabAuthenticationPage = observer(function InstanceGitlabAuthent
   );
 });
 
-export const meta: Route.MetaFunction = () => [{ title: "GitLab Authentication - God Mode" }];
+export const meta: Route.MetaFunction = () => [{ title: "GitLab 身份验证 - 实例管理" }];
 
 export default InstanceGitlabAuthenticationPage;

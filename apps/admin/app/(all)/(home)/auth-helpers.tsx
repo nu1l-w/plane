@@ -22,56 +22,56 @@ const errorCodeMessages: {
 } = {
   // admin
   [EAdminAuthErrorCodes.ADMIN_ALREADY_EXIST]: {
-    title: `Admin already exists`,
-    message: () => `Admin already exists. Please try again.`,
+    title: `管理员已存在`,
+    message: () => `管理员已存在，请重试。`,
   },
   [EAdminAuthErrorCodes.REQUIRED_ADMIN_EMAIL_PASSWORD_FIRST_NAME]: {
-    title: `Email, password and first name required`,
-    message: () => `Email, password and first name required. Please try again.`,
+    title: `信息不完整`,
+    message: () => `请填写邮箱、密码和姓名。`,
   },
   [EAdminAuthErrorCodes.INVALID_ADMIN_EMAIL]: {
-    title: `Invalid admin email`,
-    message: () => `Invalid admin email. Please try again.`,
+    title: `邮箱无效`,
+    message: () => `请输入有效的管理员邮箱。`,
   },
   [EAdminAuthErrorCodes.INVALID_ADMIN_PASSWORD]: {
-    title: `Invalid admin password`,
-    message: () => `Invalid admin password. Please try again.`,
+    title: `密码不符合要求`,
+    message: () => `请设置更强的密码后重试。`,
   },
   [EAdminAuthErrorCodes.REQUIRED_ADMIN_EMAIL_PASSWORD]: {
-    title: `Email and password required`,
-    message: () => `Email and password required. Please try again.`,
+    title: `信息不完整`,
+    message: () => `请输入邮箱和密码。`,
   },
   [EAdminAuthErrorCodes.ADMIN_AUTHENTICATION_FAILED]: {
-    title: `Authentication failed`,
-    message: () => `Authentication failed. Please try again.`,
+    title: `身份验证失败`,
+    message: () => `身份验证失败，请重试。`,
   },
   [EAdminAuthErrorCodes.ADMIN_USER_ALREADY_EXIST]: {
-    title: `Admin user already exists`,
+    title: `管理员账号已存在`,
     message: () => (
       <div>
-        Admin user already exists.&nbsp;
+        管理员账号已存在，请
         <Link className="font-medium underline underline-offset-4 transition-all hover:font-bold" href={`/admin`}>
-          Sign In
+          登录
         </Link>
-        &nbsp;now.
+        。
       </div>
     ),
   },
   [EAdminAuthErrorCodes.ADMIN_USER_DOES_NOT_EXIST]: {
-    title: `Admin user does not exist`,
+    title: `管理员账号不存在`,
     message: () => (
       <div>
-        Admin user does not exist.&nbsp;
+        管理员账号不存在，请
         <Link className="font-medium underline underline-offset-4 transition-all hover:font-bold" href={`/admin`}>
-          Sign In
+          登录
         </Link>
-        &nbsp;now.
+        。
       </div>
     ),
   },
   [EAdminAuthErrorCodes.ADMIN_USER_DEACTIVATED]: {
-    title: `User account deactivated`,
-    message: () => `User account deactivated. Please contact ${SUPPORT_EMAIL ? SUPPORT_EMAIL : "administrator"}.`,
+    title: `账号已停用`,
+    message: () => `此账号已停用，请联系${SUPPORT_EMAIL ? SUPPORT_EMAIL : "系统管理员"}。`,
   },
 };
 
@@ -92,8 +92,8 @@ export const authErrorHandler = (errorCode: EAdminAuthErrorCodes, email?: string
     return {
       type: EErrorAlertType.BANNER_ALERT,
       code: errorCode,
-      title: errorCodeMessages[errorCode]?.title || "Error",
-      message: errorCodeMessages[errorCode]?.message(email) || "Something went wrong. Please try again.",
+      title: errorCodeMessages[errorCode]?.title || "发生错误",
+      message: errorCodeMessages[errorCode]?.message(email) || "出了点问题，请重试。",
     };
 
   return undefined;

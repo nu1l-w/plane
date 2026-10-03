@@ -4,14 +4,14 @@
  * See the LICENSE file for details.
  */
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { observer } from "mobx-react";
 import type { Control } from "react-hook-form";
 import { Controller } from "react-hook-form";
 import { Sparkle } from "lucide-react";
 // plane imports
 import { ETabIndices } from "@plane/constants";
-import type { EditorRefApi } from "@plane/editor";
+import type { EditorRefApi, TEditorAsset } from "@plane/editor";
 import { useTranslation } from "@plane/i18n";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 import type { TIssue } from "@plane/types";
@@ -31,7 +31,7 @@ import { usePlatformOS } from "@/hooks/use-platform-os";
 // plane web services
 import { WorkspaceService } from "@/services/workspace.service";
 // services
-import { AIService } from "@/services/ai.service";
+import { AIService, getAIServiceErrorMessage } from "@/services/ai.service";
 const workspaceService = new WorkspaceService();
 const aiService = new AIService();
 
@@ -51,6 +51,7 @@ type TIssueDescriptionEditorProps = {
   setGptAssistantModal: React.Dispatch<React.SetStateAction<boolean>>;
   handleGptAssistantClose: () => void;
   onAssetUpload: (assetId: string) => void;
+  onAssetChange: (assetIds: string[]) => void;
   onClose: () => void;
 };
 
@@ -71,6 +72,7 @@ export const IssueDescriptionEditor = observer(function IssueDescriptionEditor(p
     setGptAssistantModal,
     handleGptAssistantClose,
     onAssetUpload,
+    onAssetChange,
     onClose,
   } = props;
   // i18n
@@ -82,6 +84,10 @@ export const IssueDescriptionEditor = observer(function IssueDescriptionEditor(p
   const workspaceId = getWorkspaceBySlug(workspaceSlug?.toString())?.id ?? "";
   const { config } = useInstance();
   const { uploadEditorAsset, duplicateEditorAsset } = useEditorAsset();
+  const handleEditorAssetChange = useCallback(
+    (assets: TEditorAsset[]) => onAssetChange(assets.map((asset) => asset.src)),
+    [onAssetChange]
+  );
   // platform
   const { isMobile } = usePlatformOS();
 
@@ -119,38 +125,29 @@ export const IssueDescriptionEditor = observer(function IssueDescriptionEditor(p
 
     setIAmFeelingLucky(true);
 
-    aiService
-      .createGptTask(workspaceSlug.toString(), {
+    try {
+      const res = await aiService.createGptTask(workspaceSlug.toString(), {
         prompt: issueName,
-        task: "Generate a proper description for this work item.",
-      })
-      .then((res) => {
-        if (res.response === "")
-          setToast({
-            type: TOAST_TYPE.ERROR,
-            title: "Error!",
-            message:
-              "Work item title isn't informative enough to generate the description. Please try with a different title.",
-          });
-        else handleAiAssistance(res.response_html);
-      })
-      .catch((err) => {
-        const error = err?.data?.error;
-
-        if (err.status === 429)
-          setToast({
-            type: TOAST_TYPE.ERROR,
-            title: "Error!",
-            message: error || "You have reached the maximum number of requests of 50 requests per month per user.",
-          });
-        else
-          setToast({
-            type: TOAST_TYPE.ERROR,
-            title: "Error!",
-            message: error || "Some error occurred. Please try again.",
-          });
-      })
-      .finally(() => setIAmFeelingLucky(false));
+        task: "请根据工作项标题生成简洁、清晰且可执行的中文描述，写明目标、待完成事项和预期结果。仅使用标题中能确认的信息，不要臆测背景、时间、负责人或技术方案；如果信息不足，请指出还需要补充什么。",
+      });
+      if (res.response === "") {
+        setToast({
+          type: TOAST_TYPE.ERROR,
+          title: "无法生成描述",
+          message: "标题信息不足，暂时无法生成描述。请补充标题内容后重试。",
+        });
+      } else {
+        await handleAiAssistance(res.response_html);
+      }
+    } catch (err) {
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: "AI 生成失败",
+        message: getAIServiceErrorMessage(err),
+      });
+    } finally {
+      setIAmFeelingLucky(false);
+    }
   };
 
   return (
@@ -195,6 +192,7 @@ export const IssueDescriptionEditor = observer(function IssueDescriptionEditor(p
                 }}
                 onEnterKeyPress={() => submitBtnRef?.current?.click()}
                 ref={editorRef}
+                onAssetChange={handleEditorAssetChange}
                 tabIndex={getIndex("description_html")}
                 placeholder={(isFocused, description) => t(getDescriptionPlaceholderI18n(isFocused, description))}
                 searchMentionCallback={async (payload) =>
@@ -222,7 +220,7 @@ export const IssueDescriptionEditor = observer(function IssueDescriptionEditor(p
                     return asset_id;
                   } catch (error) {
                     console.log("Error in uploading issue asset:", error);
-                    throw new Error("Asset upload failed. Please try again later.");
+                    throw new Error("Asset upload failed. Please try again later.", { cause: error });
                   }
                 }}
                 duplicateFile={async (assetId: string) => {

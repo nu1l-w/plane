@@ -55,9 +55,8 @@ const InstanceAuthenticationPage = observer(function InstanceAuthenticationPage(
           if (!canDisable) {
             setToast({
               type: TOAST_TYPE.ERROR,
-              title: "Cannot disable authentication",
-              message:
-                "At least one authentication method must remain enabled. Please enable another method before disabling this one.",
+              title: "无法关闭此登录方式",
+              message: "至少需要保留一种登录方式。请先启用其他方式，再关闭当前方式。",
             });
             return;
           }
@@ -74,14 +73,14 @@ const InstanceAuthenticationPage = observer(function InstanceAuthenticationPage(
       const updateConfigPromise = updateInstanceConfigurations(payload);
 
       setPromiseToast(updateConfigPromise, {
-        loading: "Saving configuration",
+        loading: "正在保存配置…",
         success: {
-          title: "Success",
-          message: () => "Configuration saved successfully",
+          title: "保存成功",
+          message: () => "配置已保存。",
         },
         error: {
-          title: "Error",
-          message: () => "Failed to save configuration",
+          title: "保存失败",
+          message: () => "无法保存配置，请重试。",
         },
       });
 
@@ -113,8 +112,8 @@ const InstanceAuthenticationPage = observer(function InstanceAuthenticationPage(
   return (
     <PageWrapper
       header={{
-        title: "Manage authentication modes for your instance",
-        description: "Configure authentication modes for your team and restrict sign-ups to be invite only.",
+        title: "实例身份验证设置",
+        description: "配置登录方式，并将新用户注册限制为邀请制。",
       }}
     >
       {formattedConfig ? (
@@ -122,9 +121,9 @@ const InstanceAuthenticationPage = observer(function InstanceAuthenticationPage(
           <div className={cn("flex w-full items-center gap-14 rounded-sm")}>
             <div className="flex grow items-center gap-4">
               <div className="grow">
-                <div className="pb-1 text-16 font-medium">Allow anyone to sign up even without an invite</div>
+                <div className="pb-1 text-16 font-medium">允许未受邀用户自行注册</div>
                 <div className={cn("text-11 leading-5 font-regular text-tertiary")}>
-                  Toggling this off will only let users sign up when they are invited.
+                  关闭后，用户只有收到邀请才能注册并加入工作区。
                 </div>
               </div>
             </div>
@@ -145,7 +144,7 @@ const InstanceAuthenticationPage = observer(function InstanceAuthenticationPage(
               </div>
             </div>
           </div>
-          <div className="text-lg pt-6 font-medium">Available authentication modes</div>
+          <div className="text-lg pt-6 font-medium">可用的登录方式</div>
           {authenticationModes.map((method) => (
             <AuthenticationMethodCard
               key={method.key}
@@ -171,6 +170,6 @@ const InstanceAuthenticationPage = observer(function InstanceAuthenticationPage(
   );
 });
 
-export const meta: Route.MetaFunction = () => [{ title: "Authentication Settings - Plane Web" }];
+export const meta: Route.MetaFunction = () => [{ title: "身份验证设置 - 实例管理" }];
 
 export default InstanceAuthenticationPage;

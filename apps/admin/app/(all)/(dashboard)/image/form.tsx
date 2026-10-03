@@ -41,8 +41,8 @@ export function InstanceImageConfigForm(props: IInstanceImageConfigForm) {
       .then(() =>
         setToast({
           type: TOAST_TYPE.SUCCESS,
-          title: "Success",
-          message: "Image Configuration Settings updated successfully",
+          title: "保存成功",
+          message: "图片服务配置已更新。",
         })
       )
       .catch((err) => console.error(err));
@@ -55,18 +55,18 @@ export function InstanceImageConfigForm(props: IInstanceImageConfigForm) {
           control={control}
           type="password"
           name="UNSPLASH_ACCESS_KEY"
-          label="Access key from your Unsplash account"
+          label="Unsplash 访问密钥"
           description={
             <>
-              You will find your access key in your Unsplash developer console.&nbsp;
+              你可以在 Unsplash 开发者控制台中找到访问密钥。&nbsp;
               <a
                 href="https://unsplash.com/documentation#creating-a-developer-account"
                 target="_blank"
                 className="text-accent-primary hover:underline"
                 rel="noreferrer"
-                aria-label="Unsplash developer account documentation"
+                aria-label="Unsplash 开发者账户文档"
               >
-                Learn more.
+                查看文档
               </a>
             </>
           }
@@ -78,7 +78,7 @@ export function InstanceImageConfigForm(props: IInstanceImageConfigForm) {
 
       <div>
         <Button variant="primary" size="lg" onClick={handleSubmit(onSubmit)} loading={isSubmitting}>
-          {isSubmitting ? "Saving" : "Save changes"}
+          {isSubmitting ? "正在保存…" : "保存更改"}
         </Button>
       </div>
     </div>

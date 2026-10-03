@@ -50,22 +50,20 @@ export function ConfirmDiscardModal(props: Props) {
                   <div className="sm:flex sm:items-start">
                     <div className="mt-3 text-center sm:mt-0 sm:text-left">
                       <Dialog.Title as="h3" className="text-16 leading-6 font-medium text-tertiary">
-                        You have unsaved changes
+                        有尚未保存的更改
                       </Dialog.Title>
                       <div className="mt-2">
-                        <p className="text-13 text-placeholder">
-                          Changes you made will be lost if you go back. Do you wish to go back?
-                        </p>
+                        <p className="text-13 text-placeholder">返回后，当前更改将会丢失。确定要返回吗？</p>
                       </div>
                     </div>
                   </div>
                 </div>
                 <div className="flex items-center justify-end gap-2 p-4 sm:px-6">
                   <Button variant="secondary" size="lg" onClick={handleClose}>
-                    Keep editing
+                    继续编辑
                   </Button>
                   <Link href={onDiscardHref} className={getButtonStyling("primary", "base")}>
-                    Go back
+                    返回
                   </Link>
                 </div>
               </Dialog.Panel>

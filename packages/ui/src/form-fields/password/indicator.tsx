@@ -14,18 +14,20 @@ export interface PasswordStrengthIndicatorProps {
   password: string;
   showCriteria?: boolean;
   isFocused?: boolean;
+  translateText?: (text: string) => string;
 }
 
 export function PasswordStrengthIndicator({
   password,
   showCriteria = true,
   isFocused = false,
+  translateText,
 }: PasswordStrengthIndicatorProps) {
   const strength = getPasswordStrength(password);
   const criteria = getPasswordCriteria(password);
   const strengthInfo = getStrengthInfo(strength);
 
-  const isPasswordMeterVisible = isFocused ? true : strength === E_PASSWORD_STRENGTH.STRENGTH_VALID ? false : true;
+  const isPasswordMeterVisible = isFocused || strength !== E_PASSWORD_STRENGTH.STRENGTH_VALID;
 
   if ((!password && !showCriteria) || !isPasswordMeterVisible) {
     return null;
@@ -48,7 +50,11 @@ export function PasswordStrengthIndicator({
         </div>
 
         {/* Strength Message */}
-        {password && <p className={cn("!text-13 font-medium", strengthInfo.textColor)}>{strengthInfo.message}</p>}
+        {password && (
+          <p className={cn("!text-13 font-medium", strengthInfo.textColor)}>
+            {translateText ? translateText(strengthInfo.message) : strengthInfo.message}
+          </p>
+        )}
       </div>
 
       {/* Criteria list */}
@@ -70,7 +76,7 @@ export function PasswordStrengthIndicator({
                   "text-primary": !criterion.isValid,
                 })}
               >
-                {criterion.label}
+                {translateText ? translateText(criterion.label) : criterion.label}
               </span>
             </div>
           ))}

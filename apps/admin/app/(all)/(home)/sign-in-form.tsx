@@ -79,15 +79,15 @@ export function InstanceSignInForm() {
     if (errorCode && errorMessage) {
       switch (errorCode) {
         case EErrorCodes.INSTANCE_NOT_CONFIGURED:
-          return { type: EErrorCodes.INSTANCE_NOT_CONFIGURED, message: errorMessage };
+          return { type: EErrorCodes.INSTANCE_NOT_CONFIGURED, message: "实例尚未完成初始化，请先创建实例管理员。" };
         case EErrorCodes.REQUIRED_EMAIL_PASSWORD:
-          return { type: EErrorCodes.REQUIRED_EMAIL_PASSWORD, message: errorMessage };
+          return { type: EErrorCodes.REQUIRED_EMAIL_PASSWORD, message: "请输入邮箱和密码。" };
         case EErrorCodes.INVALID_EMAIL:
-          return { type: EErrorCodes.INVALID_EMAIL, message: errorMessage };
+          return { type: EErrorCodes.INVALID_EMAIL, message: "请输入有效的邮箱地址。" };
         case EErrorCodes.USER_DOES_NOT_EXIST:
-          return { type: EErrorCodes.USER_DOES_NOT_EXIST, message: errorMessage };
+          return { type: EErrorCodes.USER_DOES_NOT_EXIST, message: "管理员账号不存在。" };
         case EErrorCodes.AUTHENTICATION_FAILED:
-          return { type: EErrorCodes.AUTHENTICATION_FAILED, message: errorMessage };
+          return { type: EErrorCodes.AUTHENTICATION_FAILED, message: "邮箱或密码错误，请重试。" };
         default:
           return { type: undefined, message: undefined };
       }
@@ -95,7 +95,7 @@ export function InstanceSignInForm() {
   }, [errorCode, errorMessage]);
 
   const isButtonDisabled = useMemo(
-    () => (!isSubmitting && formData.email && formData.password ? false : true),
+    () => isSubmitting || !formData.email || !formData.password,
     [formData.email, formData.password, isSubmitting]
   );
 
@@ -142,7 +142,6 @@ export function InstanceSignInForm() {
                 value={formData.email}
                 onChange={(e) => handleFormChange("email", e.target.value)}
                 autoComplete="off"
-                autoFocus
               />
             </div>
 

@@ -10,6 +10,7 @@ import { CornerDownRight, RefreshCcw, Sparkles, TriangleAlert } from "lucide-rea
 // plane editor
 import type { EditorRefApi } from "@plane/editor";
 import { ChevronRightIcon } from "@plane/propel/icons";
+import { TOAST_TYPE, setToast } from "@plane/propel/toast";
 // plane ui
 import { Tooltip } from "@plane/propel/tooltip";
 // components
@@ -19,7 +20,7 @@ import { RichTextEditor } from "@/components/editor/rich-text";
 import { AI_EDITOR_TASKS, LOADING_TEXTS } from "@plane/constants";
 // plane web services
 import type { TTaskPayload } from "@/services/ai.service";
-import { AIService } from "@/services/ai.service";
+import { AIService, getAIServiceErrorMessage } from "@/services/ai.service";
 import { AskPiMenu } from "./ask-pi-menu";
 const aiService = new AIService();
 
@@ -75,7 +76,16 @@ export function EditorAIMenu(props: Props) {
   // params
   const handleGenerateResponse = async (payload: TTaskPayload) => {
     if (!workspaceSlug) return;
-    await aiService.performEditorTask(workspaceSlug.toString(), payload).then((res) => setResponse(res.response));
+    try {
+      const res = await aiService.performEditorTask(workspaceSlug.toString(), payload);
+      setResponse(res.response);
+    } catch (error) {
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: "AI 生成失败",
+        message: getAIServiceErrorMessage(error),
+      });
+    }
   };
   // handle task click
   const handleClick = async (key: AI_EDITOR_TASKS) => {

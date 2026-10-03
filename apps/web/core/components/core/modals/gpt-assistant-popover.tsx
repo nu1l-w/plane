@@ -19,7 +19,7 @@ import { Input } from "@plane/ui";
 // components
 import { RichTextEditor } from "@/components/editor/rich-text";
 // services
-import { AIService } from "@/services/ai.service";
+import { AIService, getAIServiceErrorMessage } from "@/services/ai.service";
 const aiService = new AIService();
 
 type Props = {
@@ -89,14 +89,10 @@ export function GptAssistantPopover(props: Props) {
   };
 
   const handleServiceError = (err: any) => {
-    const error = err?.data?.error;
-    const errorMessage =
-      err?.status === 429 ? error || "您已达到每月每用户 50 次请求的最大数量限制。" : error || "发生错误，请重试。";
-
     setToast({
       type: TOAST_TYPE.ERROR,
-      title: "错误！",
-      message: errorMessage,
+      title: "AI 生成失败",
+      message: getAIServiceErrorMessage(err),
     });
 
     if (onError) onError(err);
@@ -121,7 +117,7 @@ export function GptAssistantPopover(props: Props) {
   const handleInvalidTask = () => {
     setToast({
       type: TOAST_TYPE.ERROR,
-      title: "错误！",
+      title: "无法生成内容",
       message: "请输入任务内容以获取 AI 协助。",
     });
   };

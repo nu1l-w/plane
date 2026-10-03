@@ -34,14 +34,14 @@ const InstanceEmailPage = observer(function InstanceEmailPage(_props: Route.Comp
         await disableEmail();
         setIsSMTPEnabled(false);
         setToast({
-          title: "Email feature disabled",
-          message: "Email feature has been disabled",
+          title: "邮件服务已关闭",
+          message: "邮件服务已关闭。",
           type: TOAST_TYPE.SUCCESS,
         });
       } catch (_error) {
         setToast({
-          title: "Error disabling email",
-          message: "Failed to disable email feature. Please try again.",
+          title: "关闭邮件服务失败",
+          message: "无法关闭邮件服务，请重试。",
           type: TOAST_TYPE.ERROR,
         });
       } finally {
@@ -60,13 +60,13 @@ const InstanceEmailPage = observer(function InstanceEmailPage(_props: Route.Comp
   return (
     <PageWrapper
       header={{
-        title: "Secure emails from your own instance",
+        title: "配置实例邮件服务",
         description: (
           <>
-            Plane can send useful emails to you and your users from your own instance without talking to the Internet.
+            Plane 可以通过此实例向你和其他用户发送邮件。
             <div className="text-13 font-regular text-tertiary">
-              Set it up below and please test your settings before you save them.&nbsp;
-              <span className="text-danger-primary">Misconfigs can lead to email bounces and errors.</span>
+              请在下方配置并测试邮件设置后再保存。&nbsp;
+              <span className="text-danger-primary">配置错误可能导致邮件退信或发送失败。</span>
             </div>
           </>
         ),
@@ -98,6 +98,6 @@ const InstanceEmailPage = observer(function InstanceEmailPage(_props: Route.Comp
   );
 });
 
-export const meta: Route.MetaFunction = () => [{ title: "Email Settings - God Mode" }];
+export const meta: Route.MetaFunction = () => [{ title: "邮件设置 - 实例管理" }];
 
 export default InstanceEmailPage;

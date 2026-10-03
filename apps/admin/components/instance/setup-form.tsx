@@ -57,6 +57,20 @@ const defaultFromData: TFormData = {
   is_telemetry_enabled: true,
 };
 
+const ADMIN_PASSWORD_STRENGTH_TRANSLATIONS: Record<string, string> = {
+  "Please enter your password": "请输入密码",
+  "Password is too short": "密码长度不足",
+  "Password is weak": "密码强度较弱",
+  "Password is strong": "密码强度较高",
+  "Min 8 characters": "至少 8 个字符",
+  "Min 1 upper-case letter": "至少包含 1 个大写字母",
+  "Min 1 lower-case letter": "至少包含 1 个小写字母",
+  "Min 1 number": "至少包含 1 个数字",
+  "Min 1 special character": "至少包含 1 个特殊字符",
+};
+
+const translateAdminPasswordStrengthText = (text: string): string => ADMIN_PASSWORD_STRENGTH_TRANSLATIONS[text] ?? text;
+
 export function InstanceSetupForm() {
   // search params
   const searchParams = useSearchParams();
@@ -64,7 +78,7 @@ export function InstanceSetupForm() {
   const lastNameParam = searchParams?.get("last_name") || undefined;
   const companyParam = searchParams?.get("company") || undefined;
   const emailParam = searchParams?.get("email") || undefined;
-  const isTelemetryEnabledParam = (searchParams?.get("is_telemetry_enabled") === "True" ? true : false) || true;
+  const isTelemetryEnabledParam = searchParams?.get("is_telemetry_enabled") !== "False";
   const errorCode = searchParams?.get("error_code") || undefined;
   const errorMessage = searchParams?.get("error_message") || undefined;
   // state
@@ -102,17 +116,17 @@ export function InstanceSetupForm() {
     if (errorCode && errorMessage) {
       switch (errorCode) {
         case EErrorCodes.INSTANCE_NOT_CONFIGURED:
-          return { type: EErrorCodes.INSTANCE_NOT_CONFIGURED, message: errorMessage };
+          return { type: EErrorCodes.INSTANCE_NOT_CONFIGURED, message: "实例尚未配置完成，请检查部署设置后重试。" };
         case EErrorCodes.ADMIN_ALREADY_EXIST:
-          return { type: EErrorCodes.ADMIN_ALREADY_EXIST, message: errorMessage };
+          return { type: EErrorCodes.ADMIN_ALREADY_EXIST, message: "此实例已完成初始化，请返回登录页面。" };
         case EErrorCodes.REQUIRED_EMAIL_PASSWORD_FIRST_NAME:
-          return { type: EErrorCodes.REQUIRED_EMAIL_PASSWORD_FIRST_NAME, message: errorMessage };
+          return { type: EErrorCodes.REQUIRED_EMAIL_PASSWORD_FIRST_NAME, message: "请填写姓名、邮箱和密码。" };
         case EErrorCodes.INVALID_EMAIL:
-          return { type: EErrorCodes.INVALID_EMAIL, message: errorMessage };
+          return { type: EErrorCodes.INVALID_EMAIL, message: "请输入有效的邮箱地址。" };
         case EErrorCodes.INVALID_PASSWORD:
-          return { type: EErrorCodes.INVALID_PASSWORD, message: errorMessage };
+          return { type: EErrorCodes.INVALID_PASSWORD, message: "密码强度不足，请设置更强的密码。" };
         case EErrorCodes.USER_ALREADY_EXISTS:
-          return { type: EErrorCodes.USER_ALREADY_EXISTS, message: errorMessage };
+          return { type: EErrorCodes.USER_ALREADY_EXISTS, message: "此邮箱已注册，请使用其他邮箱。" };
         default:
           return { type: undefined, message: undefined };
       }
@@ -121,14 +135,12 @@ export function InstanceSetupForm() {
 
   const isButtonDisabled = useMemo(
     () =>
-      !isSubmitting &&
-      formData.first_name &&
-      formData.email &&
-      formData.password &&
-      getPasswordStrength(formData.password) === E_PASSWORD_STRENGTH.STRENGTH_VALID &&
-      formData.password === formData.confirm_password
-        ? false
-        : true,
+      isSubmitting ||
+      !formData.first_name ||
+      !formData.email ||
+      !formData.password ||
+      getPasswordStrength(formData.password) !== E_PASSWORD_STRENGTH.STRENGTH_VALID ||
+      formData.password !== formData.confirm_password,
     [formData.confirm_password, formData.email, formData.first_name, formData.password, isSubmitting]
   );
 
@@ -168,7 +180,7 @@ export function InstanceSetupForm() {
                   name="first_name"
                   type="text"
                   inputSize="md"
-                  placeholder="Wilber"
+                  placeholder="小明"
                   value={formData.first_name}
                   onChange={(e) => {
                     const validation = validatePersonName(e.target.value);
@@ -177,7 +189,6 @@ export function InstanceSetupForm() {
                     }
                   }}
                   autoComplete="off"
-                  autoFocus
                   maxLength={50}
                 />
               </div>
@@ -191,7 +202,7 @@ export function InstanceSetupForm() {
                   name="last_name"
                   type="text"
                   inputSize="md"
-                  placeholder="Wright"
+                  placeholder="张"
                   value={formData.last_name}
                   onChange={(e) => {
                     const validation = validatePersonName(e.target.value);
@@ -218,7 +229,7 @@ export function InstanceSetupForm() {
                 placeholder="name@company.com"
                 value={formData.email}
                 onChange={(e) => handleFormChange("email", e.target.value)}
-                hasError={errorData.type && errorData.type === EErrorCodes.INVALID_EMAIL ? true : false}
+                hasError={errorData.type === EErrorCodes.INVALID_EMAIL}
                 autoComplete="off"
               />
               {errorData.type && errorData.type === EErrorCodes.INVALID_EMAIL && errorData.message && (
@@ -262,7 +273,7 @@ export function InstanceSetupForm() {
                   placeholder="请输入新密码"
                   value={formData.password}
                   onChange={(e) => handleFormChange("password", e.target.value)}
-                  hasError={errorData.type && errorData.type === EErrorCodes.INVALID_PASSWORD ? true : false}
+                  hasError={errorData.type === EErrorCodes.INVALID_PASSWORD}
                   onFocus={() => setIsPasswordInputFocused(true)}
                   onBlur={() => setIsPasswordInputFocused(false)}
                   autoComplete="new-password"
@@ -290,7 +301,11 @@ export function InstanceSetupForm() {
               {errorData.type && errorData.type === EErrorCodes.INVALID_PASSWORD && errorData.message && (
                 <p className="px-1 text-11 text-danger-primary">{errorData.message}</p>
               )}
-              <PasswordStrengthIndicator password={formData.password} isFocused={isPasswordInputFocused} />
+              <PasswordStrengthIndicator
+                password={formData.password}
+                isFocused={isPasswordInputFocused}
+                translateText={translateAdminPasswordStrengthText}
+              />
             </div>
 
             <div className="w-full space-y-1">
