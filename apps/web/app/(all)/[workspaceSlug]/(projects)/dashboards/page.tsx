@@ -8,7 +8,7 @@ import { observer } from "mobx-react";
 // components
 import { useTranslation } from "@plane/i18n";
 import { Breadcrumbs, Header } from "@plane/ui";
-import { WorkspaceDashboardOverview } from "@/components/analytics/dashboard-overview";
+import { WorkspaceOverview } from "@/components/analytics/dashboard-overview";
 import { BreadcrumbLink } from "@/components/common/breadcrumb-link";
 import { AppHeader } from "@/components/core/app-header";
 import { ContentWrapper } from "@/components/core/content-wrapper";
@@ -16,10 +16,10 @@ import { PageHead } from "@/components/core/page-title";
 // hooks
 import { useWorkspace } from "@/hooks/store/use-workspace";
 
-function WorkspaceDashboardsPage() {
+function WorkspaceOverviewPage() {
   const { currentWorkspace } = useWorkspace();
   const { t } = useTranslation();
-  const pageTitle = currentWorkspace?.name ? `${currentWorkspace.name} - ${t("workspace_dashboards")}` : undefined;
+  const pageTitle = currentWorkspace?.name ? `${currentWorkspace.name} - ${t("workspace_overview")}` : undefined;
 
   return (
     <>
@@ -28,7 +28,7 @@ function WorkspaceDashboardsPage() {
           <Header>
             <Header.LeftItem>
               <Breadcrumbs>
-                <Breadcrumbs.Item component={<BreadcrumbLink label={t("workspace_dashboards")} />} />
+                <Breadcrumbs.Item component={<BreadcrumbLink label={t("workspace_overview")} />} />
               </Breadcrumbs>
             </Header.LeftItem>
           </Header>
@@ -36,10 +36,10 @@ function WorkspaceDashboardsPage() {
       />
       <ContentWrapper>
         <PageHead title={pageTitle} />
-        <WorkspaceDashboardOverview />
+        <WorkspaceOverview />
       </ContentWrapper>
     </>
   );
 }
 
-export default observer(WorkspaceDashboardsPage);
+export default observer(WorkspaceOverviewPage);

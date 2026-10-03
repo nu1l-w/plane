@@ -12,7 +12,7 @@ import { AlertTriangle } from "lucide-react";
 import { useTranslation } from "@plane/i18n";
 import { Button, getButtonStyling } from "@plane/propel/button";
 import { ChevronLeftIcon, ChevronRightIcon, CloseIcon, FilterIcon, InfoIcon } from "@plane/propel/icons";
-import { CustomSelect, Loader } from "@plane/ui";
+import { CustomSelect, Loader, Tag } from "@plane/ui";
 import { cn } from "@plane/utils";
 import { DashboardService } from "@/services/dashboard.service";
 import type {
@@ -492,10 +492,9 @@ function DashboardOverviewLoader() {
   const { t } = useTranslation();
 
   return (
-    <main className="mx-auto w-full max-w-[1440px] space-y-5 px-4 py-6 md:px-6 md:py-8">
+    <main className="mx-auto w-full max-w-[1440px] space-y-5 px-6 py-4">
       <span className="sr-only">{t("dashboard_overview.loading")}</span>
       <Loader className="space-y-3">
-        <Loader.Item height="28px" width="220px" />
         <Loader.Item height="16px" width="420px" className="max-w-full" />
       </Loader>
       <Loader>
@@ -519,7 +518,7 @@ function DashboardOverviewLoader() {
   );
 }
 
-export function WorkspaceDashboardOverview() {
+export function WorkspaceOverview() {
   const { workspaceSlug } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const { t } = useTranslation();
@@ -561,7 +560,7 @@ export function WorkspaceDashboardOverview() {
   if (isLoading && !data) return <DashboardOverviewLoader />;
   if (!data) {
     return (
-      <div className="flex min-h-[360px] w-full flex-col items-center justify-center gap-3 px-6 text-center">
+      <div className="mx-auto flex min-h-[360px] w-full max-w-[1440px] flex-col items-center justify-center gap-3 px-6 py-4 text-center">
         <span className="grid size-10 place-items-center rounded-full bg-danger-subtle text-danger-primary">
           <AlertTriangle className="size-5" aria-hidden="true" />
         </span>
@@ -584,13 +583,46 @@ export function WorkspaceDashboardOverview() {
   const createdRangeLabel = filters.created_range
     ? t(`dashboard_overview.filters.${filters.created_range}`)
     : t("dashboard_overview.filters.all_time");
+  const appliedFilters: {
+    key: "project_id" | "assignee_id" | "created_range" | "priority";
+    label: string;
+    value: string;
+  }[] = [];
+  if (filters.project_id) {
+    appliedFilters.push({
+      key: "project_id",
+      label: t("dashboard_overview.filters.project"),
+      value: selectedProject?.name ?? filters.project_id,
+    });
+  }
+  if (filters.assignee_id) {
+    appliedFilters.push({
+      key: "assignee_id",
+      label: t("dashboard_overview.filters.assignee"),
+      value:
+        filters.assignee_id === "unassigned"
+          ? t("dashboard_overview.filters.unassigned")
+          : selectedAssignee?.member__display_name || filters.assignee_id,
+    });
+  }
+  if (filters.created_range) {
+    appliedFilters.push({
+      key: "created_range",
+      label: t("dashboard_overview.filters.created_range"),
+      value: createdRangeLabel,
+    });
+  }
+  if (filters.priority) {
+    appliedFilters.push({
+      key: "priority",
+      label: t("common.priority"),
+      value: t(`common.${filters.priority}`),
+    });
+  }
 
   return (
-    <main className="mx-auto w-full max-w-[1440px] space-y-5 px-4 py-6 md:px-6 md:py-8">
-      <div>
-        <h1 className="text-24 font-semibold text-primary">{t("dashboard_overview.title")}</h1>
-        <p className="mt-1 text-13 text-secondary">{t("dashboard_overview.description")}</p>
-      </div>
+    <main className="mx-auto w-full max-w-[1440px] space-y-5 px-6 py-4">
+      <p className="text-13 text-secondary">{t("dashboard_overview.description")}</p>
       <section className={cn(CARD_CLASS, "relative overflow-hidden p-4")} aria-label={t("common.filters")}>
         {isValidating && (
           <>
@@ -670,6 +702,24 @@ export function WorkspaceDashboardOverview() {
             ))}
           </DashboardFilter>
         </div>
+        {appliedFilters.length > 0 && (
+          <div className="mt-3 flex flex-wrap items-center gap-2" aria-label={t("common.filters")}>
+            {appliedFilters.map((filter) => (
+              <Tag key={filter.key}>
+                <span className="text-11 text-tertiary">{filter.label}</span>
+                <span className="text-11 text-primary">{filter.value}</span>
+                <button
+                  type="button"
+                  className="grid place-items-center text-tertiary hover:text-secondary"
+                  aria-label={`${t("common.remove")} ${filter.label}`}
+                  onClick={() => changeFilter(filter.key, "")}
+                >
+                  <CloseIcon height={12} width={12} strokeWidth={2} />
+                </button>
+              </Tag>
+            ))}
+          </div>
+        )}
       </section>
       {error && (
         <div className="flex items-center justify-between gap-3 rounded-md border border-danger-subtle bg-danger-subtle px-3 py-2 text-12 text-danger-primary">
@@ -687,7 +737,7 @@ export function WorkspaceDashboardOverview() {
             value={value}
             href={
               key === "projects"
-                ? undefined
+                ? `/${slug}/projects/`
                 : getDashboardHref(slug as string, searchParams, { detail: key, risk: null, page: null })
             }
             active={detail === key}

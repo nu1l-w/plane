@@ -31,7 +31,7 @@ export const SidebarUserMenu = observer(function SidebarUserMenu() {
     },
     {
       key: "dashboards",
-      labelTranslationKey: "workspace_dashboards",
+      labelTranslationKey: "workspace_overview",
       href: `/${workspaceSlug.toString()}/dashboards/`,
       access: [EUserWorkspaceRoles.ADMIN, EUserWorkspaceRoles.MEMBER],
       Icon: DashboardIcon,

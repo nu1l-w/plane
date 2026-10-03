@@ -1,9 +1,9 @@
 {
   "dashboard_overview": {
-    "title": "研发总览",
-    "description": "汇总当前工作区中您有权限访问的项目和工作项。",
-    "loading": "正在加载仪表板...",
-    "load_error": "仪表板加载失败。",
+    "title": "总览",
+    "description": "跨项目查看进度、工作项变化与待处理风险。",
+    "loading": "正在加载总览...",
+    "load_error": "总览加载失败。",
     "retry": "重试",
     "project_progress": "项目进度",
     "progress_hint": "已完成 / 未取消工作项",

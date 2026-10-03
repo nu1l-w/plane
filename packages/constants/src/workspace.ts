@@ -238,7 +238,7 @@ export const WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS: Record<string, IWorkspac
   },
   dashboards: {
     key: "dashboards",
-    labelTranslationKey: "workspace_dashboards",
+    labelTranslationKey: "workspace_overview",
     href: `/dashboards/`,
     access: [EUserWorkspaceRoles.ADMIN, EUserWorkspaceRoles.MEMBER],
     highlight: (pathname: string, url: string) => pathname.includes(url),
