@@ -9,6 +9,7 @@ from plane.app.views import (
     GPTIntegrationEndpoint,
     UnsplashEndpoint,
     WorkspaceAIChatEndpoint,
+    WorkspaceAIIssueDraftEndpoint,
     WorkspaceGPTIntegrationEndpoint,
 )
 
@@ -29,5 +30,10 @@ urlpatterns = [
         "workspaces/<str:slug>/ai-chat/",
         WorkspaceAIChatEndpoint.as_view(),
         name="workspace-ai-chat",
+    ),
+    path(
+        "workspaces/<str:slug>/ai-chat/draft-issue/",
+        WorkspaceAIIssueDraftEndpoint.as_view(),
+        name="workspace-ai-issue-draft",
     ),
 ]

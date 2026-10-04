@@ -41,6 +41,23 @@ export type TAIChatSource = {
   kind: "page" | "work_item";
   title: string;
   url: string;
+  citation?: number;
+  location?: string;
+  snippet?: string;
+};
+
+export type TAIChatIssueDraft = {
+  name: string;
+  description: string;
+  priority: "urgent" | "high" | "medium" | "low" | "none";
+  assignee_id: string | null;
+  target_date: string | null;
+  label_ids: string[];
+};
+
+export type TAIChatIssueDraftOptions = {
+  assignees: { id: string; name: string }[];
+  labels: { id: string; name: string }[];
 };
 
 export class AIService extends APIService {
@@ -64,6 +81,21 @@ export class AIService extends APIService {
     data: { history: TAIChatMessage[]; message: string; project_id?: string }
   ): Promise<{ response: string; scope: "project" | "workspace"; sources: TAIChatSource[] }> {
     return this.post(`/api/workspaces/${workspaceSlug}/ai-chat/`, data)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response ?? { message: error?.message };
+      });
+  }
+
+  async draftIssue(
+    workspaceSlug: string,
+    data: { prompt: string; project_id: string }
+  ): Promise<{
+    draft: TAIChatIssueDraft;
+    project: { id: string; identifier: string; name: string };
+    options: TAIChatIssueDraftOptions;
+  }> {
+    return this.post(`/api/workspaces/${workspaceSlug}/ai-chat/draft-issue/`, data)
       .then((response) => response?.data)
       .catch((error) => {
         throw error?.response ?? { message: error?.message };
