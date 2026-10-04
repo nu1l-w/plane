@@ -10,6 +10,7 @@ import { useTranslation } from "@plane/i18n";
 import type { IIssueDisplayProperties, TIssue } from "@plane/types";
 import { useProject } from "@/hooks/store/use-project";
 import { WorkItemTypeService } from "@/services/issue/work-item-type.service";
+import { WorkItemTypeLogo } from "@/components/issues/work-item-type-logo";
 
 const workItemTypeService = new WorkItemTypeService();
 
@@ -17,17 +18,17 @@ type Props = {
   issue: TIssue;
   workspaceSlug: string | undefined;
   displayProperties: IIssueDisplayProperties | undefined;
+  typeOnly?: boolean;
 };
 
 export const WorkItemSummary = observer(function WorkItemSummary(props: Props) {
-  const { issue, workspaceSlug, displayProperties } = props;
+  const { issue, workspaceSlug, displayProperties, typeOnly = false } = props;
   const { t } = useTranslation();
   const { getProjectById, getProjectIdentifierById } = useProject();
   const project = getProjectById(issue.project_id);
   const shouldShowType = displayProperties?.issue_type ?? true;
   const shouldShowParent = displayProperties?.parent ?? true;
   const parent = issue.parent;
-  const hasDefectSummary = (issue.defect_count ?? 0) > 0;
 
   const { data: projectTypes } = useSWR(
     shouldShowType && workspaceSlug && issue.project_id && project?.is_issue_type_enabled
@@ -43,31 +44,23 @@ export const WorkItemSummary = observer(function WorkItemSummary(props: Props) {
   const parentIdentifier = parent?.project_id
     ? `${getProjectIdentifierById(parent.project_id) ?? ""}-${parent.sequence_id ?? ""}`
     : "";
-  const hasSummary = (shouldShowType && !!workItemType) || (shouldShowParent && !!parent?.name) || hasDefectSummary;
+  const hasSummary = (shouldShowType && !!workItemType) || (!typeOnly && shouldShowParent && !!parent?.name);
 
   if (!hasSummary) return null;
 
   return (
     <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-11 text-tertiary">
       {shouldShowType && workItemType && (
-        <span className="shrink-0 rounded-sm border border-subtle bg-layer-1 px-1.5 py-0.5">
-          {workItemType.work_item_type.name}
+        <span className="inline-flex max-w-36 shrink-0 flex-nowrap items-center gap-1.5 rounded-sm border border-subtle bg-layer-1 px-1.5 py-0.5 whitespace-nowrap">
+          <WorkItemTypeLogo workItemType={workItemType.work_item_type} size={12} />
+          <span className="min-w-0 truncate">{workItemType.work_item_type.name}</span>
         </span>
       )}
-      {shouldShowParent && parent?.name && (
+      {!typeOnly && shouldShowParent && parent?.name && (
         <span className="flex min-w-0 items-center gap-1 truncate">
           <span className="shrink-0 text-placeholder">{t("issue.display.properties.parent")}:</span>
           {parentIdentifier && <span className="shrink-0 text-placeholder">{parentIdentifier}</span>}
           <span className="truncate text-secondary">{parent.name}</span>
-        </span>
-      )}
-      {hasDefectSummary && (
-        <span className="shrink-0 rounded-sm border border-subtle bg-layer-1 px-1.5 py-0.5">
-          {t("issue.display.properties.defect_summary", {
-            total: issue.defect_count,
-            open: issue.open_defect_count ?? 0,
-            mine: issue.my_open_defect_count ?? 0,
-          })}
         </span>
       )}
     </div>

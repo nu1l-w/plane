@@ -160,6 +160,7 @@ export const ISSUE_DISPLAY_PROPERTIES_KEYS: (keyof IIssueDisplayProperties)[] = 
 
 export const SUB_ISSUES_DISPLAY_PROPERTIES_KEYS: (keyof IIssueDisplayProperties)[] = [
   "key",
+  "issue_type",
   "assignee",
   "start_date",
   "due_date",
@@ -213,6 +214,7 @@ export const ISSUE_DISPLAY_PROPERTIES: {
 ];
 
 export const SPREADSHEET_PROPERTY_LIST: (keyof IIssueDisplayProperties)[] = [
+  "issue_type",
   "state",
   "priority",
   "assignee",

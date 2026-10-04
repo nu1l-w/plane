@@ -18,6 +18,7 @@ import { DateRangeDropdown } from "@/components/dropdowns/date-range";
 import { MemberDropdown } from "@/components/dropdowns/member/dropdown";
 import { PriorityDropdown } from "@/components/dropdowns/priority";
 import { StateDropdown } from "@/components/dropdowns/state/dropdown";
+import { WorkItemTypeDropdown } from "@/components/dropdowns/work-item-type";
 // hooks
 import { WithDisplayPropertiesHOC } from "@/components/issues/issue-layouts/properties/with-display-properties-HOC";
 import { useProjectState } from "@/hooks/store/use-project-state";
@@ -39,15 +40,15 @@ type Props = {
   issue: TIssue;
 };
 
+const handleEventPropagation = (e: SyntheticEvent<HTMLDivElement>) => {
+  e.stopPropagation();
+  e.preventDefault();
+};
+
 export const SubIssuesListItemProperties = observer(function SubIssuesListItemProperties(props: Props) {
   const { workspaceSlug, parentIssueId, issueId, canEdit, updateSubIssue, displayProperties, issue } = props;
   const { t } = useTranslation();
   const { getStateById } = useProjectState();
-
-  const handleEventPropagation = (e: SyntheticEvent<HTMLDivElement>) => {
-    e.stopPropagation();
-    e.preventDefault();
-  };
 
   const handleStartDate = (date: Date | null) => {
     if (issue.project_id) {
@@ -83,6 +84,26 @@ export const SubIssuesListItemProperties = observer(function SubIssuesListItemPr
 
   return (
     <div className="relative flex items-center gap-2">
+      <WithDisplayPropertiesHOC displayProperties={displayProperties} displayPropertyKey="issue_type">
+        <div className="h-5 min-w-0 flex-shrink-0">
+          <WorkItemTypeDropdown
+            workspaceSlug={workspaceSlug}
+            projectId={issue.project_id}
+            value={issue.type_id}
+            onChange={(val) =>
+              issue.project_id &&
+              updateSubIssue(workspaceSlug, issue.project_id, parentIssueId, issueId, { type_id: val }, { ...issue })
+            }
+            disabled={!canEdit}
+            buttonVariant="transparent-with-text"
+            className="h-full max-w-32"
+            buttonContainerClassName="max-w-32"
+            buttonClassName="hover:bg-transparent px-0"
+            showTooltip
+          />
+        </div>
+      </WithDisplayPropertiesHOC>
+
       <WithDisplayPropertiesHOC displayProperties={displayProperties} displayPropertyKey="state">
         <div className="h-5 flex-shrink-0">
           <StateDropdown
@@ -133,7 +154,7 @@ export const SubIssuesListItemProperties = observer(function SubIssuesListItemPr
         displayPropertyKey={["start_date", "due_date"]}
         shouldRenderProperty={() => isDateRangeEnabled}
       >
-        <div className="h-5" onFocus={handleEventPropagation} onClick={handleEventPropagation}>
+        <div role="presentation" className="h-5" onFocus={handleEventPropagation} onClick={handleEventPropagation}>
           <DateRangeDropdown
             value={{
               from: getDate(issue.start_date) || undefined,

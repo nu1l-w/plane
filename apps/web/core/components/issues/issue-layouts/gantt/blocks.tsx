@@ -10,10 +10,11 @@ import { useParams } from "next/navigation";
 import { Popover } from "@plane/propel/popover";
 import { Tooltip } from "@plane/propel/tooltip";
 import { ControlLink } from "@plane/ui";
-import { findTotalDaysInRange, generateWorkItemLink } from "@plane/utils";
+import { generateWorkItemLink } from "@plane/utils";
 // components
 import { SIDEBAR_WIDTH } from "@/components/gantt-chart/constants";
 import { IssueIdentifier } from "@/components/issues/issue-detail/issue-identifier";
+import { WorkItemSummary } from "@/components/issues/issue-layouts/work-item-summary";
 // hooks
 import { useIssueDetail } from "@/hooks/store/use-issue-detail";
 import { useIssues } from "@/hooks/store/use-issues";
@@ -54,8 +55,6 @@ export const IssueGanttBlock = observer(function IssueGanttBlock(props: Props) {
   const { blockStyle } = getBlockViewDetails(issueDetails, stateDetails?.color ?? "");
 
   const handleIssuePeekOverview = () => handleRedirection(workspaceSlug, issueDetails, isMobile);
-
-  const duration = findTotalDaysInRange(issueDetails?.start_date, issueDetails?.target_date) || 0;
 
   return (
     <Popover delay={100} openOnHover>
@@ -154,6 +153,14 @@ export const IssueGanttSidebarBlock = observer(function IssueGanttSidebarBlock(p
         <Tooltip tooltipContent={issueDetails?.name} isMobile={isMobile}>
           <span className="flex-grow truncate text-13 font-medium">{issueDetails?.name}</span>
         </Tooltip>
+        {issueDetails && (
+          <WorkItemSummary
+            issue={issueDetails}
+            workspaceSlug={workspaceSlug}
+            displayProperties={issuesFilter?.issueFilters?.displayProperties}
+            typeOnly
+          />
+        )}
       </div>
     </ControlLink>
   );

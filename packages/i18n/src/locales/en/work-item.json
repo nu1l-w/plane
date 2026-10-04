@@ -42,6 +42,8 @@
       }
     },
     "new": "New work item",
+    "expand_sub_issues": "Expand sub-work items",
+    "collapse_sub_issues": "Collapse sub-work items",
     "adding": "Adding work item",
     "create": {
       "success": "Work item created successfully"
@@ -58,7 +60,10 @@
         "id": "ID",
         "issue_type": "Work item Type",
         "parent": "Parent",
-        "defect_summary": "Defects {total} · Open {open} · Assigned to this user {mine}",
+        "defect_summary_total": "Defects",
+        "defect_summary_open": "Not closed",
+        "defect_summary_assigned": "Assigned to this user",
+        "defect_summary_tooltip": "Counts non-draft, non-archived direct child items configured as defects in projects visible to you. Not closed excludes completed and canceled; assigned counts open defects assigned to the profile user.",
         "sub_issue_count": "Sub-work item count",
         "attachment_count": "Attachment count",
         "created_on": "Created on",

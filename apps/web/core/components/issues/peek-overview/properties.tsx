@@ -37,6 +37,7 @@ import { useProject } from "@/hooks/store/use-project";
 import { useProjectState } from "@/hooks/store/use-project-state";
 // plane web components
 import { IssueParentSelectRoot } from "@/components/issues/parent-select-root";
+import { IssueWorkItemTypeProperty } from "@/components/issues/issue-detail/work-item-type-property";
 import type { TIssueOperations } from "../issue-detail";
 import { IssueCycleSelect } from "../issue-detail/cycle-select";
 import { IssueLabel } from "../issue-detail/label";
@@ -78,6 +79,14 @@ export const PeekOverviewProperties = observer(function PeekOverviewProperties(p
     <div>
       <h6 className="text-body-xs-medium">{t("common.properties")}</h6>
       <div className={`mt-3 w-full space-y-3 ${disabled ? "opacity-60" : ""}`}>
+        <IssueWorkItemTypeProperty
+          workspaceSlug={workspaceSlug}
+          projectId={projectId}
+          value={issue.type_id}
+          disabled={disabled}
+          onChange={(typeId) => issueOperations.update(workspaceSlug, projectId, issueId, { type_id: typeId })}
+        />
+
         <SidebarPropertyListItem icon={StatePropertyIcon} label={t("common.state")}>
           <StateDropdown
             value={issue?.state_id}

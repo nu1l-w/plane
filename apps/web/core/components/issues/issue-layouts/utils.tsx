@@ -71,6 +71,7 @@ import {
   SpreadsheetStateColumn,
   SpreadsheetSubIssueColumn,
   SpreadsheetUpdatedOnColumn,
+  SpreadsheetWorkItemTypeColumn,
 } from "@/components/issues/issue-layouts/spreadsheet/columns";
 
 export const HIGHLIGHT_CLASS = "highlight";
@@ -861,6 +862,7 @@ export const SPREADSHEET_COLUMNS: { [key in keyof IIssueDisplayProperties]: TSpr
   sub_issue_count: SpreadsheetSubIssueColumn,
   updated_on: SpreadsheetUpdatedOnColumn,
   attachment_count: SpreadsheetAttachmentColumn,
+  issue_type: SpreadsheetWorkItemTypeColumn,
 };
 
 export const useGroupByOptions = (

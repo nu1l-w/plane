@@ -51,8 +51,10 @@ export type TAIChatIssueDraft = {
   description: string;
   priority: "urgent" | "high" | "medium" | "low" | "none";
   assignee_id: string | null;
+  start_date: string | null;
   target_date: string | null;
   label_ids: string[];
+  clarifications: string[];
 };
 
 export type TAIChatIssueDraftOptions = {
@@ -89,11 +91,17 @@ export class AIService extends APIService {
 
   async draftIssue(
     workspaceSlug: string,
-    data: { prompt: string; project_id: string }
+    data: {
+      prompt: string;
+      project_id: string;
+      current_draft?: TAIChatIssueDraft;
+      revision_instruction?: string;
+    }
   ): Promise<{
     draft: TAIChatIssueDraft;
     project: { id: string; identifier: string; name: string };
     options: TAIChatIssueDraftOptions;
+    sources: TAIChatSource[];
   }> {
     return this.post(`/api/workspaces/${workspaceSlug}/ai-chat/draft-issue/`, data)
       .then((response) => response?.data)

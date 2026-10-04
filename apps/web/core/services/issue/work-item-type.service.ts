@@ -21,8 +21,23 @@ export class WorkItemTypeService extends APIService {
       });
   }
 
-  async createWorkspaceType(workspaceSlug: string, data: Pick<TWorkItemType, "name">): Promise<TWorkItemType> {
+  async createWorkspaceType(
+    workspaceSlug: string,
+    data: Pick<TWorkItemType, "name"> & Partial<Pick<TWorkItemType, "logo_props">>
+  ): Promise<TWorkItemType> {
     return this.post(`/api/workspaces/${workspaceSlug}/work-item-types/`, data)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  async updateWorkspaceType(
+    workspaceSlug: string,
+    workItemTypeId: string,
+    data: Partial<Pick<TWorkItemType, "logo_props">>
+  ): Promise<TWorkItemType> {
+    return this.patch(`/api/workspaces/${workspaceSlug}/work-item-types/${workItemTypeId}/`, data)
       .then((response) => response?.data)
       .catch((error) => {
         throw error?.response?.data;

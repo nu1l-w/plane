@@ -57,6 +57,7 @@ import {
   getWorkItemTypeFilterConfig,
   isLoaderReady,
 } from "@plane/utils";
+import { WorkItemTypeLogo } from "@/components/issues/work-item-type-logo";
 // store hooks
 import { useCycle } from "@/hooks/store/use-cycle";
 import { useLabel } from "@/hooks/store/use-label";
@@ -339,7 +340,7 @@ export const useWorkItemFiltersConfig = (props: TUseWorkItemFiltersConfigProps):
         label: t("issue.display.properties.issue_type"),
         filterIcon: Shapes,
         workItemTypes: workItemTypes ?? [],
-        getOptionIcon: (projectType) => <Logo logo={projectType.work_item_type.logo_props} size={12} />,
+        getOptionIcon: (projectType) => <WorkItemTypeLogo workItemType={projectType.work_item_type} size={12} />,
         ...operatorConfigs,
       }),
     [isFilterEnabled, operatorConfigs, project?.is_issue_type_enabled, t, workItemTypes]

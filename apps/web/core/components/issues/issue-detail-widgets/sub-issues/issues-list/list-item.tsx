@@ -20,6 +20,7 @@ import { WithDisplayPropertiesHOC } from "@/components/issues/issue-layouts/prop
 // hooks
 import { useIssueDetail } from "@/hooks/store/use-issue-detail";
 import { useProject } from "@/hooks/store/use-project";
+import { DEFAULT_DISPLAY_PROPERTIES } from "@/store/issue/issue-details/sub_issues_filter.store";
 import useIssuePeekOverviewRedirection from "@/hooks/use-issue-peek-overview-redirection";
 import { usePlatformOS } from "@/hooks/use-platform-os";
 // components
@@ -85,10 +86,19 @@ export const SubIssuesListItem = observer(function SubIssuesListItem(props: Prop
 
   // derived values
   const subIssueFilters = getSubIssueFilters(parentIssueId);
-  const displayProperties = subIssueFilters?.displayProperties ?? {};
+  const displayProperties = { ...DEFAULT_DISPLAY_PROPERTIES, ...subIssueFilters?.displayProperties };
 
   //
-  const handleIssuePeekOverview = (issue: TIssue) => handleRedirection(workspaceSlug, issue, isMobile);
+  const handleIssuePeekOverview = (peekIssue: TIssue) => handleRedirection(workspaceSlug, peekIssue, isMobile);
+
+  const handleSubIssueExpand = async () => {
+    if (!subIssueHelpers.issue_visibility.includes(issueId)) {
+      setSubIssueHelpers(parentIssueId, "preview_loader", issueId);
+      await fetchSubIssues(workspaceSlug, projectId, issueId);
+      setSubIssueHelpers(parentIssueId, "preview_loader", issueId);
+    }
+    setSubIssueHelpers(parentIssueId, "issue_visibility", issueId);
+  };
 
   if (!issue) return <></>;
 
@@ -125,17 +135,19 @@ export const SubIssuesListItem = observer(function SubIssuesListItem(props: Prop
                       <Loader width={14} strokeWidth={2} className="animate-spin" />
                     </div>
                   ) : (
-                    <div
+                    <button
+                      type="button"
+                      aria-label={
+                        subIssueHelpers.issue_visibility.includes(issue.id)
+                          ? t("issue.collapse_sub_issues")
+                          : t("issue.expand_sub_issues")
+                      }
+                      aria-expanded={subIssueHelpers.issue_visibility.includes(issue.id)}
                       className="flex h-full w-full cursor-pointer items-center justify-center text-placeholder hover:text-tertiary"
                       onClick={async (e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        if (!subIssueHelpers.issue_visibility.includes(issueId)) {
-                          setSubIssueHelpers(parentIssueId, "preview_loader", issueId);
-                          await fetchSubIssues(workspaceSlug, projectId, issueId);
-                          setSubIssueHelpers(parentIssueId, "preview_loader", issueId);
-                        }
-                        setSubIssueHelpers(parentIssueId, "issue_visibility", issueId);
+                        await handleSubIssueExpand();
                       }}
                     >
                       <ChevronRightIcon
@@ -144,7 +156,7 @@ export const SubIssuesListItem = observer(function SubIssuesListItem(props: Prop
                         })}
                         strokeWidth={2.5}
                       />
-                    </div>
+                    </button>
                   )}
                 </>
               )}
@@ -171,6 +183,7 @@ export const SubIssuesListItem = observer(function SubIssuesListItem(props: Prop
             </div>
 
             <div
+              role="presentation"
               className="flex-shrink-0 text-13"
               onClick={(e) => {
                 e.preventDefault();

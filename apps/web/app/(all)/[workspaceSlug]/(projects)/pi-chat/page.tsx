@@ -153,6 +153,9 @@ const PiChatPage = observer(function PiChatPage() {
   const [isClearChatModalOpen, setIsClearChatModalOpen] = useState(false);
   const [issueDraft, setIssueDraft] = useState<TAIChatIssueDraft | null>(null);
   const [issueDraftOptions, setIssueDraftOptions] = useState<TAIChatIssueDraftOptions>({ assignees: [], labels: [] });
+  const [issueDraftSources, setIssueDraftSources] = useState<TAIChatSource[]>([]);
+  const [issueDraftPrompt, setIssueDraftPrompt] = useState("");
+  const [issueDraftRevisionInput, setIssueDraftRevisionInput] = useState("");
   const [issueDraftProject, setIssueDraftProject] = useState<{ id: string; identifier: string; name: string } | null>(
     null
   );
@@ -178,6 +181,9 @@ const PiChatPage = observer(function PiChatPage() {
   const isChatReady = Boolean(chatStorageKey) && chatState.key === chatStorageKey;
   const messages = useMemo(() => (isChatReady ? chatState.messages : []), [chatState.messages, isChatReady]);
   const isChatSubmitting = isSubmitting || messages.some((message) => message.isLoading);
+  const hasInvalidIssueDraftDateRange = Boolean(
+    issueDraft && issueDraft.start_date && issueDraft.target_date && issueDraft.start_date > issueDraft.target_date
+  );
 
   useEffect(() => {
     if (!scopeStorageKey) {
@@ -261,6 +267,9 @@ const PiChatPage = observer(function PiChatPage() {
     setInput("");
     setIssueDraft(null);
     setIssueDraftOptions({ assignees: [], labels: [] });
+    setIssueDraftSources([]);
+    setIssueDraftPrompt("");
+    setIssueDraftRevisionInput("");
     setIssueDraftProject(null);
     setIssueDraftError("");
     setIssueCreateError("");
@@ -355,11 +364,51 @@ const PiChatPage = observer(function PiChatPage() {
     setIsDraftingIssue(true);
     setIssueDraftError("");
     setIssueCreateError("");
+    setIssueDraftSources([]);
     try {
       const result = await aiService.draftIssue(slug, { prompt, project_id: projectId });
       setIssueDraft(result.draft);
       setIssueDraftOptions(result.options);
       setIssueDraftProject(result.project);
+      setIssueDraftSources(result.sources ?? []);
+      setIssueDraftPrompt(prompt);
+      setIssueDraftRevisionInput("");
+    } catch (error) {
+      setIssueDraftError(getAIServiceErrorMessage(error));
+    } finally {
+      setIsDraftingIssue(false);
+    }
+  };
+
+  const reviseIssueDraft = async () => {
+    const revisionInstruction = issueDraftRevisionInput.trim();
+    if (
+      !slug ||
+      !issueDraft ||
+      !issueDraftProject ||
+      !issueDraftPrompt ||
+      !revisionInstruction ||
+      isChatSubmitting ||
+      isDraftingIssue ||
+      isCreatingIssue
+    )
+      return;
+
+    setIsDraftingIssue(true);
+    setIssueDraftError("");
+    setIssueCreateError("");
+    try {
+      const result = await aiService.draftIssue(slug, {
+        prompt: issueDraftPrompt,
+        project_id: issueDraftProject.id,
+        current_draft: issueDraft,
+        revision_instruction: revisionInstruction,
+      });
+      setIssueDraft(result.draft);
+      setIssueDraftOptions(result.options);
+      setIssueDraftProject(result.project);
+      setIssueDraftSources(result.sources ?? []);
+      setIssueDraftRevisionInput("");
     } catch (error) {
       setIssueDraftError(getAIServiceErrorMessage(error));
     } finally {
@@ -386,6 +435,7 @@ const PiChatPage = observer(function PiChatPage() {
         priority: issueDraft.priority,
         state_id: stateId ?? null,
         assignee_ids: issueDraft.assignee_id ? [issueDraft.assignee_id] : [],
+        start_date: issueDraft.start_date,
         target_date: issueDraft.target_date,
         label_ids: issueDraft.label_ids,
       });
@@ -402,6 +452,9 @@ const PiChatPage = observer(function PiChatPage() {
       setInput("");
       setIssueDraft(null);
       setIssueDraftOptions({ assignees: [], labels: [] });
+      setIssueDraftSources([]);
+      setIssueDraftPrompt("");
+      setIssueDraftRevisionInput("");
       setIssueDraftProject(null);
     } catch (error) {
       setIssueCreateError(getAIServiceErrorMessage(error));
@@ -435,6 +488,9 @@ const PiChatPage = observer(function PiChatPage() {
                     setChatScope({ key: scopeStorageKey, projectId: nextProjectId });
                     setIssueDraft(null);
                     setIssueDraftOptions({ assignees: [], labels: [] });
+                    setIssueDraftSources([]);
+                    setIssueDraftPrompt("");
+                    setIssueDraftRevisionInput("");
                     setIssueDraftProject(null);
                     setIssueDraftError("");
                     setIssueCreateError("");
@@ -563,7 +619,7 @@ const PiChatPage = observer(function PiChatPage() {
             </div>
 
             {issueDraft && issueDraftProject && (
-              <div className="mx-auto mb-4 max-h-72 w-full max-w-5xl overflow-y-auto rounded-lg border border-subtle bg-layer-1 p-4">
+              <div className="mx-auto mb-4 max-h-96 w-full max-w-5xl overflow-y-auto rounded-lg border border-subtle bg-layer-1 p-4">
                 <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
                   <div>
                     <h2 className="text-14 font-semibold text-primary">AI 工作项草稿</h2>
@@ -573,6 +629,25 @@ const PiChatPage = observer(function PiChatPage() {
                     </p>
                   </div>
                 </div>
+                {issueDraftSources.length > 0 && (
+                  <div className="mb-3 rounded-md border border-subtle bg-surface-1 px-3 py-2">
+                    <p className="mb-1 text-11 font-medium text-secondary">参考的项目资料</p>
+                    <div className="flex flex-wrap gap-x-3 gap-y-1">
+                      {issueDraftSources.map((source) => (
+                        <a
+                          key={`${source.kind}-${source.id}`}
+                          href={source.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-12 text-accent-primary hover:underline"
+                        >
+                          {source.kind === "page" ? "页面 · " : "工作项 · "}
+                          {source.title}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <label className="mb-3 block text-12 text-secondary">
                   标题
                   <input
@@ -581,6 +656,7 @@ const PiChatPage = observer(function PiChatPage() {
                       setIssueDraft((current) => (current ? { ...current, name: event.target.value } : current))
                     }
                     maxLength={255}
+                    disabled={isDraftingIssue || isCreatingIssue}
                     className="focus:border-accent-primary mt-1 w-full rounded-md border border-subtle bg-surface-1 px-3 py-2 text-13 text-primary outline-none"
                   />
                 </label>
@@ -591,11 +667,38 @@ const PiChatPage = observer(function PiChatPage() {
                     onChange={(event) =>
                       setIssueDraft((current) => (current ? { ...current, description: event.target.value } : current))
                     }
-                    rows={3}
+                    rows={7}
                     maxLength={5000}
+                    disabled={isDraftingIssue || isCreatingIssue}
                     className="focus:border-accent-primary mt-1 w-full resize-y rounded-md border border-subtle bg-surface-1 px-3 py-2 text-13 text-primary outline-none"
                   />
                 </label>
+                <div className="mb-3 rounded-md border border-subtle bg-surface-1 p-3">
+                  <label className="block text-12 text-secondary">
+                    补充要求，让 AI 继续修改草稿
+                    <textarea
+                      value={issueDraftRevisionInput}
+                      onChange={(event) => setIssueDraftRevisionInput(event.target.value)}
+                      rows={2}
+                      maxLength={4000}
+                      disabled={isDraftingIssue || isCreatingIssue}
+                      placeholder="例如：补充移动端兼容要求，或把验收标准写得更具体"
+                      className="focus:border-accent-primary mt-1 w-full resize-y rounded-md border border-subtle bg-layer-1 px-3 py-2 text-13 text-primary outline-none placeholder:text-placeholder"
+                    />
+                  </label>
+                  <div className="mt-2 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => void reviseIssueDraft()}
+                      disabled={
+                        !issueDraftRevisionInput.trim() || isChatSubmitting || isDraftingIssue || isCreatingIssue
+                      }
+                      className="rounded-md border border-subtle px-3 py-1.5 text-12 font-medium text-secondary hover:bg-layer-1-hover disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {isDraftingIssue ? "AI 正在修改…" : "AI 根据补充要求修改"}
+                    </button>
+                  </div>
+                </div>
                 <label className="mb-3 block text-12 text-secondary">
                   负责人
                   <select
@@ -605,6 +708,7 @@ const PiChatPage = observer(function PiChatPage() {
                         current ? { ...current, assignee_id: event.target.value || null } : current
                       )
                     }
+                    disabled={isDraftingIssue || isCreatingIssue}
                     className="focus:border-accent-primary mt-1 w-full rounded-md border border-subtle bg-surface-1 px-3 py-2 text-13 text-primary outline-none"
                   >
                     <option value="">项目默认负责人（如有）</option>
@@ -615,19 +719,49 @@ const PiChatPage = observer(function PiChatPage() {
                     ))}
                   </select>
                 </label>
-                <label className="mb-3 block text-12 text-secondary">
-                  截止日期
-                  <input
-                    type="date"
-                    value={issueDraft.target_date ?? ""}
-                    onChange={(event) =>
-                      setIssueDraft((current) =>
-                        current ? { ...current, target_date: event.target.value || null } : current
-                      )
-                    }
-                    className="focus:border-accent-primary mt-1 block rounded-md border border-subtle bg-surface-1 px-3 py-2 text-13 text-primary outline-none"
-                  />
-                </label>
+                <div className="mb-3 flex flex-wrap gap-4">
+                  <label className="block text-12 text-secondary">
+                    开始日期
+                    <input
+                      type="date"
+                      value={issueDraft.start_date ?? ""}
+                      onChange={(event) =>
+                        setIssueDraft((current) =>
+                          current ? { ...current, start_date: event.target.value || null } : current
+                        )
+                      }
+                      disabled={isDraftingIssue || isCreatingIssue}
+                      className="focus:border-accent-primary mt-1 block rounded-md border border-subtle bg-surface-1 px-3 py-2 text-13 text-primary outline-none"
+                    />
+                  </label>
+                  <label className="block text-12 text-secondary">
+                    截止日期
+                    <input
+                      type="date"
+                      value={issueDraft.target_date ?? ""}
+                      onChange={(event) =>
+                        setIssueDraft((current) =>
+                          current ? { ...current, target_date: event.target.value || null } : current
+                        )
+                      }
+                      disabled={isDraftingIssue || isCreatingIssue}
+                      className="focus:border-accent-primary mt-1 block rounded-md border border-subtle bg-surface-1 px-3 py-2 text-13 text-primary outline-none"
+                    />
+                  </label>
+                </div>
+                {issueDraft.clarifications.length > 0 && (
+                  <div className="mb-3 rounded-md border border-subtle bg-surface-1 px-3 py-2">
+                    <p className="mb-1 text-11 font-medium text-primary">待确认信息</p>
+                    <ul className="list-inside list-disc space-y-1 text-12 text-secondary">
+                      {issueDraft.clarifications.map((question) => (
+                        <li key={question}>{question}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {hasInvalidIssueDraftDateRange && (
+                  <p className="text-danger mb-3 text-12">开始日期不能晚于截止日期，请调整日期后再创建。</p>
+                )}
                 <fieldset className="mb-3">
                   <legend className="mb-1 text-12 text-secondary">标签</legend>
                   {issueDraftOptions.labels.length > 0 ? (
@@ -649,6 +783,7 @@ const PiChatPage = observer(function PiChatPage() {
                                 return { ...current, label_ids: Array.from(labelIds) };
                               })
                             }
+                            disabled={isDraftingIssue || isCreatingIssue}
                           />
                           {label.name}
                         </label>
@@ -669,6 +804,7 @@ const PiChatPage = observer(function PiChatPage() {
                           : current
                       )
                     }
+                    disabled={isDraftingIssue || isCreatingIssue}
                     className="focus:border-accent-primary rounded-md border border-subtle bg-surface-1 px-3 py-1.5 text-13 text-primary outline-none"
                   >
                     <option value="urgent">紧急</option>
@@ -685,10 +821,13 @@ const PiChatPage = observer(function PiChatPage() {
                     onClick={() => {
                       setIssueDraft(null);
                       setIssueDraftOptions({ assignees: [], labels: [] });
+                      setIssueDraftSources([]);
+                      setIssueDraftPrompt("");
+                      setIssueDraftRevisionInput("");
                       setIssueDraftProject(null);
                       setIssueCreateError("");
                     }}
-                    disabled={isCreatingIssue}
+                    disabled={isCreatingIssue || isDraftingIssue}
                     className="rounded-md border border-subtle px-3 py-1.5 text-12 text-secondary hover:bg-layer-1-hover disabled:opacity-50"
                   >
                     取消
@@ -697,7 +836,9 @@ const PiChatPage = observer(function PiChatPage() {
                     type="button"
                     variant="primary"
                     size="sm"
-                    disabled={!issueDraft.name.trim() || isCreatingIssue}
+                    disabled={
+                      !issueDraft.name.trim() || hasInvalidIssueDraftDateRange || isDraftingIssue || isCreatingIssue
+                    }
                     loading={isCreatingIssue}
                     onClick={() => void createDraftedIssue()}
                   >

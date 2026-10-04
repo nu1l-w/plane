@@ -95,6 +95,8 @@ export const IssueDefaultProperties = observer(function IssueDefaultProperties(p
               workspaceSlug={workspaceSlug}
               projectId={projectId}
               value={value}
+              buttonVariant="border-with-text"
+              className="h-7 max-w-48"
               onChange={(issueTypeId) => {
                 onChange(issueTypeId);
                 handleFormChange();

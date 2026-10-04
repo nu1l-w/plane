@@ -2,6 +2,7 @@
   "work_item_types": {
     "label": "Work item Types",
     "label_lowercase": "work item types",
+    "select_placeholder": "Select type",
     "settings": {
       "description": "Configure work item categories and the default type for a project. Custom fields are not available yet.",
       "cant_delete_default_message": "This work item type cannot be deleted because it's set as the default for this project",
@@ -9,6 +10,14 @@
       "set_as_defect": "Set as defect type",
       "unset_as_defect": "Unset defect type",
       "defect_type": "Defect type",
+      "icon_label": "Icon",
+      "icon_placeholder": "Select an icon",
+      "icon_scope": "New icon choices are saved on workspace work item types. Older types without a saved choice still use name-based icons; changes apply in every project that uses the type.",
+      "icon_presets": {
+        "requirement": "Requirement",
+        "task": "Task",
+        "defect": "Defect"
+      },
       "cant_set_default_inactive_message": "Activate this type before setting it as default",
       "set_default_confirmation": {
         "title": "Set as default work item type",

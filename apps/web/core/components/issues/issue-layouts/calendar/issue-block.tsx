@@ -24,6 +24,7 @@ import useIssuePeekOverviewRedirection from "@/hooks/use-issue-peek-overview-red
 import { usePlatformOS } from "@/hooks/use-platform-os";
 // components
 import { IssueIdentifier } from "@/components/issues/issue-detail/issue-identifier";
+import { WorkItemSummary } from "@/components/issues/issue-layouts/work-item-summary";
 // local components
 import { WorkItemPreviewCard } from "../../preview-card";
 import type { TRenderQuickActions } from "../list/list-view-types";
@@ -140,7 +141,13 @@ export const CalendarIssueBlock = observer(
                         displayProperties={issuesFilter?.issueFilters?.displayProperties}
                       />
                     )}
-                    <div className="truncate text-13 font-medium md:text-11 md:font-regular">{issue.name}</div>
+                    <div className="min-w-0 truncate text-13 font-medium md:text-11 md:font-regular">{issue.name}</div>
+                    <WorkItemSummary
+                      issue={issue}
+                      workspaceSlug={workspaceSlug?.toString()}
+                      displayProperties={issuesFilter?.issueFilters?.displayProperties}
+                      typeOnly
+                    />
                   </div>
                   {/* Wrapper exists only to stop clicks reaching the ControlLink; the
                       quick-action menu inside carries its own interactive semantics. */}

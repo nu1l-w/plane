@@ -5,9 +5,12 @@
  */
 
 import { useRef } from "react";
+import { ListTodo } from "lucide-react";
 //types
 import { observer } from "mobx-react";
 import type { IIssueDisplayFilterOptions, IIssueDisplayProperties } from "@plane/types";
+import { useTranslation } from "@plane/i18n";
+import { Row } from "@plane/ui";
 //components
 import { shouldRenderColumn } from "@/helpers/issue-filter.helper";
 import { WithDisplayPropertiesHOC } from "../properties/with-display-properties-HOC";
@@ -23,6 +26,7 @@ interface Props {
 }
 export const SpreadsheetHeaderColumn = observer(function SpreadsheetHeaderColumn(props: Props) {
   const { displayProperties, displayFilters, property, handleDisplayFilterUpdate, isEpic = false } = props;
+  const { t } = useTranslation();
 
   //hooks
   const tableHeaderCellRef = useRef<HTMLTableCellElement | null>(null);
@@ -40,15 +44,22 @@ export const SpreadsheetHeaderColumn = observer(function SpreadsheetHeaderColumn
         ref={tableHeaderCellRef}
         tabIndex={0}
       >
-        <HeaderColumn
-          displayFilters={displayFilters}
-          handleDisplayFilterUpdate={handleDisplayFilterUpdate}
-          property={property}
-          onClose={() => {
-            tableHeaderCellRef?.current?.focus();
-          }}
-          isEpic={isEpic}
-        />
+        {property === "issue_type" ? (
+          <Row className="flex w-full items-center gap-1.5 py-2 text-13 text-secondary">
+            <ListTodo className="h-4 w-4 text-placeholder" />
+            {t("issue.display.properties.issue_type")}
+          </Row>
+        ) : (
+          <HeaderColumn
+            displayFilters={displayFilters}
+            handleDisplayFilterUpdate={handleDisplayFilterUpdate}
+            property={property}
+            onClose={() => {
+              tableHeaderCellRef?.current?.focus();
+            }}
+            isEpic={isEpic}
+          />
+        )}
       </th>
     </WithDisplayPropertiesHOC>
   );

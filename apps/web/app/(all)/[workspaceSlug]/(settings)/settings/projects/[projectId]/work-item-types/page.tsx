@@ -17,6 +17,12 @@ import type { TProjectWorkItemType } from "@plane/types";
 // components
 import { NotAuthorizedView } from "@/components/auth-screens/not-authorized-view";
 import { PageHead } from "@/components/core/page-title";
+import {
+  getConfiguredWorkItemTypeIconPreset,
+  getWorkItemTypeIconLogoProps,
+  WorkItemTypeLogo,
+  type TWorkItemTypeIconPreset,
+} from "@/components/issues/work-item-type-logo";
 import { SettingsContentWrapper } from "@/components/settings/content-wrapper";
 import { SettingsHeading } from "@/components/settings/heading";
 import { ProjectSettingsFeatureControlItem } from "@/components/settings/project/content/feature-control-item";
@@ -37,6 +43,7 @@ function WorkItemTypesSettingsPage({ params }: Route.ComponentProps) {
   const { allowPermissions, workspaceUserInfo } = useUserPermissions();
   const { currentProjectDetails, getProjectById } = useProject();
   const [newTypeName, setNewTypeName] = useState("");
+  const [newTypeIcon, setNewTypeIcon] = useState<TWorkItemTypeIconPreset | "">("");
   const [selectedTypeId, setSelectedTypeId] = useState("");
   const project = getProjectById(projectId) ?? currentProjectDetails;
   const canManageProject = allowPermissions([EUserPermissions.ADMIN], EUserPermissionsLevel.PROJECT);
@@ -53,6 +60,11 @@ function WorkItemTypesSettingsPage({ params }: Route.ComponentProps) {
   const pageTitle = currentProjectDetails?.name
     ? `${currentProjectDetails.name} - ${t("project_settings.work_item_types.heading")}`
     : undefined;
+  const workItemTypeIconOptions: { value: TWorkItemTypeIconPreset; label: string }[] = [
+    { value: "requirement", label: t("work_item_types.settings.icon_presets.requirement") },
+    { value: "task", label: t("work_item_types.settings.icon_presets.task") },
+    { value: "defect", label: t("work_item_types.settings.icon_presets.defect") },
+  ];
   const projectTypeIds = new Set(projectTypes?.map((projectType) => projectType.issue_type) ?? []);
   const availableTypes = workspaceTypes?.filter((type) => type.is_active && !projectTypeIds.has(type.id)) ?? [];
 
@@ -83,11 +95,15 @@ function WorkItemTypesSettingsPage({ params }: Route.ComponentProps) {
   };
 
   const createType = async () => {
-    if (!workspaceSlug || !newTypeName.trim()) return;
+    if (!workspaceSlug || !newTypeName.trim() || !newTypeIcon) return;
     try {
-      const issueType = await workItemTypeService.createWorkspaceType(workspaceSlug, { name: newTypeName.trim() });
+      const issueType = await workItemTypeService.createWorkspaceType(workspaceSlug, {
+        name: newTypeName.trim(),
+        logo_props: getWorkItemTypeIconLogoProps(newTypeIcon),
+      });
       await workItemTypeService.addProjectType(workspaceSlug, projectId, issueType.id);
       setNewTypeName("");
+      setNewTypeIcon("");
       await refreshTypes();
     } catch {
       showError();
@@ -111,6 +127,18 @@ function WorkItemTypesSettingsPage({ params }: Route.ComponentProps) {
         is_defect: !projectType.is_defect,
       });
       await mutateProjectTypes();
+    } catch {
+      showError();
+    }
+  };
+
+  const updateTypeIcon = async (projectType: TProjectWorkItemType, icon: TWorkItemTypeIconPreset) => {
+    if (!workspaceSlug) return;
+    try {
+      await workItemTypeService.updateWorkspaceType(workspaceSlug, projectType.work_item_type.id, {
+        logo_props: getWorkItemTypeIconLogoProps(icon),
+      });
+      await refreshTypes();
     } catch {
       showError();
     }
@@ -154,6 +182,7 @@ function WorkItemTypesSettingsPage({ params }: Route.ComponentProps) {
             <p className="mt-1 text-body-sm-regular text-tertiary">
               {t("project_settings.work_item_types.description")}
             </p>
+            <p className="mt-1 text-caption-sm-regular text-tertiary">{t("work_item_types.settings.icon_scope")}</p>
           </div>
 
           <div className="rounded-lg border border-subtle bg-surface-1">
@@ -161,20 +190,43 @@ function WorkItemTypesSettingsPage({ params }: Route.ComponentProps) {
               <div className="divide-y divide-subtle">
                 {projectTypes.map((projectType) => (
                   <div key={projectType.id} className="flex items-center justify-between gap-4 px-4 py-3">
-                    <div className="min-w-0">
-                      <p className="truncate text-body-sm-medium">{projectType.work_item_type.name}</p>
-                      {projectType.is_default && (
-                        <p className="mt-0.5 text-caption-sm-regular text-tertiary">
-                          {t("work_item_types.settings.set_as_default")}
-                        </p>
-                      )}
-                      {projectType.is_defect && (
-                        <p className="mt-0.5 text-caption-sm-regular text-tertiary">
-                          {t("work_item_types.settings.defect_type")}
-                        </p>
-                      )}
+                    <div className="flex min-w-0 items-center gap-3">
+                      <WorkItemTypeLogo workItemType={projectType.work_item_type} size={20} />
+                      <div className="min-w-0">
+                        <p className="truncate text-body-sm-medium">{projectType.work_item_type.name}</p>
+                        {projectType.is_default && (
+                          <p className="mt-0.5 text-caption-sm-regular text-tertiary">
+                            {t("work_item_types.settings.set_as_default")}
+                          </p>
+                        )}
+                        {projectType.is_defect && (
+                          <p className="mt-0.5 text-caption-sm-regular text-tertiary">
+                            {t("work_item_types.settings.defect_type")}
+                          </p>
+                        )}
+                      </div>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
+                      <label className="flex items-center gap-1.5 text-caption-sm-regular text-tertiary">
+                        {t("work_item_types.settings.icon_label")}
+                        <select
+                          aria-label={t("work_item_types.settings.icon_label")}
+                          className="h-8 rounded-md border border-subtle bg-layer-1 px-2 text-caption-sm-regular text-secondary"
+                          value={getConfiguredWorkItemTypeIconPreset(projectType.work_item_type) ?? ""}
+                          disabled={!canManageProject}
+                          onChange={(event) => {
+                            const icon = event.target.value as TWorkItemTypeIconPreset;
+                            if (icon) void updateTypeIcon(projectType, icon);
+                          }}
+                        >
+                          <option value="">{t("work_item_types.settings.icon_placeholder")}</option>
+                          {workItemTypeIconOptions.map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
                       <Button
                         variant="secondary"
                         size="sm"
@@ -258,10 +310,26 @@ function WorkItemTypesSettingsPage({ params }: Route.ComponentProps) {
                 }}
               />
             </label>
+            <label className="flex min-w-48 flex-col gap-1.5 text-caption-md-medium text-secondary">
+              {t("work_item_types.settings.icon_label")}
+              <select
+                className="h-9 rounded-md border border-subtle bg-layer-1 px-3 text-body-sm-regular"
+                value={newTypeIcon}
+                disabled={!canManageProject}
+                onChange={(event) => setNewTypeIcon(event.target.value as TWorkItemTypeIconPreset | "")}
+              >
+                <option value="">{t("work_item_types.settings.icon_placeholder")}</option>
+                {workItemTypeIconOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
             <Button
               variant="primary"
               size="base"
-              disabled={!canManageProject || !newTypeName.trim()}
+              disabled={!canManageProject || !newTypeName.trim() || !newTypeIcon}
               onClick={createType}
             >
               {t("create")}

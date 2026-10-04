@@ -42,6 +42,8 @@
       }
     },
     "new": "新建工作项",
+    "expand_sub_issues": "展开子工作项",
+    "collapse_sub_issues": "折叠子工作项",
     "adding": "正在添加工作项",
     "create": {
       "success": "工作项创建成功"
@@ -58,7 +60,10 @@
         "id": "ID",
         "issue_type": "工作项类型",
         "parent": "父项",
-        "defect_summary": "缺陷 {total} · 未解决 {open} · 分配给此用户 {mine}",
+        "defect_summary_total": "缺陷",
+        "defect_summary_open": "未关闭",
+        "defect_summary_assigned": "分配给此用户",
+        "defect_summary_tooltip": "仅统计你可查看项目中，直接关联到此工作项、类型设为缺陷且未归档的非草稿项。“未关闭”不含已完成和已取消；“分配给此用户”是其中分配给当前查看用户的数量。",
         "sub_issue_count": "子工作项数量",
         "attachment_count": "附件数量",
         "created_on": "创建于",

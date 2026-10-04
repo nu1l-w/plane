@@ -2,6 +2,7 @@
   "work_item_types": {
     "label": "工作项类型",
     "label_lowercase": "工作项类型",
+    "select_placeholder": "选择类型",
     "settings": {
       "description": "配置项目工作项分类和默认类型。自定义字段暂不可用。",
       "cant_delete_default_message": "无法删除此工作项类型，因为它已设置为该项目的默认类型。",
@@ -9,6 +10,14 @@
       "set_as_defect": "设为缺陷类型",
       "unset_as_defect": "取消缺陷类型",
       "defect_type": "缺陷类型",
+      "icon_label": "图标",
+      "icon_placeholder": "选择图标",
+      "icon_scope": "新选择的图标保存在工作区类型中；未设置的旧类型仍按名称显示图标。更改后会同步到使用该类型的其他项目。",
+      "icon_presets": {
+        "requirement": "需求",
+        "task": "任务",
+        "defect": "缺陷"
+      },
       "cant_set_default_inactive_message": "请先激活此类型再将其设为默认",
       "set_default_confirmation": {
         "title": "设为默认工作项类型",

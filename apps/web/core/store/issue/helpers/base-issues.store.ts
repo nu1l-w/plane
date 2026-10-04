@@ -1235,6 +1235,9 @@ export abstract class BaseIssuesStore implements IBaseIssuesStore {
 
         //if update is delete, remove it at a particular path
         if (issueUpdate.action === EIssueGroupedAction.DELETE) {
+          // Hidden sub-issues were never included in this view's grouped list,
+          // so changing their grouped property must not decrement the group count.
+          if (this.shouldSkipSubIssueFromList(issueBeforeUpdate)) continue;
           // remove issue Id from the path
           update(this, ["groupedIssueIds", ...issueUpdate.path], (issueIds: string[] = []) => pull(issueIds, issueId));
         }
