@@ -6,7 +6,6 @@
 
 // helpers
 import { API_BASE_URL } from "@plane/constants";
-import type { AI_EDITOR_TASKS } from "@plane/constants";
 // services
 import { APIService } from "@/services/api.service";
 
@@ -32,11 +31,16 @@ export const getAIServiceErrorMessage = (error: unknown): string => {
   return "AI 生成失败，请稍后重试；如果问题持续，请联系实例管理员查看服务端日志。";
 };
 
-export type TTaskPayload = {
-  casual_score?: number;
-  formal_score?: number;
-  task: AI_EDITOR_TASKS;
-  text_input: string;
+export type TAIChatMessage = {
+  role: "assistant" | "user";
+  content: string;
+};
+
+export type TAIChatSource = {
+  id: string;
+  kind: "page" | "work_item";
+  title: string;
+  url: string;
 };
 
 export class AIService extends APIService {
@@ -44,7 +48,10 @@ export class AIService extends APIService {
     super(API_BASE_URL);
   }
 
-  async createGptTask(workspaceSlug: string, data: { prompt: string; task: string }): Promise<any> {
+  async createGptTask(
+    workspaceSlug: string,
+    data: { prompt: string; task: string }
+  ): Promise<{ response: string; response_html: string }> {
     return this.post(`/api/workspaces/${workspaceSlug}/ai-assistant/`, data)
       .then((response) => response?.data)
       .catch((error) => {
@@ -52,14 +59,12 @@ export class AIService extends APIService {
       });
   }
 
-  async performEditorTask(
+  async askWorkspace(
     workspaceSlug: string,
-    data: TTaskPayload
-  ): Promise<{
-    response: string;
-  }> {
-    return this.post(`/api/workspaces/${workspaceSlug}/rephrase-grammar/`, data)
-      .then((res) => res?.data)
+    data: { history: TAIChatMessage[]; message: string; project_id?: string }
+  ): Promise<{ response: string; scope: "project" | "workspace"; sources: TAIChatSource[] }> {
+    return this.post(`/api/workspaces/${workspaceSlug}/ai-chat/`, data)
+      .then((response) => response?.data)
       .catch((error) => {
         throw error?.response ?? { message: error?.message };
       });

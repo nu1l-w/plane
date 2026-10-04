@@ -54,7 +54,7 @@ export const SidebarUserMenu = observer(function SidebarUserMenu() {
       key: "pi-chat",
       labelTranslationKey: "sidebar.pi_chat",
       href: `/${workspaceSlug.toString()}/pi-chat/`,
-      access: [EUserWorkspaceRoles.ADMIN, EUserWorkspaceRoles.MEMBER, EUserWorkspaceRoles.GUEST],
+      access: [EUserWorkspaceRoles.ADMIN, EUserWorkspaceRoles.MEMBER],
       Icon: PiChatLogo,
     },
   ];

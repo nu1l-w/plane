@@ -19,7 +19,6 @@ import { RichTextEditor } from "@/components/editor/rich-text";
 // plane web constants
 import { AI_EDITOR_TASKS, LOADING_TEXTS } from "@plane/constants";
 // plane web services
-import type { TTaskPayload } from "@/services/ai.service";
 import { AIService, getAIServiceErrorMessage } from "@/services/ai.service";
 import { AskPiMenu } from "./ask-pi-menu";
 const aiService = new AIService();
@@ -71,13 +70,29 @@ export function EditorAIMenu(props: Props) {
   const [activeTask, setActiveTask] = useState<AI_EDITOR_TASKS | null>(null);
   const [response, setResponse] = useState<string | undefined>(undefined);
   const [isRegenerating, setIsRegenerating] = useState(false);
+  const [lastQuery, setLastQuery] = useState("");
+  const [selectedTone, setSelectedTone] = useState("default");
   // refs
   const responseContainerRef = useRef<HTMLDivElement>(null);
   // params
-  const handleGenerateResponse = async (payload: TTaskPayload) => {
-    if (!workspaceSlug) return;
+  const handleAsk = async (query: string, tone = selectedTone) => {
+    const selection = editorRef?.getSelectedText();
+    if (!workspaceSlug || !selection || !query.trim()) return;
+
+    setLastQuery(query);
+    setSelectedTone(tone);
+    setResponse(undefined);
+    setIsRegenerating(true);
     try {
-      const res = await aiService.performEditorTask(workspaceSlug.toString(), payload);
+      const toneInstruction = {
+        default: "请使用自然、清晰的语气。",
+        professional: "请使用专业、正式的语气。",
+        casual: "请使用轻松、随意的语气。",
+      }[tone];
+      const res = await aiService.createGptTask(workspaceSlug.toString(), {
+        prompt: selection,
+        task: `${query.trim()}\n\n${toneInstruction}`,
+      });
       setResponse(res.response);
     } catch (error) {
       setToast({
@@ -85,56 +100,29 @@ export function EditorAIMenu(props: Props) {
         title: "AI 生成失败",
         message: getAIServiceErrorMessage(error),
       });
+    } finally {
+      setIsRegenerating(false);
     }
   };
   // handle task click
-  const handleClick = async (key: AI_EDITOR_TASKS) => {
+  const handleClick = (key: AI_EDITOR_TASKS) => {
     const selection = editorRef?.getSelectedText();
     if (!selection || activeTask === key) return;
     setActiveTask(key);
-    if (key === AI_EDITOR_TASKS.ASK_ANYTHING) return;
     setResponse(undefined);
-    setIsRegenerating(false);
-    await handleGenerateResponse({
-      task: key,
-      text_input: selection,
-    });
   };
   // handle re-generate response
   const handleRegenerate = async () => {
-    const selection = editorRef?.getSelectedText();
-    if (!selection || !activeTask) return;
-    setIsRegenerating(true);
-    await handleGenerateResponse({
-      task: activeTask,
-      text_input: selection,
-    })
-      .then(() =>
-        responseContainerRef.current?.scrollTo({
-          top: 0,
-          behavior: "smooth",
-        })
-      )
-      .finally(() => setIsRegenerating(false));
+    if (!lastQuery || !activeTask) return;
+    await handleAsk(lastQuery, selectedTone);
+    responseContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   };
-  // handle re-generate response
+  // handle tone change and regenerate with the same instruction
   const handleToneChange = async (key: string) => {
-    const selectedTone = TONES_LIST.find((t) => t.key === key);
-    const selection = editorRef?.getSelectedText();
-    if (!selectedTone || !selection || !activeTask) return;
-    setResponse(undefined);
-    setIsRegenerating(false);
-    await handleGenerateResponse({
-      casual_score: selectedTone.casual_score,
-      formal_score: selectedTone.formal_score,
-      task: activeTask,
-      text_input: selection,
-    }).then(() =>
-      responseContainerRef.current?.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      })
-    );
+    const toneOption = TONES_LIST.find((t) => t.key === key);
+    if (!toneOption || !lastQuery || !activeTask) return;
+    await handleAsk(lastQuery, toneOption.key);
+    responseContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
   };
   // handle replace selected text with the response
   const handleInsertText = (insertOnNextLine: boolean) => {
@@ -148,6 +136,8 @@ export function EditorAIMenu(props: Props) {
     if (!isOpen) {
       setActiveTask(null);
       setResponse(undefined);
+      setLastQuery("");
+      setSelectedTone("default");
     }
   }, [isOpen]);
 
@@ -208,6 +198,7 @@ export function EditorAIMenu(props: Props) {
             <AskPiMenu
               handleInsertText={handleInsertText}
               handleRegenerate={handleRegenerate}
+              handleAsk={handleAsk}
               isRegenerating={isRegenerating}
               response={response}
               workspaceSlug={workspaceSlug}

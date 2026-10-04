@@ -14,6 +14,7 @@ import {
   InboxIcon,
   MultipleStickyIcon,
   PageIcon,
+  PiChatLogo,
   ProjectIcon,
   ViewsIcon,
   YourWorkIcon,
@@ -28,6 +29,8 @@ export const getSidebarNavigationItemIcon = (key: string, className: string = ""
       return <DashboardIcon className={cn("size-4 flex-shrink-0", className)} />;
     case "workspace_pages":
       return <PageIcon className={cn("size-4 flex-shrink-0", className)} />;
+    case "pi_chat":
+      return <PiChatLogo className={cn("size-4 flex-shrink-0", className)} />;
     case "inbox":
       return <InboxIcon className={cn("size-4 flex-shrink-0", className)} />;
     case "projects":

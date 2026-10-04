@@ -62,6 +62,9 @@ export const coreRoutes: RouteConfigEntry[] = [
         // Workspace Home
         route(":workspaceSlug", "./(all)/[workspaceSlug]/(projects)/page.tsx"),
 
+        // Plane AI workspace chat
+        route(":workspaceSlug/pi-chat", "./(all)/[workspaceSlug]/(projects)/pi-chat/page.tsx"),
+
         // Workspace Dashboards
         route(":workspaceSlug/dashboards", "./(all)/[workspaceSlug]/(projects)/dashboards/page.tsx"),
 

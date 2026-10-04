@@ -16,6 +16,7 @@ import { RichTextEditor } from "@/components/editor/rich-text";
 import { useWorkspace } from "@/hooks/store/use-workspace";
 
 type Props = {
+  handleAsk: (query: string) => Promise<void>;
   handleInsertText: (insertOnNextLine: boolean) => void;
   handleRegenerate: () => Promise<void>;
   isRegenerating: boolean;
@@ -24,7 +25,7 @@ type Props = {
 };
 
 export function AskPiMenu(props: Props) {
-  const { handleInsertText, handleRegenerate, isRegenerating, response, workspaceSlug } = props;
+  const { handleAsk, handleInsertText, handleRegenerate, isRegenerating, response, workspaceSlug } = props;
   // states
   const [query, setQuery] = useState("");
   // store hooks
@@ -94,7 +95,9 @@ export function AskPiMenu(props: Props) {
             </div>
           </div>
         ) : (
-          <p className="text-13 text-secondary">AI 正在回答...</p>
+          <p className="text-13 text-secondary">
+            {isRegenerating ? "AI 正在回答..." : "输入指令后，AI 会根据选中的内容生成建议。"}
+          </p>
         )}
       </div>
       <div className="px-4 py-3">
@@ -107,11 +110,32 @@ export function AskPiMenu(props: Props) {
             className="w-full border-none bg-transparent text-13 outline-none placeholder:text-placeholder"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                if (query.trim() && !isRegenerating) {
+                  void handleAsk(query.trim());
+                  setQuery("");
+                }
+              }
+            }}
             placeholder="告诉 AI 要做什么..."
+            disabled={isRegenerating}
           />
-          <span className="grid size-4 flex-shrink-0 place-items-center">
+          <button
+            type="button"
+            className="grid size-6 flex-shrink-0 place-items-center rounded-sm text-secondary transition-colors hover:bg-layer-1 disabled:cursor-not-allowed disabled:opacity-40"
+            onClick={() => {
+              if (query.trim() && !isRegenerating) {
+                void handleAsk(query.trim());
+                setQuery("");
+              }
+            }}
+            disabled={!query.trim() || isRegenerating}
+            aria-label="发送问题给 AI"
+          >
             <CircleArrowUp className="size-4 text-secondary" />
-          </span>
+          </button>
         </div>
       </div>
     </>
