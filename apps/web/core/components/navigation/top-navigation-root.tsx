@@ -10,6 +10,7 @@ import { useParams, usePathname } from "next/navigation";
 import { cn } from "@plane/utils";
 import { TopNavPowerK } from "@/components/navigation";
 import { TopNavigationPreferences } from "@/components/navigation/top-navigation-preferences";
+import { TopNavigationAIEntry } from "@/components/navigation/top-navigation-ai-entry";
 import { HelpMenuRoot } from "@/components/workspace/sidebar/help-section/root";
 import { UserMenuRoot } from "@/components/workspace/sidebar/user-menu-root";
 import { WorkspaceMenuRoot } from "@/components/workspace/sidebar/workspace-menu-root";
@@ -52,8 +53,9 @@ export const TopNavigationRoot = observer(function TopNavigationRoot() {
       })}
     >
       {/* Workspace Menu */}
-      <div className="flex-1 shrink-0">
+      <div className="flex flex-1 shrink-0 items-center gap-2">
         <WorkspaceMenuRoot variant="top-navigation" />
+        <TopNavigationAIEntry />
       </div>
       {/* Power K Search */}
       <div className="shrink-0">

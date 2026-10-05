@@ -55,6 +55,71 @@
 .shadow-custom {
   box-shadow: 2px 2px 8px 2px rgba(234, 231, 250, 0.3); /* Convert #EAE7FA4D to rgba */
 }
+
+.top-navigation-ai-entry {
+  isolation: isolate;
+  animation: top-navigation-ai-glow 5s ease-in-out infinite;
+}
+
+.top-navigation-ai-entry::after {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  transform: translateX(-140%);
+  background: linear-gradient(110deg, transparent 25%, rgba(255, 255, 255, 0.22) 50%, transparent 75%);
+  content: "";
+  pointer-events: none;
+  animation: top-navigation-ai-sheen 7s ease-in-out infinite;
+}
+
+.top-navigation-ai-mark {
+  animation: top-navigation-ai-mark-motion 3.2s ease-in-out infinite;
+}
+
+@keyframes top-navigation-ai-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(139, 117, 255, 0);
+  }
+  50% {
+    box-shadow: 0 0 14px 1px rgba(139, 117, 255, 0.14);
+  }
+}
+
+@keyframes top-navigation-ai-sheen {
+  0%,
+  68%,
+  100% {
+    opacity: 0;
+    transform: translateX(-140%);
+  }
+  74% {
+    opacity: 1;
+  }
+  88% {
+    opacity: 0;
+    transform: translateX(140%);
+  }
+}
+
+@keyframes top-navigation-ai-mark-motion {
+  0%,
+  100% {
+    transform: scale(0.96);
+  }
+  50% {
+    transform: scale(1.04);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .top-navigation-ai-entry,
+  .top-navigation-ai-entry::after,
+  .top-navigation-ai-mark {
+    animation: none;
+  }
+}
+
 /* backdrop filter */
 .backdrop-blur-custom {
   @apply backdrop-filter blur-[9px];

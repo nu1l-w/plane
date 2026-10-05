@@ -8,7 +8,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { observer } from "mobx-react";
 import { useParams } from "next/navigation";
 import useSWR from "swr";
-import { Send, Sparkles, Trash2 } from "lucide-react";
+import { Send, Trash2 } from "lucide-react";
+import { PiChatLogo } from "@plane/propel/icons";
 import { EIssuesStoreType } from "@plane/types";
 import { AlertModalCore, Button } from "@plane/ui";
 import { AIChatMarkdown } from "@/components/ui/ai-markdown";
@@ -469,7 +470,7 @@ const PiChatPage = observer(function PiChatPage() {
         header={
           <div className="flex w-full items-center justify-between gap-3 px-4">
             <div className="flex min-w-0 items-center gap-2 text-13 font-medium text-primary">
-              <Sparkles className="size-4 shrink-0 text-accent-primary" />
+              <PiChatLogo className="size-4 shrink-0 text-accent-primary" />
               <span className="truncate">StarAxis AI (Beta)</span>
             </div>
             <div className="flex min-w-0 items-center gap-2">
