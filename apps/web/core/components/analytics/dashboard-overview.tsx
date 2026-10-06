@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { useState } from "react";
+import { observer } from "mobx-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useSearchParams } from "react-router";
@@ -12,9 +14,12 @@ import { AlertTriangle } from "lucide-react";
 import { useTranslation } from "@plane/i18n";
 import { Button, getButtonStyling } from "@plane/propel/button";
 import { Dialog } from "@plane/propel/dialog";
-import { ChevronLeftIcon, ChevronRightIcon, CloseIcon, FilterIcon, InfoIcon } from "@plane/propel/icons";
+import { ChevronLeftIcon, ChevronRightIcon, CloseIcon, InfoIcon } from "@plane/propel/icons";
 import { CustomSelect, Loader, Tag } from "@plane/ui";
 import { cn } from "@plane/utils";
+import { useUser } from "@/hooks/store/user";
+import { DashboardFilterMenu } from "./dashboard-filter-menu";
+import { DashboardDistributions } from "./dashboard-distributions";
 import { DashboardService } from "@/services/dashboard.service";
 import type {
   IDashboardRiskItem,
@@ -29,6 +34,8 @@ import {
   getCompletionPercentage,
   getDashboardHref,
   getStateDistribution,
+  sortDashboardProjects,
+  type TProjectSort,
 } from "./dashboard-overview.utils";
 
 const dashboardService = new DashboardService();
@@ -41,51 +48,30 @@ const STATE_COLORS: Record<string, string> = {
 };
 
 const RISK_KINDS: TDashboardRisk[] = ["overdue", "due_soon", "stale", "high_priority_unassigned"];
-const DETAIL_KINDS: TDashboardDetail[] = ["total", "backlog", "unstarted", "in_progress", "completed", "cancelled"];
+const DETAIL_KINDS: TDashboardDetail[] = [
+  "open",
+  "total",
+  "backlog",
+  "unstarted",
+  "in_progress",
+  "completed",
+  "cancelled",
+];
 const PRIORITIES: TDashboardPriority[] = ["urgent", "high", "medium", "low", "none"];
 const CARD_CLASS = "rounded-lg border border-subtle bg-surface-1";
-
-function DashboardFilter({
-  label,
-  value,
-  displayValue,
-  onChange,
-  children,
-}: {
-  label: string;
-  value: string;
-  displayValue: string;
-  onChange: (value: string) => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex w-full min-w-0 flex-col gap-1 sm:w-auto sm:min-w-40">
-      <span className="text-11 font-medium text-tertiary">{label}</span>
-      <CustomSelect
-        value={value}
-        label={<span className="min-w-0 flex-1 truncate text-left">{displayValue}</span>}
-        onChange={(selectedValue: string) => onChange(selectedValue)}
-        className="w-full"
-        buttonClassName="h-8 border-subtle bg-surface-1 text-primary shadow-raised-100 transition-colors hover:bg-layer-1"
-        optionsClassName="min-w-56"
-        maxHeight="lg"
-      >
-        {children}
-      </CustomSelect>
-    </div>
-  );
-}
 
 function SummaryCard({
   label,
   value,
   href,
   active,
+  attention = false,
 }: {
   label: string;
   value: number;
   href?: string;
   active?: boolean;
+  attention?: boolean;
 }) {
   const card = (
     <div
@@ -93,6 +79,7 @@ function SummaryCard({
         CARD_CLASS,
         "relative h-full overflow-hidden p-4 transition-all duration-200",
         href && "group-hover:border-strong group-hover:bg-layer-1 group-hover:shadow-raised-100",
+        attention && value > 0 && "border-warning-subtle bg-warning-subtle/30",
         active && "border-accent-strong bg-accent-primary/5 shadow-raised-100"
       )}
     >
@@ -111,7 +98,14 @@ function SummaryCard({
           />
         )}
       </div>
-      <p className="mt-2 text-24 font-semibold tracking-tight text-primary">{value.toLocaleString()}</p>
+      <p
+        className={cn(
+          "mt-2 text-24 font-semibold tracking-tight text-primary",
+          attention && value > 0 && "text-warning-primary"
+        )}
+      >
+        {value.toLocaleString()}
+      </p>
     </div>
   );
   return href ? (
@@ -135,56 +129,70 @@ function ProjectProgress({
   projects: IWorkspaceDashboardOverview["projects"];
 }) {
   const { t } = useTranslation();
+  const [sort, setSort] = useState<TProjectSort>("overdue");
   return (
     <section className={cn(CARD_CLASS, "p-4 md:p-5")}>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-16 font-semibold text-primary">{t("dashboard_overview.project_progress")}</h2>
-        <span className="text-12 text-tertiary">{t("dashboard_overview.progress_hint")}</span>
+        <CustomSelect
+          value={sort}
+          onChange={(value: TProjectSort) => setSort(value)}
+          label={t(`dashboard_overview.sort.${sort}`)}
+        >
+          {(["overdue", "completion", "name"] as const).map((key) => (
+            <CustomSelect.Option key={key} value={key}>
+              {t(`dashboard_overview.sort.${key}`)}
+            </CustomSelect.Option>
+          ))}
+        </CustomSelect>
       </div>
       {projects.length === 0 ? (
         <p className="py-10 text-center text-13 text-tertiary">{t("dashboard_overview.no_projects")}</p>
       ) : (
-        <div className="-mx-2 max-h-[420px] space-y-1 overflow-y-auto px-2">
-          {projects.map((project) => {
-            const actionable = getActionableTotal(project.total, project.cancelled);
-            const percentage = getCompletionPercentage(project.completed, project.total, project.cancelled);
-            return (
-              <Link
-                key={project.id}
-                href={`/${workspaceSlug}/projects/${project.id}/issues`}
-                className="group block rounded-md px-2 py-2.5 transition-colors outline-none hover:bg-layer-1 focus-visible:ring-2 focus-visible:ring-accent-strong"
-              >
-                <div className="mb-2 flex items-center justify-between gap-3 text-13">
-                  <span className="min-w-0 truncate font-medium text-primary transition-colors group-hover:text-accent-primary">
-                    {project.name}
-                  </span>
-                  <span className="flex shrink-0 items-center gap-1.5 text-secondary">
-                    {project.completed}/{actionable} ({percentage}%)
-                    <ChevronRightIcon
-                      className="size-3 text-placeholder opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100"
-                      aria-hidden="true"
-                    />
-                  </span>
-                </div>
-                <div
-                  role="progressbar"
-                  aria-label={project.name}
-                  aria-valuenow={percentage}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                  className="h-2 overflow-hidden rounded-full bg-layer-1"
+        <>
+          <p className="mb-3 text-12 text-tertiary">{t("dashboard_overview.progress_hint")}</p>
+          <div className="-mx-2 grid max-h-[420px] grid-cols-1 items-start gap-x-6 gap-y-1 overflow-y-auto px-2 md:grid-cols-2">
+            {sortDashboardProjects(projects, sort).map((project) => {
+              const actionable = getActionableTotal(project.total, project.cancelled);
+              const percentage = getCompletionPercentage(project.completed, project.total, project.cancelled);
+              return (
+                <Link
+                  key={project.id}
+                  href={`/${workspaceSlug}/projects/${project.id}/issues`}
+                  className="group block rounded-md px-2 py-2.5 transition-colors outline-none hover:bg-layer-1 focus-visible:ring-2 focus-visible:ring-accent-strong"
                 >
-                  <div className="h-full rounded-full bg-accent-primary" style={{ width: `${percentage}%` }} />
-                </div>
-                {project.overdue > 0 && (
-                  <p className="mt-1 text-12 text-danger-primary">
-                    {t("dashboard_overview.project_overdue", { count: project.overdue })}
-                  </p>
-                )}
-              </Link>
-            );
-          })}
-        </div>
+                  <div className="mb-2 flex items-center justify-between gap-3 text-13">
+                    <span className="min-w-0 truncate font-medium text-primary transition-colors group-hover:text-accent-primary">
+                      {project.name}
+                    </span>
+                    <span className="flex shrink-0 items-center gap-1.5 text-secondary">
+                      {project.completed}/{actionable} ({percentage}%)
+                      <ChevronRightIcon
+                        className="size-3 text-placeholder opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100"
+                        aria-hidden="true"
+                      />
+                    </span>
+                  </div>
+                  <div
+                    role="progressbar"
+                    aria-label={project.name}
+                    aria-valuenow={percentage}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    className="h-2 overflow-hidden rounded-full bg-layer-1"
+                  >
+                    <div className="h-full rounded-full bg-accent-primary" style={{ width: `${percentage}%` }} />
+                  </div>
+                  {project.overdue > 0 && (
+                    <p className="mt-1 text-12 text-danger-primary">
+                      {t("dashboard_overview.project_overdue", { count: project.overdue })}
+                    </p>
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+        </>
       )}
     </section>
   );
@@ -206,12 +214,15 @@ function StateDistribution({
   const total = distribution.reduce((sum, item) => sum + item.count, 0);
 
   return (
-    <section className={cn(CARD_CLASS, "p-4 md:p-5")}>
-      <h2 className="mb-4 text-16 font-semibold text-primary">{t("dashboard_overview.state_distribution")}</h2>
+    <section className={cn(CARD_CLASS, "p-4 md:p-5 xl:row-span-2 xl:grid xl:grid-rows-subgrid")}>
+      <div className="mb-3 min-h-20 xl:mb-0">
+        <h2 className="text-16 font-semibold text-primary">{t("dashboard_overview.state_distribution")}</h2>
+        <p className="mt-1 text-12 leading-5 text-tertiary">{t("dashboard_overview.state_hint")}</p>
+      </div>
       {total === 0 ? (
         <p className="py-10 text-center text-13 text-tertiary">{t("dashboard_overview.no_work_items")}</p>
       ) : (
-        <div className="-mx-2 space-y-1">
+        <div className="-mx-2 max-h-[400px] overflow-y-auto xl:h-[400px]">
           {distribution.map(({ group, count }) => {
             const detail = group === "started" ? "in_progress" : group;
             const isActive = activeDetail === detail;
@@ -225,24 +236,22 @@ function StateDistribution({
                 })}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
-                  "group flex items-center gap-3 rounded-md px-2 py-2 transition-colors outline-none hover:bg-layer-1 focus-visible:ring-2 focus-visible:ring-accent-strong",
+                  "group block h-20 rounded-md px-2 py-2.5 transition-colors outline-none hover:bg-layer-1 focus-visible:ring-2 focus-visible:ring-accent-strong",
                   isActive && "bg-accent-primary/5"
                 )}
               >
-                <span className={cn("w-20 shrink-0 text-13 text-secondary", isActive && "text-accent-primary")}>
-                  {t(`dashboard_overview.states.${group}`)}
-                </span>
-                <div className="h-2 flex-1 overflow-hidden rounded-full bg-layer-1">
+                <div className="mb-2 flex items-center justify-between gap-3 text-13">
+                  <span className={cn("text-secondary", isActive && "text-accent-primary")}>
+                    {t(`dashboard_overview.states.${group}`)}
+                  </span>
+                  <span className="font-medium text-primary">{count}</span>
+                </div>
+                <div className="h-1.5 overflow-hidden rounded-full bg-layer-1">
                   <div
                     className={cn("h-full rounded-full transition-[width] duration-300", STATE_COLORS[group])}
                     style={{ width: `${(count / total) * 100}%` }}
                   />
                 </div>
-                <span className="w-9 text-right text-13 font-medium text-primary">{count}</span>
-                <ChevronRightIcon
-                  className="size-3 shrink-0 text-placeholder opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100"
-                  aria-hidden="true"
-                />
               </Link>
             );
           })}
@@ -328,7 +337,12 @@ function DetailItems({
                 <span className="mr-2 text-tertiary">
                   {item.project__identifier}-{item.sequence_id}
                 </span>
-                {item.name}
+                <span className="block truncate font-medium">{item.name}</span>
+                <span className="mt-1 block truncate text-12 text-tertiary">
+                  {item.project__name} · {t(item.priority)} ·{" "}
+                  {item.assignees.map((member) => member.name || member.id).join(", ") ||
+                    t("dashboard_overview.filters.unassigned")}
+                </span>
               </span>
               <span className="flex shrink-0 items-center gap-2 text-secondary">
                 {item.target_date ?? ""}
@@ -370,7 +384,7 @@ function DashboardDetailDrawer({
   const { t } = useTranslation();
   const title = risk
     ? t(`dashboard_overview.metrics.${risk}`)
-    : detail === "total" || detail === "in_progress"
+    : detail === "open" || detail === "total" || detail === "in_progress"
       ? t(`dashboard_overview.metrics.${detail}`)
       : t(`dashboard_overview.states.${detail}`);
 
@@ -511,10 +525,24 @@ function RiskItems({
                 <span className="mr-2 text-tertiary">
                   {item.project__identifier}-{item.sequence_id}
                 </span>
-                {item.name}
+                <span className="block truncate font-medium">{item.name}</span>
+                <span className="mt-1 block truncate text-12 text-tertiary">
+                  {item.project__name} · {t(item.priority)} ·{" "}
+                  {item.assignees.map((member) => member.name || member.id).join(", ") ||
+                    t("dashboard_overview.filters.unassigned")}
+                </span>
               </span>
               <span className="flex shrink-0 items-center gap-2 text-danger-primary">
-                {risk === "stale" ? item.updated_at.slice(0, 10) : (item.target_date ?? "")}
+                <span className="text-right">
+                  <span className="block">
+                    {risk === "stale" ? item.updated_at.slice(0, 10) : (item.target_date ?? "")}
+                  </span>
+                  {item.overdue_days > 0 && (
+                    <span className="mt-1 block text-12">
+                      {t("dashboard_overview.overdue_days", { count: item.overdue_days })}
+                    </span>
+                  )}
+                </span>
                 <ChevronRightIcon
                   className="size-3 text-placeholder opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100"
                   aria-hidden="true"
@@ -535,7 +563,7 @@ function DashboardOverviewLoader() {
   const { t } = useTranslation();
 
   return (
-    <main className="mx-auto w-full max-w-[1440px] space-y-5 px-6 py-4">
+    <main className="mx-auto w-full max-w-[1440px] space-y-5 px-4 py-5 md:px-6">
       <span className="sr-only">{t("dashboard_overview.loading")}</span>
       <Loader className="space-y-3">
         <Loader.Item height="16px" width="420px" className="max-w-full" />
@@ -561,7 +589,8 @@ function DashboardOverviewLoader() {
   );
 }
 
-export function WorkspaceOverview() {
+export const WorkspaceOverview = observer(function WorkspaceOverview() {
+  const { data: currentUser } = useUser();
   const { workspaceSlug } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const { t } = useTranslation();
@@ -664,111 +693,119 @@ export function WorkspaceOverview() {
     appliedFilters.push({
       key: "priority",
       label: t("common.priority"),
-      value: t(`common.${filters.priority}`),
+      value: t(filters.priority),
     });
   }
 
   return (
-    <main className="mx-auto w-full max-w-[1440px] space-y-5 px-6 py-4">
-      <p className="text-13 text-secondary">{t("dashboard_overview.description")}</p>
-      <section className={cn(CARD_CLASS, "relative overflow-hidden p-4")} aria-label={t("common.filters")}>
-        {isValidating && (
-          <>
-            <span className="absolute inset-x-0 top-0 h-0.5 animate-pulse bg-accent-primary" aria-hidden="true" />
-            <span className="sr-only" role="status">
-              {t("dashboard_overview.loading")}
-            </span>
-          </>
-        )}
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2 text-13 font-medium text-secondary">
-            <FilterIcon className="size-4" aria-hidden="true" />
-            {t("common.filters")}
-          </div>
-          {hasActiveFilters && (
-            <Button variant="ghost" size="lg" prependIcon={<CloseIcon />} onClick={clearFilters}>
-              {t("common.clear_all")}
+    <main className="mx-auto w-full max-w-[1440px] space-y-5 px-4 py-5 md:px-6">
+      <div className="grid grid-cols-1 items-start gap-x-3 gap-y-1 md:grid-cols-2">
+        <div className="md:row-span-2">
+          <h1 className="text-24 font-semibold tracking-tight text-primary">{t("dashboard_overview.title")}</h1>
+          <p className="mt-1 text-13 text-secondary">{t("dashboard_overview.description")}</p>
+        </div>
+        <div className="flex items-center justify-end gap-2">
+          <DashboardFilterMenu
+            isFiltersApplied={hasActiveFilters}
+            groups={[
+              {
+                key: "project_id",
+                label: t("dashboard_overview.filters.project"),
+                value: filters.project_id ?? "",
+                options: [
+                  { value: "", label: t("dashboard_overview.filters.all_projects") },
+                  ...data.available_projects.map((project) => ({ value: project.id, label: project.name })),
+                ],
+              },
+              {
+                key: "assignee_id",
+                label: t("dashboard_overview.filters.assignee"),
+                value: filters.assignee_id ?? "",
+                options: [
+                  { value: "", label: t("dashboard_overview.filters.all_assignees") },
+                  { value: "unassigned", label: t("dashboard_overview.filters.unassigned") },
+                  ...data.assignees.map((member) => ({
+                    value: member.member_id,
+                    label: member.member__display_name || member.member_id,
+                  })),
+                ],
+              },
+              {
+                key: "created_range",
+                label: t("dashboard_overview.filters.created_range"),
+                value: filters.created_range ?? "",
+                options: [
+                  { value: "", label: t("dashboard_overview.filters.all_time") },
+                  ...["last_7_days", "last_30_days", "last_90_days"].map((range) => ({
+                    value: range,
+                    label: t(`dashboard_overview.filters.${range}`),
+                  })),
+                ],
+              },
+              {
+                key: "priority",
+                label: t("common.priority"),
+                value: filters.priority ?? "",
+                options: [
+                  { value: "", label: t("common.all") },
+                  ...PRIORITIES.map((priority) => ({ value: priority, label: t(priority) })),
+                ],
+              },
+            ]}
+            onChange={changeFilter}
+          />
+          {currentUser && (
+            <Button
+              variant={filters.assignee_id === currentUser.id ? "primary" : "secondary"}
+              size="lg"
+              onClick={() => changeFilter("assignee_id", filters.assignee_id === currentUser.id ? "" : currentUser.id)}
+            >
+              {t("dashboard_overview.only_mine")}
             </Button>
           )}
         </div>
-        <div className="flex flex-wrap gap-3">
-          <DashboardFilter
-            label={t("dashboard_overview.filters.project")}
-            value={filters.project_id ?? ""}
-            displayValue={selectedProject?.name ?? t("dashboard_overview.filters.all_projects")}
-            onChange={(value) => changeFilter("project_id", value)}
-          >
-            <CustomSelect.Option value="">{t("dashboard_overview.filters.all_projects")}</CustomSelect.Option>
-            {data.available_projects.map((project) => (
-              <CustomSelect.Option key={project.id} value={project.id}>
-                {project.name}
-              </CustomSelect.Option>
-            ))}
-          </DashboardFilter>
-          <DashboardFilter
-            label={t("dashboard_overview.filters.assignee")}
-            value={filters.assignee_id ?? ""}
-            displayValue={
-              filters.assignee_id === "unassigned"
-                ? t("dashboard_overview.filters.unassigned")
-                : selectedAssignee?.member__display_name || t("dashboard_overview.filters.all_assignees")
-            }
-            onChange={(value) => changeFilter("assignee_id", value)}
-          >
-            <CustomSelect.Option value="">{t("dashboard_overview.filters.all_assignees")}</CustomSelect.Option>
-            <CustomSelect.Option value="unassigned">{t("dashboard_overview.filters.unassigned")}</CustomSelect.Option>
-            {data.assignees.map((member) => (
-              <CustomSelect.Option key={member.member_id} value={member.member_id}>
-                {member.member__display_name || member.member_id}
-              </CustomSelect.Option>
-            ))}
-          </DashboardFilter>
-          <DashboardFilter
-            label={t("dashboard_overview.filters.created_range")}
-            value={filters.created_range ?? ""}
-            displayValue={createdRangeLabel}
-            onChange={(value) => changeFilter("created_range", value)}
-          >
-            <CustomSelect.Option value="">{t("dashboard_overview.filters.all_time")}</CustomSelect.Option>
-            {["last_7_days", "last_30_days", "last_90_days"].map((range) => (
-              <CustomSelect.Option key={range} value={range}>
-                {t(`dashboard_overview.filters.${range}`)}
-              </CustomSelect.Option>
-            ))}
-          </DashboardFilter>
-          <DashboardFilter
-            label={t("common.priority")}
-            value={filters.priority ?? ""}
-            displayValue={filters.priority ? t(`common.${filters.priority}`) : t("common.all")}
-            onChange={(value) => changeFilter("priority", value)}
-          >
-            <CustomSelect.Option value="">{t("common.all")}</CustomSelect.Option>
-            {PRIORITIES.map((priority) => (
-              <CustomSelect.Option key={priority} value={priority}>
-                {t(`common.${priority}`)}
-              </CustomSelect.Option>
-            ))}
-          </DashboardFilter>
-        </div>
-        {appliedFilters.length > 0 && (
-          <div className="mt-3 flex flex-wrap items-center gap-2" aria-label={t("common.filters")}>
-            {appliedFilters.map((filter) => (
-              <Tag key={filter.key}>
-                <span className="text-11 text-tertiary">{filter.label}</span>
-                <span className="text-11 text-primary">{filter.value}</span>
-                <button
-                  type="button"
-                  className="grid place-items-center text-tertiary hover:text-secondary"
-                  aria-label={`${t("common.remove")} ${filter.label}`}
-                  onClick={() => changeFilter(filter.key, "")}
-                >
+        <section
+          className="relative flex h-6 min-w-0 items-center overflow-x-auto md:col-start-2"
+          aria-label={t("common.filters")}
+          aria-busy={isValidating}
+        >
+          {isValidating && (
+            <span className="sr-only" role="status">
+              {t("dashboard_overview.loading")}
+            </span>
+          )}
+          {appliedFilters.length > 0 && (
+            <div className="ml-auto flex shrink-0 items-center gap-1.5" aria-label={t("common.filters")}>
+              {appliedFilters.map((filter) => (
+                <Tag key={filter.key} className="h-6 shrink-0 gap-1 px-1.5 py-0 text-11">
+                  <span className="text-11 text-tertiary">{filter.label}</span>
+                  <span className="max-w-28 truncate text-11 text-primary" title={filter.value}>
+                    {filter.value}
+                  </span>
+                  <button
+                    type="button"
+                    className="grid place-items-center text-tertiary hover:text-secondary"
+                    aria-label={`${t("common.remove")} ${filter.label}`}
+                    onClick={() => changeFilter(filter.key, "")}
+                  >
+                    <CloseIcon height={12} width={12} strokeWidth={2} />
+                  </button>
+                </Tag>
+              ))}
+              <button
+                type="button"
+                className="rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-accent-strong"
+                onClick={clearFilters}
+              >
+                <Tag className="h-6 shrink-0 gap-1 px-1.5 py-0 text-11">
+                  {t("common.clear_all")}
                   <CloseIcon height={12} width={12} strokeWidth={2} />
-                </button>
-              </Tag>
-            ))}
-          </div>
-        )}
-      </section>
+                </Tag>
+              </button>
+            </div>
+          )}
+        </section>
+      </div>
       {error && (
         <div className="flex items-center justify-between gap-3 rounded-md border border-danger-subtle bg-danger-subtle px-3 py-2 text-12 text-danger-primary">
           <span>{t("dashboard_overview.load_error")}</span>
@@ -804,35 +841,34 @@ export function WorkspaceOverview() {
           onClose={closeDetail}
         />
       )}
-      <section>
+      <section className={cn(CARD_CLASS, "p-4 md:p-5")}>
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-16 font-semibold text-primary">{t("dashboard_overview.risks_title")}</h2>
-          <p className="flex items-center gap-1.5 text-12 text-tertiary">
-            <InfoIcon className="size-3.5 shrink-0" aria-hidden="true" />
-            {t("dashboard_overview.risks_hint")}
-          </p>
         </div>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <p className="mb-4 text-12 leading-5 text-tertiary">{t("dashboard_overview.risks_hint")}</p>
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           {RISK_KINDS.map((kind) => (
             <SummaryCard
               key={kind}
               label={t(`dashboard_overview.metrics.${kind}`)}
               value={data.summary[kind]}
+              attention
               href={getDashboardHref(slug as string, searchParams, { risk: kind, detail: null, page: null })}
               active={risk === kind}
             />
           ))}
         </div>
       </section>
+      <ProjectProgress workspaceSlug={slug as string} projects={data.projects} />
       {!risk && !detail && <RiskItems workspaceSlug={slug as string} items={data.overdue_items} />}
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-        <ProjectProgress workspaceSlug={slug as string} projects={data.projects} />
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3 xl:grid-rows-[auto_1fr]">
         <StateDistribution
           workspaceSlug={slug as string}
           states={data.states}
           searchParams={searchParams}
           activeDetail={detail}
         />
+        <DashboardDistributions workspaceSlug={slug as string} data={data} searchParams={searchParams} />
       </div>
       <WeeklyTrends weeks={data.weekly_trends} />
       <details className={cn(CARD_CLASS, "group overflow-hidden")}>
@@ -852,4 +888,4 @@ export function WorkspaceOverview() {
       </details>
     </main>
   );
-}
+});

@@ -4,6 +4,7 @@ import {
   getCompletionPercentage,
   getDashboardHref,
   getStateDistribution,
+  sortDashboardProjects,
 } from "./dashboard-overview.utils";
 
 describe("dashboard overview", () => {
@@ -54,5 +55,31 @@ describe("dashboard overview", () => {
     expect(getDashboardHref("team", filters, { detail: "completed", risk: null, page: null })).toBe(
       "/team/dashboards?priority=high&detail=completed"
     );
+  });
+});
+
+describe("project sorting", () => {
+  const projects = [
+    { name: "Alpha", total: 4, completed: 1, cancelled: 2, overdue: 0 },
+    { name: "Beta", total: 8, completed: 2, cancelled: 0, overdue: 3 },
+    { name: "Empty", total: 0, completed: 0, cancelled: 0, overdue: 0 },
+  ];
+  it("prioritizes overdue projects without mutating the response", () => {
+    expect(sortDashboardProjects(projects, "overdue").map((p) => p.name)).toEqual(["Beta", "Alpha", "Empty"]);
+    expect(projects[0].name).toBe("Alpha");
+  });
+  it("sorts completion using the actionable denominator and handles empty projects", () => {
+    expect(sortDashboardProjects(projects, "completion").map((p) => p.name)).toEqual(["Alpha", "Beta", "Empty"]);
+    expect(sortDashboardProjects(projects, "name").map((p) => p.name)).toEqual(["Alpha", "Beta", "Empty"]);
+  });
+  it("opens priority details without retaining a conflicting risk or page", () => {
+    expect(
+      getDashboardHref("team", new URLSearchParams("assignee_id=one&risk=stale&page=2"), {
+        priority: "high",
+        detail: "open",
+        risk: null,
+        page: null,
+      })
+    ).toBe("/team/dashboards?assignee_id=one&priority=high&detail=open");
   });
 });

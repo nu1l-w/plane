@@ -11,7 +11,7 @@ import { APIService } from "@/services/api.service";
 // types
 
 export type TDashboardRisk = "overdue" | "due_soon" | "stale" | "high_priority_unassigned";
-export type TDashboardDetail = "total" | "backlog" | "unstarted" | "in_progress" | "completed" | "cancelled";
+export type TDashboardDetail = "open" | "total" | "backlog" | "unstarted" | "in_progress" | "completed" | "cancelled";
 export type TDashboardPriority = "urgent" | "high" | "medium" | "low" | "none";
 export interface IWorkspaceDashboardFilters {
   project_id?: string;
@@ -27,7 +27,9 @@ export interface IDashboardRiskItem {
   id: string;
   name: string;
   sequence_id: number;
-  priority: string;
+  priority: TDashboardPriority;
+  assignees: { id: string; name: string }[];
+  overdue_days: number;
   target_date: string | null;
   updated_at: string;
   project_id: string;
@@ -48,6 +50,8 @@ export interface IWorkspaceDashboardOverview {
     high_priority_unassigned: number;
   };
   states: Record<string, number>;
+  priorities: Record<TDashboardPriority, number>;
+  member_distribution: { id: string; name: string; total: number; in_progress: number; overdue: number }[];
   available_projects: { id: string; name: string }[];
   assignees: { member_id: string; member__display_name: string }[];
   projects: {

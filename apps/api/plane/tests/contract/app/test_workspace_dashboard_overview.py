@@ -23,34 +23,18 @@ from plane.db.models import (
 @pytest.mark.django_db
 class TestWorkspaceDashboardOverview:
     def test_only_active_project_memberships_are_counted(self, session_client, workspace, create_user):
-        visible = Project.objects.create(
-            name="Visible", identifier="VIS", workspace=workspace, created_by=create_user
-        )
-        hidden = Project.objects.create(
-            name="Hidden", identifier="HID", workspace=workspace, created_by=create_user
-        )
-        ProjectMember.objects.create(
-            project=visible, workspace=workspace, member=create_user, role=20
-        )
-        ProjectMember.objects.create(
-            project=hidden, workspace=workspace, member=create_user, role=20, is_active=False
-        )
-        started = State.objects.create(
-            name="Started", color="#eee", group="started", project=visible
-        )
-        completed = State.objects.create(
-            name="Completed", color="#ddd", group="completed", project=visible
-        )
-        hidden_state = State.objects.create(
-            name="Secret", color="#ccc", group="started", project=hidden
-        )
+        visible = Project.objects.create(name="Visible", identifier="VIS", workspace=workspace, created_by=create_user)
+        hidden = Project.objects.create(name="Hidden", identifier="HID", workspace=workspace, created_by=create_user)
+        ProjectMember.objects.create(project=visible, workspace=workspace, member=create_user, role=20)
+        ProjectMember.objects.create(project=hidden, workspace=workspace, member=create_user, role=20, is_active=False)
+        started = State.objects.create(name="Started", color="#eee", group="started", project=visible)
+        completed = State.objects.create(name="Completed", color="#ddd", group="completed", project=visible)
+        hidden_state = State.objects.create(name="Secret", color="#ccc", group="started", project=hidden)
         yesterday = timezone.localdate() - timedelta(days=1)
         overdue = Issue.objects.create(
             name="Late task", project=visible, state=started, priority="urgent", target_date=yesterday
         )
-        Issue.objects.create(
-            name="Done task", project=visible, state=completed, target_date=yesterday
-        )
+        Issue.objects.create(name="Done task", project=visible, state=completed, target_date=yesterday)
         Issue.objects.create(name="Hidden task", project=hidden, state=hidden_state, target_date=yesterday)
 
         response = session_client.get(f"/api/workspaces/{workspace.slug}/dashboard-overview/")
@@ -82,20 +66,12 @@ class TestWorkspaceDashboardOverview:
         cancelled = State.objects.create(name="Cancelled", color="#ccc", group="cancelled", project=project)
         this_week = timezone.localdate() - timedelta(days=timezone.localdate().weekday())
         last_week = this_week - timedelta(days=7)
-        last_week_moment = timezone.make_aware(
-            datetime.combine(last_week + timedelta(days=1), time(12))
-        )
+        last_week_moment = timezone.make_aware(datetime.combine(last_week + timedelta(days=1), time(12)))
         finished = Issue.objects.create(name="Finished", project=project, state=completed)
-        Issue.objects.filter(id=finished.id).update(
-            created_at=last_week_moment, completed_at=last_week_moment
-        )
+        Issue.objects.filter(id=finished.id).update(created_at=last_week_moment, completed_at=last_week_moment)
         Issue.objects.create(name="New", project=project, state=started)
-        Issue.objects.create(
-            name="Past due", project=project, state=started, target_date=last_week
-        )
-        Issue.objects.create(
-            name="Cancelled", project=project, state=cancelled, target_date=last_week
-        )
+        Issue.objects.create(name="Past due", project=project, state=started, target_date=last_week)
+        Issue.objects.create(name="Cancelled", project=project, state=cancelled, target_date=last_week)
 
         response = session_client.get(f"/api/workspaces/{workspace.slug}/dashboard-overview/")
 
@@ -115,15 +91,9 @@ class TestWorkspaceDashboardOverview:
         assert this_week_bucket["completed"] == 0
         assert this_week_bucket["overdue"] == 0
 
-    def test_assigned_high_priority_work_does_not_count_as_unassigned(
-        self, session_client, workspace, create_user
-    ):
-        project = Project.objects.create(
-            name="Assigned", identifier="ASN", workspace=workspace, created_by=create_user
-        )
-        ProjectMember.objects.create(
-            project=project, workspace=workspace, member=create_user, role=20
-        )
+    def test_assigned_high_priority_work_does_not_count_as_unassigned(self, session_client, workspace, create_user):
+        project = Project.objects.create(name="Assigned", identifier="ASN", workspace=workspace, created_by=create_user)
+        ProjectMember.objects.create(project=project, workspace=workspace, member=create_user, role=20)
         state = State.objects.create(name="Open", color="#eee", project=project)
         issue = Issue.objects.create(name="Assigned issue", project=project, state=state, priority="high")
         IssueAssignee.objects.create(issue=issue, assignee=create_user, project=project)
@@ -160,9 +130,7 @@ class TestWorkspaceDashboardOverview:
         ProjectMember.objects.create(project=project, workspace=workspace, member=create_user, role=20)
         started = State.objects.create(name="Started", color="#aaa", group="started", project=project)
         completed = State.objects.create(name="Completed", color="#bbb", group="completed", project=project)
-        completed_high = Issue.objects.create(
-            name="High completed", project=project, state=completed, priority="high"
-        )
+        completed_high = Issue.objects.create(name="High completed", project=project, state=completed, priority="high")
         Issue.objects.create(name="Low completed", project=project, state=completed, priority="low")
         Issue.objects.create(name="High in progress", project=project, state=started, priority="high")
         url = f"/api/workspaces/{workspace.slug}/dashboard-overview/"
@@ -184,9 +152,7 @@ class TestWorkspaceDashboardOverview:
         ProjectMember.objects.create(project=project, workspace=workspace, member=create_user, role=20)
         today = timezone.localdate()
         for index in range(21):
-            Issue.objects.create(
-                name=f"Due soon {index}", project=project, target_date=today + timedelta(days=1)
-            )
+            Issue.objects.create(name=f"Due soon {index}", project=project, target_date=today + timedelta(days=1))
         old_issue = Issue.objects.create(name="Old", project=project)
         Issue.objects.filter(id=old_issue.id).update(
             created_at=timezone.now() - timedelta(days=60),
@@ -209,9 +175,7 @@ class TestWorkspaceDashboardOverview:
         assert past_last_page.data["risk_page"] == 1
         assert past_last_page.data["risk_items"][0]["id"] == old_issue.id
 
-    def test_invalid_or_hidden_project_filters_do_not_expose_data(
-        self, session_client, workspace
-    ):
+    def test_invalid_or_hidden_project_filters_do_not_expose_data(self, session_client, workspace):
         hidden = Project.objects.create(name="Hidden filter", identifier="HFL", workspace=workspace)
         Issue.objects.create(name="Hidden task", project=hidden)
         url = f"/api/workspaces/{workspace.slug}/dashboard-overview/"
@@ -238,15 +202,11 @@ class TestWorkspaceDashboardOverview:
         assert response.data["projects"] == []
         assert response.data["overdue_items"] == []
 
-    def test_guest_role_in_project_does_not_expose_its_work_items(
-        self, session_client, workspace, create_user
-    ):
+    def test_guest_role_in_project_does_not_expose_its_work_items(self, session_client, workspace, create_user):
         project = Project.objects.create(
             name="Restricted", identifier="RST", workspace=workspace, created_by=create_user
         )
-        ProjectMember.objects.create(
-            project=project, workspace=workspace, member=create_user, role=5
-        )
+        ProjectMember.objects.create(project=project, workspace=workspace, member=create_user, role=5)
         Issue.objects.create(name="Restricted issue", project=project)
 
         response = session_client.get(f"/api/workspaces/{workspace.slug}/dashboard-overview/")
@@ -256,9 +216,7 @@ class TestWorkspaceDashboardOverview:
         assert response.data["summary"]["total"] == 0
 
     def test_non_member_cannot_read_workspace_overview(self, workspace):
-        stranger = User.objects.create(
-            email="stranger-dashboard@example.com", username="stranger-dashboard"
-        )
+        stranger = User.objects.create(email="stranger-dashboard@example.com", username="stranger-dashboard")
         client = APIClient()
         client.force_authenticate(user=stranger)
 
@@ -267,9 +225,7 @@ class TestWorkspaceDashboardOverview:
         assert response.status_code == 403
 
     def test_guest_cannot_read_workspace_overview(self, workspace):
-        guest = User.objects.create(
-            email="guest-dashboard@example.com", username="guest-dashboard"
-        )
+        guest = User.objects.create(email="guest-dashboard@example.com", username="guest-dashboard")
         WorkspaceMember.objects.create(workspace=workspace, member=guest, role=5)
         client = APIClient()
         client.force_authenticate(user=guest)
@@ -277,3 +233,57 @@ class TestWorkspaceDashboardOverview:
         response = client.get(f"/api/workspaces/{workspace.slug}/dashboard-overview/")
 
         assert response.status_code == 403
+
+    def test_distributions_exclude_closed_and_hidden_work_and_handle_shared_assignments(
+        self, session_client, workspace, create_user
+    ):
+        project = Project.objects.create(name="Distribution", identifier="DST", workspace=workspace)
+        hidden = Project.objects.create(name="Hidden", identifier="HDN", workspace=workspace)
+        ProjectMember.objects.create(project=project, workspace=workspace, member=create_user, role=20)
+        other = User.objects.create(email="distribution@example.com", username="distribution")
+        WorkspaceMember.objects.create(workspace=workspace, member=other, role=15)
+        started = State.objects.create(name="Started", color="#aaa", group="started", project=project)
+        completed = State.objects.create(name="Completed", color="#bbb", group="completed", project=project)
+        cancelled = State.objects.create(name="Cancelled", color="#ccc", group="cancelled", project=project)
+        shared = Issue.objects.create(
+            name="Shared",
+            project=project,
+            state=started,
+            priority="urgent",
+            target_date=timezone.localdate() - timedelta(days=3),
+        )
+        for member in [create_user, other]:
+            IssueAssignee.objects.create(issue=shared, project=project, assignee=member)
+        unassigned = Issue.objects.create(name="Unassigned", project=project, priority="high")
+        removed = Issue.objects.create(name="Removed assignment", project=project, priority="low")
+        assignment = IssueAssignee.objects.create(issue=removed, project=project, assignee=create_user)
+        IssueAssignee.objects.filter(id=assignment.id).update(deleted_at=timezone.now())
+        done = Issue.objects.create(name="Done", project=project, state=completed, priority="urgent")
+        IssueAssignee.objects.create(issue=done, project=project, assignee=create_user)
+        Issue.objects.create(name="Cancelled", project=project, state=cancelled, priority="urgent")
+        secret = Issue.objects.create(name="Secret", project=hidden, priority="urgent")
+        IssueAssignee.objects.create(issue=secret, project=hidden, assignee=create_user)
+        url = f"/api/workspaces/{workspace.slug}/dashboard-overview/"
+        response = session_client.get(url)
+        assert response.status_code == 200
+        assert response.data["priorities"] == {"urgent": 1, "high": 1, "medium": 0, "low": 1, "none": 0}
+        members = {row["id"]: row for row in response.data["member_distribution"]}
+        for member in [create_user, other]:
+            assert members[str(member.id)]["total"] == 1
+            assert members[str(member.id)]["in_progress"] == 1
+            assert members[str(member.id)]["overdue"] == 1
+        assert members["unassigned"]["total"] == 2
+        item = response.data["overdue_items"][0]
+        assert item["overdue_days"] == 3
+        assert {row["id"] for row in item["assignees"]} == {create_user.id, other.id}
+        filtered = session_client.get(url, {"priority": "high", "detail": "open"})
+        assert filtered.data["detail_total"] == 1
+        assert filtered.data["detail_items"][0]["id"] == unassigned.id
+        assert filtered.data["member_distribution"][0]["id"] == "unassigned"
+        assert filtered.data["member_distribution"][0]["total"] == 1
+        open_urgent = session_client.get(url, {"priority": "urgent", "detail": "open"})
+        assert open_urgent.data["detail_total"] == 1
+        assert open_urgent.data["detail_items"][0]["id"] == shared.id
+        empty = session_client.get(url, {"project_id": str(hidden.id)})
+        assert not empty.data["member_distribution"]
+        assert not any(empty.data["priorities"].values())

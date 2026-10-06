@@ -21,6 +21,7 @@ RISK_KINDS = {"overdue", "due_soon", "stale", "high_priority_unassigned"}
 PRIORITIES = {"urgent", "high", "medium", "low", "none"}
 DETAIL_GROUPS = {
     "total": None,
+    "open": None,
     "backlog": "backlog",
     "unstarted": "unstarted",
     "in_progress": "started",
@@ -30,7 +31,7 @@ DETAIL_GROUPS = {
 
 
 def risk_item_values(queryset):
-    return list(
+    items = list(
         queryset.values(
             "id",
             "name",
@@ -43,33 +44,37 @@ def risk_item_values(queryset):
             "project__identifier",
         )
     )
+    assignments = {}
+    for row in (
+        IssueAssignee.objects.filter(issue_id__in=[item["id"] for item in items], deleted_at__isnull=True)
+        .order_by("assignee__display_name", "assignee_id")
+        .values("issue_id", "assignee_id", "assignee__display_name")
+    ):
+        assignments.setdefault(row["issue_id"], []).append(
+            {
+                "id": row["assignee_id"],
+                "name": row["assignee__display_name"],
+            }
+        )
+    for item in items:
+        item["assignees"] = assignments.get(item["id"], [])
+        item["overdue_days"] = max(0, (timezone.localdate() - item["target_date"]).days) if item["target_date"] else 0
+    return items
 
 
 def weekly_trends(issues, overdue_issues, today):
     first_week = today - timedelta(days=today.weekday(), weeks=7)
-    first_moment = timezone.make_aware(
-        datetime.combine(first_week, time.min), timezone.get_current_timezone()
-    )
+    first_moment = timezone.make_aware(datetime.combine(first_week, time.min), timezone.get_current_timezone())
 
     def counts_by_week(queryset, field):
-        rows = (
-            queryset.annotate(week=TruncWeek(field))
-            .order_by()
-            .values("week")
-            .annotate(total=Count("id"))
-        )
+        rows = queryset.annotate(week=TruncWeek(field)).order_by().values("week").annotate(total=Count("id"))
         return {
-            (row["week"].date() if isinstance(row["week"], datetime) else row["week"]): row["total"]
-            for row in rows
+            (row["week"].date() if isinstance(row["week"], datetime) else row["week"]): row["total"] for row in rows
         }
 
     created = counts_by_week(issues.filter(created_at__gte=first_moment), "created_at")
-    completed = counts_by_week(
-        issues.filter(state__group="completed", completed_at__gte=first_moment), "completed_at"
-    )
-    overdue = counts_by_week(
-        overdue_issues.filter(target_date__gte=first_week), "target_date"
-    )
+    completed = counts_by_week(issues.filter(state__group="completed", completed_at__gte=first_moment), "completed_at")
+    overdue = counts_by_week(overdue_issues.filter(target_date__gte=first_week), "target_date")
     return [
         {
             "week_start": (week := first_week + timedelta(weeks=index)).isoformat(),
@@ -134,9 +139,9 @@ class WorkspaceDashboardOverviewEndpoint(BaseAPIView):
                 issues = issues.annotate(has_assignee=Exists(assigned)).filter(has_assignee=False)
             else:
                 issues = issues.filter(
-                    id__in=IssueAssignee.objects.filter(
-                        assignee_id=assignee_id, deleted_at__isnull=True
-                    ).values("issue_id")
+                    id__in=IssueAssignee.objects.filter(assignee_id=assignee_id, deleted_at__isnull=True).values(
+                        "issue_id"
+                    )
                 )
         if created_range:
             issues = issues.filter(created_at__gte=timezone.now() - timedelta(days=CREATED_RANGES[created_range]))
@@ -152,6 +157,40 @@ class WorkspaceDashboardOverviewEndpoint(BaseAPIView):
             .annotate(has_active_assignee=Exists(assigned))
             .filter(has_active_assignee=False)
         )
+
+        priority_counts = {
+            row["priority"]: row["total"]
+            for row in open_issues.order_by().values("priority").annotate(total=Count("id"))
+        }
+        member_counts = list(
+            IssueAssignee.objects.filter(issue_id__in=open_issues.values("id"), deleted_at__isnull=True)
+            .order_by()
+            .values("assignee_id", "assignee__display_name")
+            .annotate(
+                total=Count("issue_id", distinct=True),
+                in_progress=Count("issue_id", filter=Q(issue__state__group="started"), distinct=True),
+                overdue=Count("issue_id", filter=Q(issue__target_date__lt=today), distinct=True),
+            )
+        )
+        member_rows = [
+            {
+                "id": str(row["assignee_id"]),
+                "name": row["assignee__display_name"],
+                "total": row["total"],
+                "in_progress": row["in_progress"],
+                "overdue": row["overdue"],
+            }
+            for row in member_counts
+        ]
+        unassigned = open_issues.annotate(has_assignee=Exists(assigned)).filter(has_assignee=False)
+        unassigned_counts = unassigned.aggregate(
+            total=Count("id"),
+            in_progress=Count("id", filter=Q(state__group="started")),
+            overdue=Count("id", filter=Q(target_date__lt=today)),
+        )
+        if unassigned_counts["total"]:
+            member_rows.append({"id": "unassigned", "name": "", **unassigned_counts})
+        member_rows.sort(key=lambda row: (-row["overdue"], -row["total"], row["id"]))
 
         counts = issues.aggregate(
             total=Count("id"),
@@ -171,8 +210,7 @@ class WorkspaceDashboardOverviewEndpoint(BaseAPIView):
                 cancelled=Count("id", filter=Q(state__group="cancelled")),
                 overdue=Count(
                     "id",
-                    filter=Q(target_date__lt=today)
-                    & ~Q(state__group__in=["completed", "cancelled"]),
+                    filter=Q(target_date__lt=today) & ~Q(state__group__in=["completed", "cancelled"]),
                 ),
             )
         }
@@ -201,30 +239,28 @@ class WorkspaceDashboardOverviewEndpoint(BaseAPIView):
         risk_total = risk_counts.get(risk, 0)
         risk_page = min(page_number, max(1, (risk_total + 19) // 20))
         risk_items = (
-            risk_item_values(selected_risk[(risk_page - 1) * 20 : risk_page * 20])
-            if selected_risk is not None
-            else []
+            risk_item_values(selected_risk[(risk_page - 1) * 20 : risk_page * 20]) if selected_risk is not None else []
         )
         detail_issues = issues
-        if detail and DETAIL_GROUPS[detail] == "unstarted":
-            detail_issues = detail_issues.filter(
-                Q(state__group="unstarted") | Q(state__group__isnull=True)
-            )
+        if detail == "open":
+            detail_issues = open_issues
+        elif detail and DETAIL_GROUPS[detail] == "unstarted":
+            detail_issues = detail_issues.filter(Q(state__group="unstarted") | Q(state__group__isnull=True))
         elif detail and DETAIL_GROUPS[detail]:
             detail_issues = detail_issues.filter(state__group=DETAIL_GROUPS[detail])
         detail_total = detail_issues.count() if detail else 0
         detail_page = min(page_number, max(1, (detail_total + 19) // 20))
         detail_items = (
-            risk_item_values(
-                detail_issues.order_by("-created_at", "id")[(detail_page - 1) * 20 : detail_page * 20]
-            )
+            risk_item_values(detail_issues.order_by("-created_at", "id")[(detail_page - 1) * 20 : detail_page * 20])
             if detail
             else []
         )
         overdue_items = risk_item_values(risks["overdue"][:10])
-        assignees = WorkspaceMember.objects.filter(
-            workspace__slug=slug, is_active=True, member__is_bot=False
-        ).order_by("member__display_name").values("member_id", "member__display_name")
+        assignees = (
+            WorkspaceMember.objects.filter(workspace__slug=slug, is_active=True, member__is_bot=False)
+            .order_by("member__display_name")
+            .values("member_id", "member__display_name")
+        )
 
         return Response(
             {
@@ -234,6 +270,8 @@ class WorkspaceDashboardOverviewEndpoint(BaseAPIView):
                     **risk_counts,
                 },
                 "states": state_counts,
+                "priorities": {key: priority_counts.get(key, 0) for key in PRIORITIES},
+                "member_distribution": member_rows,
                 "projects": project_rows,
                 "weekly_trends": weekly_trends(issues, overdue_issues, today),
                 "available_projects": available_projects,

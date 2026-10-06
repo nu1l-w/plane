@@ -35,3 +35,22 @@ export function getDashboardHref(
   const query = params.toString();
   return `/${encodeURIComponent(workspaceSlug)}/dashboards${query ? `?${query}` : ""}`;
 }
+
+export type TProjectSort = "overdue" | "completion" | "name";
+
+export function sortDashboardProjects<
+  T extends { name: string; total: number; completed: number; cancelled: number; overdue: number },
+>(projects: T[], sort: TProjectSort): T[] {
+  // Sort a copy for compatibility with the app's ES2022 target.
+  // oxlint-disable-next-line unicorn/no-array-sort
+  return [...projects].sort((a, b) => {
+    const difference =
+      sort === "overdue"
+        ? b.overdue - a.overdue
+        : sort === "completion"
+          ? getCompletionPercentage(b.completed, b.total, b.cancelled) -
+            getCompletionPercentage(a.completed, a.total, a.cancelled)
+          : 0;
+    return difference || a.name.localeCompare(b.name);
+  });
+}

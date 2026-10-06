@@ -54,7 +54,8 @@
       "overdue": "Overdue",
       "due_soon": "Due in 7 days",
       "stale": "Not updated in 14 days",
-      "high_priority_unassigned": "High priority, unassigned"
+      "high_priority_unassigned": "High priority, unassigned",
+      "open": "Open work"
     },
     "states": {
       "backlog": "Backlog",
@@ -62,7 +63,20 @@
       "started": "In progress",
       "completed": "Completed",
       "cancelled": "Cancelled"
-    }
+    },
+    "only_mine": "My work",
+    "overdue_days": "{count} days overdue",
+    "priority_distribution": "Open work by priority",
+    "open_work_hint": "Excludes completed and cancelled work. Select a priority to filter.",
+    "member_distribution": "Work by assignee",
+    "member_hint": "Open work only. Shared work counts for each assignee. Select a member to filter.",
+    "member_started": "{count} in progress",
+    "sort": {
+      "overdue": "Most overdue first",
+      "completion": "Highest completion first",
+      "name": "Project name"
+    },
+    "state_hint": "All work items, including completed and cancelled. Select a state to view."
   },
   "home": {
     "empty": {

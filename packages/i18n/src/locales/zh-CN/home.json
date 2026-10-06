@@ -54,7 +54,8 @@
       "overdue": "已逾期",
       "due_soon": "未来 7 天到期",
       "stale": "14 天未更新",
-      "high_priority_unassigned": "高优先级未分配"
+      "high_priority_unassigned": "高优先级未分配",
+      "open": "未完成工作项"
     },
     "states": {
       "backlog": "待办",
@@ -62,7 +63,20 @@
       "started": "进行中",
       "completed": "已完成",
       "cancelled": "已取消"
-    }
+    },
+    "only_mine": "只看我的",
+    "overdue_days": "逾期 {count} 天",
+    "priority_distribution": "未完成任务优先级",
+    "open_work_hint": "仅统计未完成、未取消的工作项；点击查看。",
+    "member_distribution": "成员任务分布",
+    "member_hint": "仅统计未完成任务；多人负责的任务计入每位负责人。点击按负责人筛选。",
+    "member_started": "进行中 {count} 项",
+    "sort": {
+      "overdue": "逾期最多优先",
+      "completion": "完成率最高优先",
+      "name": "按项目名称"
+    },
+    "state_hint": "包含已完成和已取消的工作项；点击状态查看明细。"
   },
   "home": {
     "empty": {
