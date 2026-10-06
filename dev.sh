@@ -4,6 +4,9 @@ set -euo pipefail
 ROOT="$(dirname "$(realpath "${BASH_SOURCE[0]}")")"
 
 compose() {
+  if [[ -f "$ROOT/services/notification-adapter/.env" ]]; then
+    set -- --profile notifications "$@"
+  fi
   docker compose --project-directory "$ROOT" -f "$ROOT/docker-compose-local.yml" "$@"
 }
 

@@ -24,6 +24,23 @@ def project(db, workspace, create_user):
 
 @pytest.mark.contract
 class TestWorkItemTypeAPI:
+    @pytest.mark.parametrize("has_type", [True, False])
+    def test_workspace_view_preserves_work_item_type(self, session_client, workspace, project, has_type):
+        issue_type = IssueType.objects.create(workspace=workspace, name="View type") if has_type else None
+        issue = Issue.objects.create(
+            workspace=workspace,
+            project=project,
+            name="Work item in workspace view",
+            type=issue_type,
+        )
+
+        response = session_client.get(f"/api/workspaces/{workspace.slug}/issues/")
+
+        assert response.status_code == status.HTTP_200_OK
+        result = next(item for item in response.json()["results"] if item["id"] == str(issue.id))
+        assert "type_id" in result
+        assert result["type_id"] == (str(issue_type.id) if has_type else None)
+
     def workspace_types_url(self, workspace):
         return f"/api/v1/workspaces/{workspace.slug}/work-item-types/"
 

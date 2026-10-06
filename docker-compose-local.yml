@@ -1,5 +1,5 @@
-x-local-storage-env: &local-storage-env
-  # Direct S3 access: containers use Docker DNS; signed URLs use the browser address.
+x-local-storage-env:
+  &local-storage-env # Direct S3 access: containers use Docker DNS; signed URLs use the browser address.
   USE_MINIO: "0"
   AWS_REGION: ${AWS_REGION:-us-east-1}
   AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
@@ -178,11 +178,32 @@ services:
       - plane-db
       - plane-redis
 
+  notification-adapter:
+    profiles:
+      - notifications
+    image: plane-notification-adapter
+    build:
+      context: ./services/notification-adapter
+    restart: unless-stopped
+    networks:
+      - dev_env
+    env_file:
+      - ./services/notification-adapter/.env
+    ports:
+      - "8080:8080"
+    volumes:
+      - notification-data:/app/data
+      - ./services/notification-adapter/config:/app/config:ro
+
 volumes:
   redisdata:
   uploads:
   pgdata:
   rabbitmq_data:
+  notification-data:
+    # Reuse the standalone adapter's queue during migration. Compose creates
+    # this volume for new installations and preserves it on normal shutdown.
+    name: plane-notification-data
 
 networks:
   dev_env:

@@ -161,9 +161,20 @@ def get_model_data(event: str, event_id: Union[str, List[str]], many: bool = Fal
                 issue_id = queryset.id
                 queryset = model.objects.filter(pk=issue_id).prefetch_related(*issue_prefetches).first()
 
-            return serializer(queryset, many=many, context={"expand": ["labels", "assignees"]}).data
+            data = serializer(queryset, many=many, context={"expand": ["labels", "assignees"]}).data
         else:
-            return serializer(queryset, many=many).data
+            data = serializer(queryset, many=many).data
+        # Include the human-readable project name in outbound webhook data.
+        # Keep the existing project ID intact for consumers that route by ID.
+        if event in ("issue", "issue_comment", "module", "cycle"):
+            if many:
+                project_names = {str(key): name for key, name in Project.objects.filter(pk__in={obj.project_id for obj in queryset}).values_list("id", "name")}
+                for item in data:
+                    project_id = item.get("project")
+                    item["project_name"] = project_names.get(str(project_id), "")
+            else:
+                data["project_name"] = queryset.project.name
+        return data
     except ObjectDoesNotExist:
         raise ObjectDoesNotExist(f"No {event} found with id: {event_id}")
 

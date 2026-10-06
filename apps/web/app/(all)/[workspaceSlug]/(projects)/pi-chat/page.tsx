@@ -164,7 +164,9 @@ const PiChatPage = observer(function PiChatPage() {
   const [isCreatingIssue, setIsCreatingIssue] = useState(false);
   const [issueDraftError, setIssueDraftError] = useState("");
   const [issueCreateError, setIssueCreateError] = useState("");
+  const chatScrollContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const previousChatStorageKeyRef = useRef("");
   const formRef = useRef<HTMLFormElement>(null);
   const scopeStorageKey =
     slug && currentUser?.id
@@ -253,8 +255,17 @@ const PiChatPage = observer(function PiChatPage() {
   }, [chatStorageKey]);
 
   useEffect(() => {
+    if (!isChatReady || !chatStorageKey) return;
+
+    if (previousChatStorageKeyRef.current !== chatStorageKey) {
+      previousChatStorageKeyRef.current = chatStorageKey;
+      const scrollContainer = chatScrollContainerRef.current;
+      if (scrollContainer) scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      return;
+    }
+
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [messages]);
+  }, [chatStorageKey, isChatReady, messages]);
 
   const clearChat = () => {
     if (!chatStorageKey || !isChatReady || isChatSubmitting || isDraftingIssue || isCreatingIssue) return;
@@ -531,7 +542,7 @@ const PiChatPage = observer(function PiChatPage() {
         <PageHead title="StarAxis AI (Beta)" />
         <div className="mx-auto flex h-full w-full max-w-6xl flex-col overflow-hidden px-4">
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-            <div className="flex-1 overflow-y-auto py-5 sm:py-8">
+            <div ref={chatScrollContainerRef} className="flex-1 overflow-y-auto py-5 sm:py-8">
               {messages.length === 0 ? (
                 <div className="mx-auto flex min-h-full max-w-2xl flex-col justify-center py-8">
                   <h2 className="text-20 font-semibold text-primary">问问你的工作区</h2>
@@ -887,7 +898,7 @@ const PiChatPage = observer(function PiChatPage() {
                 />
                 <div className="flex flex-wrap items-end justify-between gap-3 px-2 pt-2">
                   <div className="flex min-w-0 flex-1 flex-col gap-1 text-11 text-tertiary">
-                    <span>当前范围内的资料会发送给 AI 服务商</span>
+                    <span> </span>
                   </div>
                   <div className="flex shrink-0 flex-col items-end gap-1">
                     <div className="flex gap-2">

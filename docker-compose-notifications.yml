@@ -1,0 +1,17 @@
+# 从仓库根目录与 docker-compose.yml 合并使用，详见服务 README。
+services:
+  notification-adapter:
+    build:
+      context: ./services/notification-adapter
+    restart: unless-stopped
+    env_file:
+      - ./services/notification-adapter/.env
+    volumes:
+      - notification-data:/app/data
+      - ./services/notification-adapter/config:/app/config:ro
+    expose:
+      - "8080"
+    # 沿用根目录 Compose 的默认网络，供 API / worker 通过服务名访问。
+
+volumes:
+  notification-data:

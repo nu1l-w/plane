@@ -2,10 +2,10 @@
 
 ## 先分清两套环境
 
-| 目录 | 用途 | 入口 |
-| --- | --- | --- |
-| `plane-src` | 当前使用的源码开发环境，可改代码并热更新 | http://localhost:3000 |
-| `plane-local` | Docker 成品镜像环境，目前已停止 | http://localhost:8080 |
+| 目录          | 用途                                     | 入口                  |
+| ------------- | ---------------------------------------- | --------------------- |
+| `plane-src`   | 当前使用的源码开发环境，可改代码并热更新 | http://localhost:3000 |
+| `plane-local` | Docker 成品镜像环境，目前已停止          | http://localhost:8080 |
 
 两套环境的数据库、账号、项目和附件独立，不会自动同步。这里的命令只操作 `plane-src`，不会迁移或删除 `plane-local` 的数据。
 
@@ -39,13 +39,13 @@ bash dev.sh down
 
 ## 访问地址
 
-| 地址 | 用途 |
-| --- | --- |
-| http://localhost:3000 | 日常项目管理 |
-| http://localhost:3001/god-mode/ | 实例管理员后台，配置注册、邮件等 |
-| http://localhost:3002/spaces/ | 发布的项目空间，不是日常工作入口 |
-| http://localhost:8000/api/instances/ | API 状态检查 |
-| http://localhost:9090 | MinIO 对象存储控制台，仅排查附件时使用 |
+| 地址                                 | 用途                                   |
+| ------------------------------------ | -------------------------------------- |
+| http://localhost:3000                | 日常项目管理                           |
+| http://localhost:3001/god-mode/      | 实例管理员后台，配置注册、邮件等       |
+| http://localhost:3002/spaces/        | 发布的项目空间，不是日常工作入口       |
+| http://localhost:8000/api/instances/ | API 状态检查                           |
+| http://localhost:9090                | MinIO 对象存储控制台，仅排查附件时使用 |
 
 MinIO 的账号、密码对应根目录 `.env` 的 `AWS_ACCESS_KEY_ID` 和 `AWS_SECRET_ACCESS_KEY`，不是 Plane 登录账号。不要在控制台随意删除桶或对象。
 
@@ -64,15 +64,15 @@ MinIO 的账号、密码对应根目录 `.env` 的 `AWS_ACCESS_KEY_ID` 和 `AWS_
 
 ## 怎么组织工作
 
-| 概念 | 用法 | Sonicore 示例 |
-| --- | --- | --- |
-| Workspace 工作区 | 一个团队或产品的总空间 | Sonicore 团队 |
-| Project 项目 | 独立产品或工作方向 | 音频检测平台 |
-| Work item / Issue 任务 | 一件可交付、可验收的工作 | 完成 YAMNet 原始录音基线报告 |
-| Module 模块 | 一组相关任务 | 数据与标注、检测模型、动态 EQ |
-| Cycle 迭代 | 一个有起止时间的执行周期 | 第一轮两周迭代 |
-| Page 文档 | 需求、实验报告、会议记录 | 基线报告与验收标准 |
-| View 视图 | 保存筛选条件，集中查看任务 | 本周到期、分配给我、阻塞任务 |
+| 概念                   | 用法                       | Sonicore 示例                 |
+| ---------------------- | -------------------------- | ----------------------------- |
+| Workspace 工作区       | 一个团队或产品的总空间     | Sonicore 团队                 |
+| Project 项目           | 独立产品或工作方向         | 音频检测平台                  |
+| Work item / Issue 任务 | 一件可交付、可验收的工作   | 完成 YAMNet 原始录音基线报告  |
+| Module 模块            | 一组相关任务               | 数据与标注、检测模型、动态 EQ |
+| Cycle 迭代             | 一个有起止时间的执行周期   | 第一轮两周迭代                |
+| Page 文档              | 需求、实验报告、会议记录   | 基线报告与验收标准            |
+| View 视图              | 保存筛选条件，集中查看任务 | 本周到期、分配给我、阻塞任务  |
 
 建议先建一个项目和三个任务：整理录音样本、完成基线评估、验证动态 EQ。每个任务都写清楚“要做什么、验收结果、截止日期”，再逐步引入模块和迭代。
 
@@ -124,3 +124,9 @@ curl -I http://localhost:9000/minio/health/live
 - 修改前端环境变量：停止前端，再执行 `bash dev.sh frontend`。
 - 后端代码通常由 API 自动重载；修改 Celery 任务代码后需重启 worker。
 - 原镜像无法拉取时：在根目录 `.env` 配置可获取且受信任的兼容镜像，再执行 `up`。不要为了重新拉镜像删除数据卷。
+
+## 钉钉 / 飞书通知服务
+
+配置 `services/notification-adapter/.env` 后，`bash dev.sh up` 自动启用通知服务，Docker Desktop 中归入 `plane-src` 分组；`bash dev.sh down` 一起停止，队列数据保留。不配置该文件时，不启动通知服务。
+
+现有 Webhook 地址 `http://host.docker.internal:8080/webhooks/plane` 可继续使用，API / worker 的 `WEBHOOK_ALLOWED_HOSTS` 需包含 `host.docker.internal`。通知配置修改后运行 `bash dev.sh up`；通知代码修改后运行 `docker compose -f docker-compose-local.yml --profile notifications up -d --build notification-adapter`。查看日志使用 `bash dev.sh logs notification-adapter`。
