@@ -74,6 +74,36 @@ class TestAIChatRisks:
         for mock in (risks, plan, llm, issues, pages):
             mock.assert_not_called()
 
+    @pytest.mark.parametrize("creator,expected", [("current_user", 23), ("any", 30)])
+    def test_list_all_preserves_creator_scope_and_reads_beyond_sample(
+        self, session_client, workspace, create_user, creator, expected
+    ):
+        project = self.setup_scope(workspace, create_user)
+        for index in range(30):
+            issue = Issue.objects.create(name=f"Task {index}", project=project)
+            Issue.objects.filter(id=issue.id).update(created_by=create_user if index < 23 else None)
+        history = [
+            {"role": "user", "content": "我创建了几个工作项" if creator == "current_user" else "工作区有几个工作项"},
+            {"role": "assistant", "content": "共23个，展示12个"},
+        ]
+        plan = {
+            "assignee": "any", "creator": creator, "status": "any",
+            "priority": "any", "terms": [], "risks": [],
+        }
+        with (
+            patch("plane.app.views.external.ai_chat._get_issue_search_plan", return_value=plan) as search,
+            patch("plane.app.views.external.ai_chat.get_llm_response", return_value=("全部23个", None, None)),
+        ):
+            response = session_client.post(
+                f"/api/workspaces/{workspace.slug}/ai-chat/",
+                {"message": "全部列出来", "history": history}, format="json",
+            )
+        assert response.status_code == 200
+        assert response.data["retrieval"] == {"mode": "smart", "matched": expected, "read": expected}
+        assert len(response.data["sources"]) == expected
+        assert history[0]["content"] in search.call_args.args[0]
+        assert search.call_args.args[4] == history
+
     def setup_scope(self, workspace, user):
         WorkspaceMember.objects.filter(workspace=workspace, member=user).update(role=15)
         project = Project.objects.create(name="Visible", identifier="VIS", workspace=workspace)

@@ -85,3 +85,16 @@ def test_asgi_progress_is_yielded_before_answer_finishes():
 
     with patch("plane.app.views.external.ai_chat.close_old_connections"):
         async_to_sync(consume)()
+
+
+@pytest.mark.parametrize("message", ["全部列出来", "全部列出", "show all"])
+def test_list_followup_preserves_previous_user_scope(message):
+    from plane.app.views.external.ai_chat import _resolve_issue_followup, _asks_for_all_issues
+
+    history = [
+        {"role": "user", "content": "我创建了几个工作项"},
+        {"role": "assistant", "content": "总共30个"},
+    ]
+    assert _asks_for_all_issues(message)
+    assert _resolve_issue_followup(message, history) == f"我创建了几个工作项；本次请求：{message}"
+    assert _resolve_issue_followup("列出整个工作区的全部工作项", history) == "列出整个工作区的全部工作项"
