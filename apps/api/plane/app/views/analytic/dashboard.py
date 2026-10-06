@@ -13,11 +13,11 @@ from rest_framework import status
 
 from plane.app.permissions import ROLE, allow_permission
 from plane.app.views.base import BaseAPIView
-from plane.db.models import Issue, IssueAssignee, Project, ProjectMember, WorkspaceMember
+from plane.db.models import Issue, IssueAssignee, IssueRelation, Project, ProjectMember, WorkspaceMember
 
 
 CREATED_RANGES = {"last_7_days": 7, "last_30_days": 30, "last_90_days": 90}
-RISK_KINDS = {"overdue", "due_soon", "stale", "high_priority_unassigned"}
+RISK_KINDS = {"blocked", "overdue", "due_soon", "stale", "high_priority_unassigned"}
 PRIORITIES = {"urgent", "high", "medium", "low", "none"}
 DETAIL_GROUPS = {
     "total": None,
@@ -30,7 +30,7 @@ DETAIL_GROUPS = {
 }
 
 
-def risk_item_values(queryset):
+def risk_item_values(queryset, blocker_relations=None):
     items = list(
         queryset.values(
             "id",
@@ -59,6 +59,23 @@ def risk_item_values(queryset):
     for item in items:
         item["assignees"] = assignments.get(item["id"], [])
         item["overdue_days"] = max(0, (timezone.localdate() - item["target_date"]).days) if item["target_date"] else 0
+    if blocker_relations is not None:
+        relations = list(
+            blocker_relations.filter(issue_id__in=[item["id"] for item in items])
+            .order_by("related_issue__project__identifier", "related_issue__sequence_id", "id")
+            .values("issue_id", "related_issue_id")
+        )
+        blocker_items = {
+            item["id"]: item
+            for item in risk_item_values(
+                Issue.issue_objects.filter(id__in=[relation["related_issue_id"] for relation in relations])
+            )
+        }
+        blockers_by_issue = {}
+        for relation in relations:
+            blockers_by_issue.setdefault(relation["issue_id"], []).append(blocker_items[relation["related_issue_id"]])
+        for item in items:
+            item["blockers"] = blockers_by_issue.get(item["id"], [])
     return items
 
 
@@ -127,6 +144,17 @@ class WorkspaceDashboardOverviewEndpoint(BaseAPIView):
             ).values("project_id"),
         )
         available_projects = list(projects.order_by("name").values("id", "name"))
+        # Blockers are checked across accessible projects, independent of dashboard
+        # filters: an older task or a different assignee can still block this work.
+        visible_open_issues = Issue.issue_objects.filter(
+            workspace__slug=slug, project_id__in=projects.values("id")
+        ).exclude(state__group__in=["completed", "cancelled"])
+        blocker_relations = IssueRelation.objects.filter(
+            workspace__slug=slug,
+            deleted_at__isnull=True,
+            relation_type="blocked_by",
+            related_issue_id__in=visible_open_issues.values("id"),
+        )
         if project_id:
             projects = projects.filter(id=project_id)
         issues = Issue.issue_objects.filter(
@@ -149,6 +177,9 @@ class WorkspaceDashboardOverviewEndpoint(BaseAPIView):
             issues = issues.filter(priority=priority)
 
         open_issues = issues.exclude(state__group__in=["completed", "cancelled"])
+        blocked_issues = open_issues.annotate(
+            has_open_blocker=Exists(blocker_relations.filter(issue_id=OuterRef("pk")))
+        ).filter(has_open_blocker=True)
         overdue_issues = open_issues.filter(target_date__lt=today)
         due_soon_issues = open_issues.filter(target_date__range=(today, today + timedelta(days=7)))
         stale_issues = open_issues.filter(updated_at__lt=timezone.now() - timedelta(days=14))
@@ -229,6 +260,7 @@ class WorkspaceDashboardOverviewEndpoint(BaseAPIView):
         project_rows.sort(key=lambda row: (-row["overdue"], row["name"]))
 
         risks = {
+            "blocked": blocked_issues.order_by("-updated_at", "id"),
             "overdue": overdue_issues.order_by("target_date", "id"),
             "due_soon": due_soon_issues.order_by("target_date", "id"),
             "stale": stale_issues.order_by("updated_at", "id"),
@@ -239,7 +271,12 @@ class WorkspaceDashboardOverviewEndpoint(BaseAPIView):
         risk_total = risk_counts.get(risk, 0)
         risk_page = min(page_number, max(1, (risk_total + 19) // 20))
         risk_items = (
-            risk_item_values(selected_risk[(risk_page - 1) * 20 : risk_page * 20]) if selected_risk is not None else []
+            risk_item_values(
+                selected_risk[(risk_page - 1) * 20 : risk_page * 20],
+                blocker_relations=blocker_relations if risk == "blocked" else None,
+            )
+            if selected_risk is not None
+            else []
         )
         detail_issues = issues
         if detail == "open":

@@ -11,6 +11,7 @@ from rest_framework.test import APIClient
 from plane.db.models import (
     Issue,
     IssueAssignee,
+    IssueRelation,
     Project,
     ProjectMember,
     State,
@@ -47,6 +48,7 @@ class TestWorkspaceDashboardOverview:
             "in_progress": 1,
             "cancelled": 0,
             "overdue": 1,
+            "blocked": 0,
             "due_soon": 0,
             "stale": 0,
             "high_priority_unassigned": 1,
@@ -287,3 +289,107 @@ class TestWorkspaceDashboardOverview:
         empty = session_client.get(url, {"project_id": str(hidden.id)})
         assert not empty.data["member_distribution"]
         assert not any(empty.data["priorities"].values())
+
+    def test_blocked_risk_is_distinct_cross_project_and_releases_when_blockers_close(
+        self, session_client, workspace, create_user
+    ):
+        project = Project.objects.create(name="Delivery", identifier="DLV", workspace=workspace)
+        upstream = Project.objects.create(name="Upstream", identifier="UPS", workspace=workspace)
+        hidden = Project.objects.create(name="Hidden blocker", identifier="HDB", workspace=workspace)
+        for visible in [project, upstream]:
+            ProjectMember.objects.create(project=visible, workspace=workspace, member=create_user, role=20)
+        started = State.objects.create(name="Started", color="#aaa", group="started", project=upstream)
+        completed = State.objects.create(name="Completed", color="#bbb", group="completed", project=upstream)
+        cancelled = State.objects.create(name="Cancelled", color="#ccc", group="cancelled", project=upstream)
+        subject = Issue.objects.create(name="Delivery task", project=project, priority="urgent")
+        IssueAssignee.objects.create(issue=subject, project=project, assignee=create_user)
+        first = Issue.objects.create(name="Old prerequisite", project=upstream, state=started, priority="low")
+        second = Issue.objects.create(name="Other prerequisite", project=upstream, state=started, priority="low")
+        Issue.objects.filter(id=first.id).update(created_at=timezone.now() - timedelta(days=60))
+        other = User.objects.create(email="blocker-owner@example.com", username="blocker-owner", display_name="Owner")
+        IssueAssignee.objects.create(issue=first, project=upstream, assignee=other)
+        for blocker in [first, second]:
+            IssueRelation.objects.create(
+                issue=subject, related_issue=blocker, project=project, relation_type="blocked_by"
+            )
+        for kind in [
+            "completed",
+            "cancelled",
+            "archived",
+            "deleted",
+            "draft",
+            "hidden",
+            "deleted_relation",
+            "relates_to",
+            "reverse",
+        ]:
+            excluded_subject = Issue.objects.create(name=f"Excluded {kind}", project=project, priority="urgent")
+            blocker = Issue.objects.create(
+                name=f"Blocker {kind}",
+                project=hidden if kind == "hidden" else upstream,
+                state=completed if kind == "completed" else cancelled if kind == "cancelled" else started,
+            )
+            if kind in ["archived", "deleted", "draft"]:
+                Issue.objects.filter(id=blocker.id).update(
+                    **{
+                        "archived": {"archived_at": timezone.localdate()},
+                        "deleted": {"deleted_at": timezone.now()},
+                        "draft": {"is_draft": True},
+                    }[kind]
+                )
+            relation = IssueRelation.objects.create(
+                issue=blocker if kind == "reverse" else excluded_subject,
+                related_issue=excluded_subject if kind == "reverse" else blocker,
+                project=upstream if kind == "reverse" else project,
+                relation_type="relates_to" if kind == "relates_to" else "blocked_by",
+            )
+            if kind == "deleted_relation":
+                IssueRelation.objects.filter(id=relation.id).update(deleted_at=timezone.now())
+        url = f"/api/workspaces/{workspace.slug}/dashboard-overview/"
+        # Filter delivery work, not its prerequisites; upstream work remains relevant.
+        filters = {
+            "risk": "blocked",
+            "project_id": str(project.id),
+            "priority": "urgent",
+            "created_range": "last_7_days",
+            "assignee_id": str(create_user.id),
+        }
+        response = session_client.get(url, filters)
+        assert response.status_code == 200
+        assert response.data["summary"]["blocked"] == 1
+        assert response.data["risk_total"] == 1
+        assert response.data["risk_items"][0]["id"] == subject.id
+        assert {item["id"] for item in response.data["risk_items"][0]["blockers"]} == {first.id, second.id}
+        first_detail = next(item for item in response.data["risk_items"][0]["blockers"] if item["id"] == first.id)
+        assert first_detail["assignees"] == [{"id": other.id, "name": "Owner"}]
+        unfiltered = session_client.get(url, {"risk": "blocked", "project_id": str(project.id)})
+        assert unfiltered.data["risk_total"] == 1
+        Issue.objects.filter(id=first.id).update(state=completed)
+        assert session_client.get(url, filters).data["risk_total"] == 1
+        Issue.objects.filter(id=second.id).update(state=cancelled)
+        released = session_client.get(url, filters)
+        assert released.data["summary"]["blocked"] == 0
+        assert released.data["risk_items"] == []
+        Issue.objects.filter(id=second.id).update(state=started)
+        assert session_client.get(url, filters).data["risk_total"] == 1
+        IssueRelation.objects.filter(issue=subject, related_issue=second).update(deleted_at=timezone.now())
+        assert session_client.get(url, filters).data["risk_total"] == 0
+
+    def test_blocked_risk_paginates_without_counting_each_relation(self, session_client, workspace, create_user):
+        project = Project.objects.create(name="Blocked pages", identifier="BPG", workspace=workspace)
+        ProjectMember.objects.create(project=project, workspace=workspace, member=create_user, role=20)
+        blockers = [Issue.objects.create(name=f"Prerequisite {i}", project=project) for i in range(2)]
+        for index in range(21):
+            issue = Issue.objects.create(name=f"Blocked {index}", project=project)
+            for blocker in blockers:
+                IssueRelation.objects.create(
+                    issue=issue, related_issue=blocker, project=project, relation_type="blocked_by"
+                )
+        response = session_client.get(
+            f"/api/workspaces/{workspace.slug}/dashboard-overview/", {"risk": "blocked", "page": "2"}
+        )
+        assert response.status_code == 200
+        assert response.data["risk_total"] == 21
+        assert response.data["risk_page"] == 2
+        assert len(response.data["risk_items"]) == 1
+        assert len(response.data["risk_items"][0]["blockers"]) == 2

@@ -18,6 +18,7 @@ import { ChevronLeftIcon, ChevronRightIcon, CloseIcon, InfoIcon } from "@plane/p
 import { CustomSelect, Loader, Tag } from "@plane/ui";
 import { cn } from "@plane/utils";
 import { useUser } from "@/hooks/store/user";
+import { DashboardBlockedItems } from "./dashboard-blocked-items";
 import { DashboardFilterMenu } from "./dashboard-filter-menu";
 import { DashboardDistributions } from "./dashboard-distributions";
 import { DashboardService } from "@/services/dashboard.service";
@@ -47,7 +48,7 @@ const STATE_COLORS: Record<string, string> = {
   cancelled: "bg-layer-2",
 };
 
-const RISK_KINDS: TDashboardRisk[] = ["overdue", "due_soon", "stale", "high_priority_unassigned"];
+const RISK_KINDS: TDashboardRisk[] = ["blocked", "overdue", "due_soon", "stale", "high_priority_unassigned"];
 const DETAIL_KINDS: TDashboardDetail[] = [
   "open",
   "total",
@@ -513,6 +514,8 @@ function RiskItems({
         <p className="py-10 text-center text-13 text-tertiary">
           {risk ? t("dashboard_overview.no_risk_items") : t("dashboard_overview.no_overdue")}
         </p>
+      ) : risk === "blocked" ? (
+        <DashboardBlockedItems workspaceSlug={workspaceSlug} items={items} />
       ) : (
         <div className="-mx-2 divide-y divide-subtle">
           {items.map((item) => (
@@ -846,7 +849,7 @@ export const WorkspaceOverview = observer(function WorkspaceOverview() {
           <h2 className="text-16 font-semibold text-primary">{t("dashboard_overview.risks_title")}</h2>
         </div>
         <p className="mb-4 text-12 leading-5 text-tertiary">{t("dashboard_overview.risks_hint")}</p>
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
           {RISK_KINDS.map((kind) => (
             <SummaryCard
               key={kind}
@@ -883,6 +886,7 @@ export const WorkspaceOverview = observer(function WorkspaceOverview() {
         <div className="space-y-1 border-t border-subtle px-4 py-3 text-12 leading-6 text-secondary">
           <p>{t("dashboard_overview.definition.progress")}</p>
           <p>{t("dashboard_overview.definition.stale")}</p>
+          <p>{t("dashboard_overview.definition.blocked")}</p>
           <p>{t("dashboard_overview.definition.created_filter")}</p>
         </div>
       </details>

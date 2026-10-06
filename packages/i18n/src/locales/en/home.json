@@ -32,7 +32,8 @@
       "title": "How these numbers are counted",
       "progress": "Work item totals include cancelled items. Project completion is completed / (total - cancelled); projects with no active work show 0%.",
       "stale": "Not updated in 14 days uses the work item's update time; comments and other activity do not reset it.",
-      "created_filter": "Assignee and creation-date filters limit work items before calculating their metrics, risks and trends; they do not change the accessible project count. Time does not filter by completion or due date."
+      "created_filter": "Assignee and creation-date filters limit work items before calculating their metrics, risks and trends; they do not change the accessible project count. Time does not filter by completion or due date.",
+      "blocked": "Blocked: open work with at least one accessible open blocker. Dashboard filters do not narrow blockers. Completed, cancelled, archived and deleted blockers are excluded. Each blocked item counts once."
     },
     "filters": {
       "project": "Project",
@@ -55,7 +56,8 @@
       "due_soon": "Due in 7 days",
       "stale": "Not updated in 14 days",
       "high_priority_unassigned": "High priority, unassigned",
-      "open": "Open work"
+      "open": "Open work",
+      "blocked": "Blocked"
     },
     "states": {
       "backlog": "Backlog",
@@ -76,7 +78,8 @@
       "completion": "Highest completion first",
       "name": "Project name"
     },
-    "state_hint": "All work items, including completed and cancelled. Select a state to view."
+    "state_hint": "All work items, including completed and cancelled. Select a state to view.",
+    "blocked_by": "Blocked by"
   },
   "home": {
     "empty": {
