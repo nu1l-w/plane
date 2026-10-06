@@ -14,6 +14,7 @@ import { EIssuesStoreType } from "@plane/types";
 // components
 import { ProfileIssuesKanBanLayout } from "@/components/issues/issue-layouts/kanban/roots/profile-issues-root";
 import { ProfileIssuesListLayout } from "@/components/issues/issue-layouts/list/roots/profile-issues-root";
+import { ProfileIssuesSpreadsheetLayout } from "@/components/issues/issue-layouts/spreadsheet/roots/profile-issues-root";
 import { IssuePeekOverview } from "@/components/issues/peek-overview";
 import { WorkspaceLevelWorkItemFiltersHOC } from "@/components/work-item-filters/filters-hoc/workspace-level";
 import { WorkItemFiltersRow } from "@/components/work-item-filters/filters-row";
@@ -71,6 +72,8 @@ export const ProfileIssuesPage = observer(function ProfileIssuesPage(props: Prop
                   <ProfileIssuesListLayout />
                 ) : activeLayout === "kanban" ? (
                   <ProfileIssuesKanBanLayout />
+                ) : activeLayout === "spreadsheet" ? (
+                  <ProfileIssuesSpreadsheetLayout />
                 ) : null}
               </div>
             </div>
