@@ -32,6 +32,7 @@ type TChatMessage = TAIChatMessage & {
   id: string;
   isLoading?: boolean;
   sources?: TAIChatSource[];
+  retrieval?: { mode: "smart" | "all"; matched: number; read: number };
 };
 
 const SUGGESTIONS = ["总结这个工作区最近的进展", "哪些工作项还没有负责人？", "列出未完成工作项"];
@@ -79,6 +80,7 @@ function loadStoredMessages(storageKey: string): TChatMessage[] {
               ? "当前请求已中断，请重新发送。"
               : message.content,
           sources,
+          retrieval: message.retrieval,
           isLoading: message.isLoading === true && activeChatRequestIds.has(message.id ?? ""),
         },
       ];
@@ -95,8 +97,8 @@ function saveStoredMessages(storageKey: string, messages: TChatMessage[]): void 
       const existingMessage = existingMessages.get(message.id);
       const messageToStore =
         message.isLoading && existingMessage && !existingMessage.isLoading ? existingMessage : message;
-      const { id, role, content, sources, isLoading } = messageToStore;
-      return { id, role, content, sources, isLoading };
+      const { id, role, content, sources, isLoading, retrieval } = messageToStore;
+      return { id, role, content, sources, isLoading, retrieval };
     });
     window.localStorage.setItem(storageKey, JSON.stringify(storedMessages));
   } catch {
@@ -148,6 +150,7 @@ const PiChatPage = observer(function PiChatPage() {
     fetchProjects(slug)
   );
   const [chatScope, setChatScope] = useState<{ key: string; projectId: string }>({ key: "", projectId: "" });
+  const [retrievalMode, setRetrievalMode] = useState<"smart" | "all">("smart");
   const [input, setInput] = useState("");
   const [chatState, setChatState] = useState<TChatState>({ key: "", messages: [] });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -330,12 +333,14 @@ const PiChatPage = observer(function PiChatPage() {
         history,
         message,
         project_id: projectId || undefined,
+        retrieval_mode: retrievalMode,
       });
       const resolvedMessage: TChatMessage = {
         ...assistantMessage,
         content: result.response,
         isLoading: false,
         sources: result.sources,
+        retrieval: result.retrieval,
       };
       saveResolvedAssistantMessage(chatStorageKey, resolvedMessage);
       setChatState((current) =>
@@ -519,6 +524,17 @@ const PiChatPage = observer(function PiChatPage() {
                   ))}
                 </select>
               </label>
+              <select
+                aria-label="检索模式"
+                title="全部工作项读取所选范围内所有工作项字段与描述摘要，单次最多 200 项"
+                className="min-w-0 rounded-md border border-subtle bg-layer-2 px-3 py-2 text-13 text-primary"
+                value={retrievalMode}
+                disabled={isChatSubmitting || isDraftingIssue || isCreatingIssue}
+                onChange={(event) => setRetrievalMode(event.target.value === "all" ? "all" : "smart")}
+              >
+                <option value="smart">智能检索</option>
+                <option value="all">全部工作项</option>
+              </select>
               <Button
                 type="button"
                 variant="neutral-primary"
@@ -589,6 +605,12 @@ const PiChatPage = observer(function PiChatPage() {
                           <div className="whitespace-pre-wrap">{message.content}</div>
                         )}
                       </div>
+                      {message.retrieval && (
+                        <p className="mt-3 text-12 text-tertiary">
+                          {message.retrieval.mode === "all" ? "全部工作项" : "智能检索"} · 匹配{" "}
+                          {message.retrieval.matched} 项 · 已读取 {message.retrieval.read} 项
+                        </p>
+                      )}
                       {message.sources && message.sources.length > 0 && (
                         <div className="mt-4 border-t border-subtle pt-3">
                           <div className="mb-2 text-12 font-medium text-tertiary">引用来源</div>

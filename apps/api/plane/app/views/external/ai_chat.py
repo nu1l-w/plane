@@ -23,6 +23,7 @@ from .base import get_llm_config, get_llm_response
 MAX_MESSAGE_LENGTH = 4000
 MAX_HISTORY_MESSAGES = 8
 MAX_CONTEXT_ISSUES = 12
+MAX_ALL_CONTEXT_ISSUES = 200
 MAX_CONTEXT_PAGES = 5
 
 
@@ -526,6 +527,10 @@ class WorkspaceAIChatEndpoint(BaseAPIView):
         if workspace_member.role == ROLE.GUEST.value:
             return Response({"error": "工作区访客无法使用 AI 功能。"}, status=status.HTTP_403_FORBIDDEN)
 
+        retrieval_mode = request.data.get("retrieval_mode", "smart")
+        if retrieval_mode not in {"smart", "all"}:
+            return Response({"error": "检索模式无效。"}, status=status.HTTP_400_BAD_REQUEST)
+
         project_id = request.data.get("project_id") or None
         if project_id:
             try:
@@ -601,6 +606,18 @@ class WorkspaceAIChatEndpoint(BaseAPIView):
                     term for term in query_plan["terms"] if term.lower() != priority_match[0].lower()
                 ]
             api_key = model = provider = None
+        elif retrieval_mode == "all":
+            api_key, model, provider = get_llm_config()
+            if not api_key or not model or not provider:
+                return Response({"error": "请先配置 AI 服务。"}, status=status.HTTP_400_BAD_REQUEST)
+            query_plan = {
+                "assignee": "any",
+                "creator": "any",
+                "status": "any",
+                "priority": "any",
+                "terms": [],
+                "risks": [],
+            }
         elif is_my_pending_query:
             query_plan = {
                 "assignee": "current_user",
@@ -740,13 +757,29 @@ class WorkspaceAIChatEndpoint(BaseAPIView):
                 status=status.HTTP_200_OK,
             )
 
-        issue_rows = list(
-            matching_issues.select_related("project", "state").order_by("-updated_at")[:MAX_CONTEXT_ISSUES]
-        )
+        if retrieval_mode == "all" and not selected_risks:
+            # Full-scope mode must not silently omit records because of inferred keywords.
+            matching_issues = issues
+            terms = []
+        matched_count = matching_issues.count()
+        context_limit = MAX_ALL_CONTEXT_ISSUES if retrieval_mode == "all" else MAX_CONTEXT_ISSUES
+        if retrieval_mode == "all" and matched_count > context_limit:
+            return Response(
+                {
+                    "error": f"当前范围共 {matched_count} 个工作项，超过单次全部读取上限 {context_limit}。"
+                    "请选择具体项目或使用智能检索。"
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        retrieval = {"mode": retrieval_mode, "matched": matched_count, "read": min(matched_count, context_limit)}
+
+        issue_rows = list(matching_issues.select_related("project", "state").order_by("-updated_at")[:context_limit])
         if not issue_rows and not terms:
             issue_rows = list(
-                structured_issues.select_related("project", "state").order_by("-updated_at")[:MAX_CONTEXT_ISSUES]
+                structured_issues.select_related("project", "state").order_by("-updated_at")[:context_limit]
             )
+
+        retrieval["read"] = len(issue_rows)
 
         accessible_pages = Page.objects.filter(
             workspace__slug=slug,
@@ -776,7 +809,7 @@ class WorkspaceAIChatEndpoint(BaseAPIView):
                 owned_by=request.user,
             )
         )
-        pages = accessible_pages.none() if is_structured_issue_query else accessible_pages
+        pages = accessible_pages.none() if is_structured_issue_query or retrieval_mode == "all" else accessible_pages
         if terms:
             page_query = Q()
             for term in terms:
@@ -812,7 +845,9 @@ class WorkspaceAIChatEndpoint(BaseAPIView):
         for issue in issue_rows:
             identifier = f"{issue.project.identifier}-{issue.sequence_id}"
             assignees = list(dict.fromkeys(name for name in active_assignees_by_issue.get(issue.id, []) if name))
-            description = _make_excerpt(issue.description_stripped or "", terms, 700)
+            description = _make_excerpt(
+                issue.description_stripped or "", terms, 180 if retrieval_mode == "all" else 700
+            )
             citation = len(sources) + 1
             state_name = issue.state.name if issue.state else "未设置"
             assignee_names = "、".join(assignees[:5]) or "未分配"
@@ -845,7 +880,7 @@ class WorkspaceAIChatEndpoint(BaseAPIView):
             context_items.append(
                 "[来源编号: [{citation}]; 工作项: {identifier}; 项目: {project}; "
                 "标题: {title}; 状态: {state}; 优先级: {priority}; "
-                "负责人: {assignees}; 截止日期: {target_date}; 描述: {description}]".format(
+                "负责人: {assignees}; 开始日期: {start_date}; 截止日期: {target_date}; 描述: {description}]".format(
                     citation=citation,
                     identifier=identifier,
                     project=issue.project.name,
@@ -853,6 +888,7 @@ class WorkspaceAIChatEndpoint(BaseAPIView):
                     state=state_name,
                     priority=_priority_label(issue.priority),
                     assignees=assignee_names,
+                    start_date=issue.start_date or "未设置",
                     target_date=issue.target_date or "未设置",
                     description=description or "无描述",
                 )
@@ -912,17 +948,17 @@ class WorkspaceAIChatEndpoint(BaseAPIView):
                 safe_history.append({"role": item["role"], "content": content})
 
         context_scope = []
-        if query_plan["assignee"] == "current_user":
+        if retrieval_mode != "all" and query_plan["assignee"] == "current_user":
             context_scope.append("服务端已按当前登录用户为负责人筛选工作项；这些工作项就是该用户负责的记录。")
-        if query_plan["creator"] == "current_user":
+        if retrieval_mode != "all" and query_plan["creator"] == "current_user":
             context_scope.append("服务端已按当前登录用户为创建人筛选工作项。")
         context_scope.append(
-            f"数据库全部匹配工作项共 {matching_issues.count()} 个；下方仅提供其中 {len(issue_rows)} 个工作项的资料。"
+            f"数据库全部匹配工作项共 {matched_count} 个；下方提供其中 {len(issue_rows)} 个工作项的字段与描述摘要。"
             "这个数量仅指当前查询匹配的工作项，不代表其他实体或未查询的风险指标。"
         )
         context = "\n".join(context_scope + context_items) or "本次没有检索到当前用户可访问的相关工作项或页面。"
 
-        if selected_risks or (is_structured_issue_query and _asks_for_count(message)):
+        if selected_risks or (retrieval_mode != "all" and is_structured_issue_query and _asks_for_count(message)):
             total = matching_issues.count()
             english = bool(re.search(r"[A-Za-z]", message)) and not re.search(r"[\u4e00-\u9fff]", message)
             risk_description = (" and " if english else "且").join(
@@ -963,13 +999,14 @@ class WorkspaceAIChatEndpoint(BaseAPIView):
                 {
                     "response": response_text,
                     "sources": sources,
+                    "retrieval": retrieval,
                     "scope": "project" if project_id else "workspace",
                     "total": total,
                 },
                 status=status.HTTP_200_OK,
             )
 
-        if is_my_pending_query:
+        if is_my_pending_query and retrieval_mode != "all":
             total = matching_issues.count()
             is_english = bool(re.search(r"[A-Za-z]", message)) and not re.search(r"[\u4e00-\u9fff]", message)
             if is_english:
@@ -1014,6 +1051,7 @@ class WorkspaceAIChatEndpoint(BaseAPIView):
                 {
                     "response": response_text,
                     "sources": sources,
+                    "retrieval": retrieval,
                     "scope": "project" if project_id else "workspace",
                 },
                 status=status.HTTP_200_OK,
@@ -1043,6 +1081,7 @@ class WorkspaceAIChatEndpoint(BaseAPIView):
             {
                 "response": response_text or "AI 暂时没有生成回答，请稍后重试。",
                 "sources": sources,
+                "retrieval": retrieval,
                 "scope": "project" if project_id else "workspace",
             },
             status=status.HTTP_200_OK,

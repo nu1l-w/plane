@@ -80,8 +80,13 @@ export class AIService extends APIService {
 
   async askWorkspace(
     workspaceSlug: string,
-    data: { history: TAIChatMessage[]; message: string; project_id?: string }
-  ): Promise<{ response: string; scope: "project" | "workspace"; sources: TAIChatSource[] }> {
+    data: { history: TAIChatMessage[]; message: string; project_id?: string; retrieval_mode?: "smart" | "all" }
+  ): Promise<{
+    response: string;
+    scope: "project" | "workspace";
+    sources: TAIChatSource[];
+    retrieval?: { mode: "smart" | "all"; matched: number; read: number };
+  }> {
     return this.post(`/api/workspaces/${workspaceSlug}/ai-chat/`, data)
       .then((response) => response?.data)
       .catch((error) => {

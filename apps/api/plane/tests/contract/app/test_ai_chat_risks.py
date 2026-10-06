@@ -213,3 +213,44 @@ class TestAIChatRisks:
             assert "04:30:00 +0800" in task
             assert "Asia/Shanghai" in task
             assert "不要根据历史对话推测" in task
+
+    def test_all_mode_reads_scope_beyond_twelve_without_keyword_loss(self, session_client, workspace, create_user):
+        project = self.setup_scope(workspace, create_user)
+        for index in range(15):
+            Issue.objects.create(name=f"Task {index}", project=project)
+        hidden = Project.objects.create(name="Hidden", identifier="HID", workspace=workspace)
+        Issue.objects.create(name="Secret", project=hidden)
+        with (
+            patch("plane.app.views.external.ai_chat.get_llm_config", return_value=("key", "model", "provider")),
+            patch("plane.app.views.external.ai_chat.get_llm_response", return_value=("回答", None, None)) as llm,
+        ):
+            response = session_client.post(
+                f"/api/workspaces/{workspace.slug}/ai-chat/",
+                {"message": "换个问法，下周要做什么", "retrieval_mode": "all"},
+                format="json",
+            )
+        assert response.status_code == 200
+        assert response.data["retrieval"] == {"mode": "all", "matched": 15, "read": 15}
+        assert len(response.data["sources"]) == 15
+        assert llm.call_count == 1
+        assert "Task 0" in llm.call_args.args[1]
+        assert "Task 14" in llm.call_args.args[1]
+        assert "Secret" not in llm.call_args.args[1]
+
+    def test_all_mode_rejects_overflow_without_partial_answer(self, session_client, workspace, create_user):
+        project = self.setup_scope(workspace, create_user)
+        for index in range(3):
+            Issue.objects.create(name=f"Task {index}", project=project)
+        with (
+            patch("plane.app.views.external.ai_chat.MAX_ALL_CONTEXT_ISSUES", 2),
+            patch("plane.app.views.external.ai_chat.get_llm_config", return_value=("key", "model", "provider")),
+            patch("plane.app.views.external.ai_chat.get_llm_response") as llm,
+        ):
+            response = session_client.post(
+                f"/api/workspaces/{workspace.slug}/ai-chat/",
+                {"message": "总结", "retrieval_mode": "all"},
+                format="json",
+            )
+        assert response.status_code == 400
+        assert "3" in response.data["error"]
+        llm.assert_not_called()
