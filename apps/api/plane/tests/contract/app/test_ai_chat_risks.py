@@ -184,3 +184,32 @@ class TestAIChatRisks:
         plan = {"assignee": "any", "creator": "any", "status": "any", "priority": "any", "terms": [], "risks": risks}
         with patch("plane.app.views.external.ai_chat.get_llm_response", return_value=(json.dumps(plan), None, None)):
             assert _get_issue_search_plan("查任务", "key", "model", "provider") is None
+
+    def test_chat_and_search_plan_receive_current_user_local_time(self, session_client, workspace, create_user):
+        from datetime import datetime, timezone as datetime_timezone
+        import json
+
+        self.setup_scope(workspace, create_user)
+        plan = {"assignee": "any", "creator": "any", "status": "any", "priority": "any", "terms": [], "risks": []}
+        fixed_time = datetime(2026, 10, 6, 20, 30, tzinfo=datetime_timezone.utc)
+        with (
+            patch("plane.app.views.external.ai_chat.timezone.now", return_value=fixed_time),
+            patch("plane.app.views.external.ai_chat.get_llm_config", return_value=("key", "model", "provider")),
+            patch(
+                "plane.app.views.external.ai_chat.get_llm_response",
+                side_effect=[(json.dumps(plan), None, None), ("时间已提供", None, None)],
+            ) as llm,
+        ):
+            response = session_client.post(
+                f"/api/workspaces/{workspace.slug}/ai-chat/",
+                {"message": "下周要干什么", "history": [{"role": "assistant", "content": "今天是2026-10-01"}]},
+                format="json",
+            )
+        assert response.status_code == 200
+        assert llm.call_count == 2
+        for call in llm.call_args_list:
+            task = call.args[0]
+            assert "2026-10-07（星期三）" in task
+            assert "04:30:00 +0800" in task
+            assert "Asia/Shanghai" in task
+            assert "不要根据历史对话推测" in task

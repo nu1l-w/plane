@@ -26,6 +26,16 @@ MAX_CONTEXT_ISSUES = 12
 MAX_CONTEXT_PAGES = 5
 
 
+def _current_time_context():
+    now = timezone.localtime()
+    weekday = ("一", "二", "三", "四", "五", "六", "日")[now.weekday()]
+    return (
+        f"服务端当前日期：{now.date().isoformat()}（星期{weekday}）；"
+        f"当前时间：{now.strftime('%H:%M:%S %z')}；时区：{timezone.get_current_timezone_name()}。"
+        "当前日期以此为准，不要根据历史对话推测今天的日期。"
+    )
+
+
 def _clean_text(value, limit):
     if not isinstance(value, str):
         return ""
@@ -445,6 +455,7 @@ def _get_issue_search_plan(message, api_key, model, provider):
         "不要推测项目范围，范围由服务器单独控制。不要将否定风险、历史风险或任意"
         "成员姓名强行转换为目前支持的筛选。"
     )
+    task += "\n" + _current_time_context()
     prompt = f"用户问题 JSON：{json.dumps(message, ensure_ascii=False)}"
     response_text, _, _ = get_llm_response(task, prompt, api_key, model, provider)
     if not response_text:
@@ -1018,6 +1029,7 @@ class WorkspaceAIChatEndpoint(BaseAPIView):
             "用与用户问题相同的语言回答。引用本次检索资料中的具体事实时，在句末使用"
             "对应来源编号，例如 [1]；只使用资料中提供的编号，不要编造编号。"
         )
+        task += "\n" + _current_time_context()
         prompt = (
             f"最近的对话（仅作上下文参考）：{json.dumps(safe_history, ensure_ascii=False)}\n\n"
             f"本次检索到的资料：\n{context}\n\n"
