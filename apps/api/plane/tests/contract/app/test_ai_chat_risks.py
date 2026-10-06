@@ -9,6 +9,71 @@ from plane.db.models import Issue, IssueAssignee, IssueRelation, Project, Projec
 @pytest.mark.contract
 @pytest.mark.django_db
 class TestAIChatRisks:
+    @pytest.mark.parametrize("needs_retrieval", [True, False])
+    def test_stream_reports_actual_phases(self, session_client, workspace, create_user, retrieval_intent, needs_retrieval):
+        import json
+
+        self.setup_scope(workspace, create_user)
+        retrieval_intent.return_value = ({"needs_retrieval": needs_retrieval, "response": "你好"}, None, None)
+        with patch("plane.app.views.external.ai_chat.get_llm_response", return_value=("回答", None, None)):
+            response = session_client.post(
+                f"/api/workspaces/{workspace.slug}/ai-chat/",
+                {"message": "你好" if not needs_retrieval else "总结项目", "stream": True, "retrieval_mode": "all"},
+                format="json",
+            )
+            events = [json.loads(line) for line in b"".join(response.streaming_content).splitlines()]
+        phases = [event["phase"] for event in events if "phase" in event]
+        assert phases == (["understanding", "retrieving", "generating"] if needs_retrieval else ["understanding"])
+        assert events[-1]["status"] == 200
+        assert events[-1]["result"]["response"] == ("回答" if needs_retrieval else "你好")
+
+    @pytest.fixture(autouse=True)
+    def retrieval_intent(self):
+        with (
+            patch(
+                "plane.app.views.external.ai_chat._get_chat_intent",
+                return_value=({"needs_retrieval": True, "response": ""}, None, None),
+            ) as intent,
+            patch("plane.app.views.external.ai_chat.get_llm_config", return_value=("key", "model", "provider")),
+        ):
+            yield intent
+
+    def test_greeting_still_validates_project_access(self, session_client, workspace, create_user):
+        self.setup_scope(workspace, create_user)
+        hidden = Project.objects.create(name="Hidden", identifier="HID", workspace=workspace)
+        response = session_client.post(
+            f"/api/workspaces/{workspace.slug}/ai-chat/",
+            {"message": "你好", "project_id": str(hidden.id)},
+            format="json",
+        )
+        assert response.status_code == 404
+
+    @pytest.mark.parametrize("mode", ["smart", "all"])
+    def test_greeting_skips_workspace_retrieval(
+        self, session_client, workspace, create_user, mode, retrieval_intent
+    ):
+        project = self.setup_scope(workspace, create_user)
+        Issue.objects.create(name="Unrelated task", project=project)
+        retrieval_intent.return_value = ({"needs_retrieval": False, "response": "你好，我是星轴 AI 助手。"}, None, None)
+        with (
+            patch("plane.app.views.external.ai_chat.get_issue_risks") as risks,
+            patch("plane.app.views.external.ai_chat._get_issue_search_plan") as plan,
+            patch("plane.app.views.external.ai_chat.get_llm_response") as llm,
+            patch("plane.app.views.external.ai_chat.Issue.issue_objects.filter") as issues,
+            patch("plane.app.views.external.ai_chat.Page.objects.filter") as pages,
+        ):
+            response = session_client.post(
+                f"/api/workspaces/{workspace.slug}/ai-chat/",
+                {"message": "你好", "retrieval_mode": mode, "project_id": str(project.id)},
+                format="json",
+            )
+        assert response.status_code == 200
+        assert response.data["sources"] == []
+        assert "retrieval" not in response.data
+        assert "你好" in response.data["response"]
+        for mock in (risks, plan, llm, issues, pages):
+            mock.assert_not_called()
+
     def setup_scope(self, workspace, user):
         WorkspaceMember.objects.filter(workspace=workspace, member=user).update(role=15)
         project = Project.objects.create(name="Visible", identifier="VIS", workspace=workspace)
@@ -254,3 +319,26 @@ class TestAIChatRisks:
         assert response.status_code == 400
         assert "3" in response.data["error"]
         llm.assert_not_called()
+
+
+@pytest.mark.contract
+@pytest.mark.django_db
+@pytest.mark.parametrize("message", ["你好", "给我讲个笑话", "你是谁"])
+def test_model_direct_answer_does_not_read_workspace(session_client, workspace, message):
+    import json
+
+    result = {"needs_retrieval": False, "response": "我是星轴 AI 助手。"}
+    with (
+        patch("plane.app.views.external.ai_chat.get_llm_config", return_value=("key", "model", "provider")),
+        patch("plane.app.views.external.ai_chat.get_llm_response", return_value=(json.dumps(result), None, None)) as llm,
+        patch("plane.app.views.external.ai_chat.Issue.issue_objects.filter") as issues,
+        patch("plane.app.views.external.ai_chat.Page.objects.filter") as pages,
+    ):
+        response = session_client.post(
+            f"/api/workspaces/{workspace.slug}/ai-chat/", {"message": message}, format="json"
+        )
+    assert response.status_code == 200
+    assert response.data == {"response": result["response"], "sources": []}
+    assert llm.call_count == 1
+    issues.assert_not_called()
+    pages.assert_not_called()

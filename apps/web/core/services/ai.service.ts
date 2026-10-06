@@ -80,18 +80,64 @@ export class AIService extends APIService {
 
   async askWorkspace(
     workspaceSlug: string,
-    data: { history: TAIChatMessage[]; message: string; project_id?: string; retrieval_mode?: "smart" | "all" }
+    data: { history: TAIChatMessage[]; message: string; project_id?: string; retrieval_mode?: "smart" | "all" },
+    onProgress?: (phase: "understanding" | "retrieving" | "generating") => void
   ): Promise<{
     response: string;
-    scope: "project" | "workspace";
+    scope?: "project" | "workspace";
     sources: TAIChatSource[];
     retrieval?: { mode: "smart" | "all"; matched: number; read: number };
   }> {
-    return this.post(`/api/workspaces/${workspaceSlug}/ai-chat/`, data)
-      .then((response) => response?.data)
-      .catch((error) => {
-        throw error?.response ?? { message: error?.message };
-      });
+    type Result = {
+      response: string;
+      sources: TAIChatSource[];
+      retrieval?: { mode: "smart" | "all"; matched: number; read: number };
+    };
+    const response = await fetch(`${this.baseURL}/api/workspaces/${workspaceSlug}/ai-chat/`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...data, stream: true }),
+    });
+    if (response.status === 401) {
+      window.location.replace(`/${window.location.pathname ? `?next_path=${window.location.pathname}` : ""}`);
+    }
+    if (!response.ok) throw { status: response.status, data: await response.json() };
+    const reader = response.body?.getReader();
+    if (!reader) throw new Error("AI 服务没有返回响应内容。");
+    const decoder = new TextDecoder();
+    let buffer = "";
+    let result: Result | undefined;
+    try {
+      while (true) {
+        // Stream chunks must be read in order from the same reader.
+        // eslint-disable-next-line no-await-in-loop
+        const { value, done } = await reader.read();
+        buffer += decoder.decode(value, { stream: !done });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+        if (done && buffer.trim()) lines.push(buffer);
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          const event = JSON.parse(line) as {
+            phase?: "understanding" | "retrieving" | "generating";
+            result?: Result & { error?: string };
+            status?: number;
+          };
+          if (event.phase) onProgress?.(event.phase);
+          if (event.result) {
+            if ((event.status ?? 200) >= 400) throw { status: event.status, data: event.result };
+            result = event.result;
+          }
+        }
+        if (done) break;
+      }
+    } finally {
+      await reader.cancel();
+      reader.releaseLock();
+    }
+    if (!result) throw new Error("AI 响应中断，请重试。");
+    return result;
   }
 
   async draftIssue(

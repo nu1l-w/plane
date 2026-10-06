@@ -307,7 +307,7 @@ const PiChatPage = observer(function PiChatPage() {
     const assistantMessage: TChatMessage = {
       id: `assistant-${Date.now()}`,
       role: "assistant",
-      content: "正在查找工作区资料并生成回答…",
+      content: "正在理解你的问题…",
       isLoading: true,
     };
     const history = messages
@@ -330,12 +330,32 @@ const PiChatPage = observer(function PiChatPage() {
     });
 
     try {
-      const result = await aiService.askWorkspace(slug, {
-        history,
-        message,
-        project_id: projectId || undefined,
-        retrieval_mode: retrievalMode,
-      });
+      const result = await aiService.askWorkspace(
+        slug,
+        {
+          history,
+          message,
+          project_id: projectId || undefined,
+          retrieval_mode: retrievalMode,
+        },
+        (phase) => {
+          const content = {
+            understanding: "正在理解你的问题…",
+            retrieving: "正在检索工作区资料…",
+            generating: "正在生成回答…",
+          }[phase];
+          setChatState((current) =>
+            current.key !== chatStorageKey
+              ? current
+              : {
+                  ...current,
+                  messages: current.messages.map((item) =>
+                    item.id === assistantMessage.id ? { ...item, content } : item
+                  ),
+                }
+          );
+        }
+      );
       const resolvedMessage: TChatMessage = {
         ...assistantMessage,
         content: result.response,
@@ -488,7 +508,7 @@ const PiChatPage = observer(function PiChatPage() {
           <div className="flex w-full items-center justify-between gap-3 px-4">
             <div className="flex min-w-0 items-center gap-2 text-13 font-medium text-primary">
               <PiChatLogo className="size-4 shrink-0 text-accent-primary" />
-              <span className="truncate">StarAxis AI (Beta)</span>
+              <span className="truncate">星轴 AI（Beta）</span>
             </div>
             <div className="flex min-w-0 items-center gap-2">
               <label className="flex shrink-0 items-center gap-2 text-13 text-secondary">
@@ -556,7 +576,7 @@ const PiChatPage = observer(function PiChatPage() {
         }
       />
       <ContentWrapper className="!overflow-hidden">
-        <PageHead title="StarAxis AI (Beta)" />
+        <PageHead title="星轴 AI（Beta）" />
         <div className="mx-auto flex h-full w-full max-w-6xl flex-col overflow-hidden px-4">
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
             <div ref={chatScrollContainerRef} className="flex-1 overflow-y-auto py-5 sm:py-8">
@@ -597,7 +617,7 @@ const PiChatPage = observer(function PiChatPage() {
                       }`}
                     >
                       <div className="mb-2 text-11 font-medium tracking-wide text-tertiary uppercase">
-                        {message.role === "user" ? "你" : "StarAxis AI (Beta)"}
+                        {message.role === "user" ? "你" : "星轴 AI（Beta）"}
                       </div>
                       <div className={`text-14 leading-6 text-primary ${message.isLoading ? "animate-pulse" : ""}`}>
                         {message.role === "assistant" && !message.isLoading ? (
