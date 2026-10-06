@@ -12,6 +12,7 @@ import { Send, Trash2 } from "lucide-react";
 import { PiChatLogo } from "@plane/propel/icons";
 import { EIssuesStoreType } from "@plane/types";
 import { AlertModalCore, Button } from "@plane/ui";
+import { AIChatSources } from "@/components/ui/ai-chat-sources";
 import { AIChatMarkdown } from "@/components/ui/ai-markdown";
 import { AppHeader } from "@/components/core/app-header";
 import { ContentWrapper } from "@/components/core/content-wrapper";
@@ -612,38 +613,7 @@ const PiChatPage = observer(function PiChatPage() {
                         </p>
                       )}
                       {message.sources && message.sources.length > 0 && (
-                        <div className="mt-4 border-t border-subtle pt-3">
-                          <div className="mb-2 text-12 font-medium text-tertiary">引用来源</div>
-                          <div className="grid gap-2 sm:grid-cols-2">
-                            {message.sources.map((source) => (
-                              <a
-                                key={`${source.kind}-${source.id}`}
-                                id={
-                                  source.citation !== undefined
-                                    ? `ai-chat-source-${message.id}-${source.citation}`
-                                    : undefined
-                                }
-                                href={source.url}
-                                className="hover:border-accent-primary min-w-0 rounded-md border border-subtle bg-layer-1 px-3 py-2.5 text-secondary hover:text-primary"
-                                title={source.title}
-                              >
-                                <span className="block truncate text-12 font-medium text-primary">
-                                  {source.citation !== undefined ? `[${source.citation}] ` : ""}
-                                  {source.kind === "page" ? "页面 · " : "工作项 · "}
-                                  {source.title}
-                                </span>
-                                {source.location && (
-                                  <span className="mt-1 block text-11 text-tertiary">{source.location}</span>
-                                )}
-                                {source.snippet && (
-                                  <span className="mt-1 line-clamp-3 block text-12 leading-5 break-words whitespace-normal text-secondary">
-                                    “{source.snippet}”
-                                  </span>
-                                )}
-                              </a>
-                            ))}
-                          </div>
-                        </div>
+                        <AIChatSources sources={message.sources} messageId={message.id} />
                       )}
                     </div>
                   ))}

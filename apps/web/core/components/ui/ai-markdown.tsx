@@ -42,7 +42,19 @@ function renderInline(markdown: string, keyPrefix: string, citations?: Record<nu
       const href = citations?.[citation];
       result.push(
         href ? (
-          <a key={key} href={href} className="text-accent-primary underline hover:no-underline">
+          <a
+            key={key}
+            href={href}
+            onClick={() => {
+              if (!href.startsWith("#")) return;
+              let element: HTMLElement | null = document.getElementById(href.slice(1));
+              while (element) {
+                if (element instanceof HTMLDetailsElement) element.open = true;
+                element = element.parentElement;
+              }
+            }}
+            className="text-accent-primary underline hover:no-underline"
+          >
             {match[10]}
           </a>
         ) : (
