@@ -47,7 +47,7 @@
   "deactivate_account": "停用账号",
   "deactivate_account_description": "停用账号后，该账号内的所有数据和资源将被永久删除且无法恢复。",
   "profile_settings": "个人资料设置",
-  "your_account": "您的账号",
+  "your_account": "我的账号",
   "security": "安全",
   "activity": "活动",
   "activity_empty_state": {
