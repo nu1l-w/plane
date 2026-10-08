@@ -182,6 +182,8 @@ export class UserService extends APIService {
     params: {
       per_page: number;
       cursor?: string;
+      start_date?: string;
+      end_date?: string;
     }
   ): Promise<IUserActivityResponse> {
     return this.get(`/api/workspaces/${workspaceSlug}/user-activity/${userId}/`, {

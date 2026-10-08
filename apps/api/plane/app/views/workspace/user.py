@@ -463,6 +463,17 @@ class WorkspaceUserActivityEndpoint(BaseAPIView):
     def get(self, request, slug, user_id):
         projects = request.query_params.getlist("project", [])
 
+        start_date = request.query_params.get("start_date")
+        end_date = request.query_params.get("end_date")
+        try:
+            start = date.fromisoformat(start_date) if start_date else None
+            end = date.fromisoformat(end_date) if end_date else None
+        except ValueError:
+            return Response({"error": "Dates must use YYYY-MM-DD"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if start and end and start > end:
+            return Response({"error": "start_date must not exceed end_date"}, status=status.HTTP_400_BAD_REQUEST)
+
         queryset = IssueActivity.objects.filter(
             ~Q(field__in=["comment", "vote", "reaction", "draft"]),
             workspace__slug=slug,
@@ -474,6 +485,11 @@ class WorkspaceUserActivityEndpoint(BaseAPIView):
 
         if projects:
             queryset = queryset.filter(project__in=projects)
+
+        if start:
+            queryset = queryset.filter(created_at__date__gte=start)
+        if end:
+            queryset = queryset.filter(created_at__date__lte=end)
 
         return self.paginate(
             order_by=sanitize_order_by(
