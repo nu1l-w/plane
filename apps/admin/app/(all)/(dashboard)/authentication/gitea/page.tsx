@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { BRAND_NAME } from "@plane/constants";
+
 import { useState } from "react";
 import { observer } from "mobx-react";
 import useSWR from "swr";
@@ -68,7 +70,7 @@ const InstanceGiteaAuthenticationPage = observer(function InstanceGiteaAuthentic
       customHeader={
         <AuthenticationMethodCard
           name="Gitea"
-          description="允许成员使用 Gitea 账号登录或注册 Plane。"
+          description={`允许成员使用 Gitea 账号登录或注册 ${BRAND_NAME}。`}
           icon={<img src={giteaLogo} height={24} width={24} alt="Gitea 标志" />}
           config={
             <ToggleSwitch

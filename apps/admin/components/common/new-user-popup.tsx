@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { BRAND_NAME } from "@plane/constants";
+
 import { observer } from "mobx-react";
 import Link from "next/link";
 import { useTheme as useNextTheme } from "next-themes";
@@ -28,9 +30,9 @@ export const NewUserPopup = observer(function NewUserPopup() {
       <div className="flex gap-4">
         <div className="grow">
           <div className="text-14 font-semibold">创建工作区</div>
-          <div className="py-2 text-13 font-medium text-tertiary">
-            平台初始化已完成。请创建第一个工作区，开始使用星轴科技研发管理平台。
-          </div>
+          <div className="py-2 text-13 font-medium text-tertiary">{`
+            平台初始化已完成。请创建第一个工作区，开始使用${BRAND_NAME}研发管理平台。
+          `}</div>
           <div className="flex items-center gap-4 pt-2">
             <Link href="/workspace/create" className={getButtonStyling("primary", "lg")}>
               创建工作区

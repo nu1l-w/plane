@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { BRAND_NAME } from "@plane/constants";
+
 import { observer } from "mobx-react";
 import useSWR from "swr";
 import { Loader } from "@plane/ui";
@@ -26,7 +28,7 @@ const InstanceAIPage = observer(function InstanceAIPage(_props: Route.ComponentP
     <PageWrapper
       header={{
         title: "为所有工作区配置 AI 功能",
-        description: "配置 AI API 凭据，为所有工作区启用 Plane AI 功能。",
+        description: `配置 AI API 凭据，为所有工作区启用 ${BRAND_NAME} AI 功能。`,
       }}
     >
       {formattedConfig ? (

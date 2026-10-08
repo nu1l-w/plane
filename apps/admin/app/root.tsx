@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { BRAND_NAME } from "@plane/constants";
+
 import type { ReactNode } from "react";
 import { Links, Meta, Outlet, Scripts } from "react-router";
 import type { LinksFunction } from "react-router";
@@ -24,8 +26,8 @@ import "@fontsource/material-symbols-rounded";
 // oxlint-disable-next-line eslint-plugin-import/no-unassigned-import -- Font CSS must load globally for its side effects.
 import "@fontsource/ibm-plex-mono";
 
-const APP_TITLE = "星轴科技研发管理平台 - 管理后台";
-const APP_DESCRIPTION = "星轴科技内部研发项目管理平台管理后台";
+const APP_TITLE = `${BRAND_NAME}研发管理平台 - 管理后台`;
+const APP_DESCRIPTION = `${BRAND_NAME}内部研发项目管理平台管理后台`;
 
 export const links: LinksFunction = () => [
   { rel: "apple-touch-icon", sizes: "180x180", href: appleTouchIcon },

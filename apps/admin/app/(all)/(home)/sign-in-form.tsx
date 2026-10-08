@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { BRAND_NAME } from "@plane/constants";
+
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
@@ -113,7 +115,7 @@ export function InstanceSignInForm() {
       <AuthHeader />
       <div className="mt-10 flex w-full flex-grow flex-col items-center justify-center py-6">
         <div className="relative flex w-full max-w-[22.5rem] flex-col gap-6">
-          <FormHeader heading="管理星轴科技研发管理平台" subHeading="配置平台级设置并保障内部系统安全" />
+          <FormHeader heading={`管理${BRAND_NAME}研发管理平台`} subHeading="配置平台级设置并保障内部系统安全" />
           <form
             className="space-y-4"
             method="POST"

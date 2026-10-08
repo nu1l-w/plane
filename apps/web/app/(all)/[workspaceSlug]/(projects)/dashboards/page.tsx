@@ -7,6 +7,7 @@
 import { observer } from "mobx-react";
 // components
 import { useTranslation } from "@plane/i18n";
+import { DashboardIcon } from "@plane/propel/icons";
 import { Breadcrumbs, Header } from "@plane/ui";
 import { WorkspaceOverview } from "@/components/analytics/dashboard-overview";
 import { BreadcrumbLink } from "@/components/common/breadcrumb-link";
@@ -28,7 +29,14 @@ function WorkspaceOverviewPage() {
           <Header>
             <Header.LeftItem>
               <Breadcrumbs>
-                <Breadcrumbs.Item component={<BreadcrumbLink label={t("workspace_overview")} />} />
+                <Breadcrumbs.Item
+                  component={
+                    <BreadcrumbLink
+                      label={t("workspace_overview")}
+                      icon={<DashboardIcon className="h-4 w-4 text-tertiary" />}
+                    />
+                  }
+                />
               </Breadcrumbs>
             </Header.LeftItem>
           </Header>

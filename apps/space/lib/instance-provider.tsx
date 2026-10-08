@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { BRAND_NAME } from "@plane/constants";
+
 import { observer } from "mobx-react";
 import { Link } from "react-router";
 import { useTheme } from "next-themes";
@@ -52,7 +54,7 @@ export const InstanceProvider = observer(function InstanceProvider({ children }:
           <div className="z-50 container mx-auto flex h-[110px] flex-shrink-0 items-center justify-between gap-5 px-5 lg:px-0">
             <div className="flex items-center gap-x-2 py-10">
               <Link to={`${SPACE_BASE_PATH}/`}>
-                <span className="text-18 font-semibold text-primary">星轴科技</span>
+                <span className="text-18 font-semibold text-primary">{BRAND_NAME}</span>
               </Link>
             </div>
           </div>

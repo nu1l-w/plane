@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { BRAND_NAME } from "@plane/constants";
+
 // plane imports
 import { CycleIcon, ModuleIcon, PageIcon, ViewsIcon, WorkItemsIcon } from "@plane/propel/icons";
 import type { ISvgIcons } from "@plane/propel/icons";
@@ -53,7 +55,9 @@ export function TourSidebar({ step, setStep }: Props) {
       <h3 className="text-16 font-medium">
         Let{"'"}s get started!
         <br />
-        Get more out of Plane.
+        {`
+        Get more out of ${BRAND_NAME}.
+      `}
       </h3>
       <div className="mt-8 space-y-5">
         {sidebarOptions.map((option) => (

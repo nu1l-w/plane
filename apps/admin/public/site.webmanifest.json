@@ -1,13 +1,21 @@
 {
-  "name": "星轴科技研发管理平台 - 管理后台",
-  "short_name": "星轴科技后台",
-  "description": "星轴科技内部研发项目管理平台管理后台",
+  "name": "联序 & 星轴研发管理平台 - 管理后台",
+  "short_name": "联序 & 星轴后台",
+  "description": "联序 & 星轴研发协作平台管理后台",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#f9fafb",
   "theme_color": "#3f76ff",
   "icons": [
-    { "src": "/favicon/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/favicon/android-chrome-512x512.png", "sizes": "512x512", "type": "image/png" }
+    {
+      "src": "/favicon/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
   ]
 }

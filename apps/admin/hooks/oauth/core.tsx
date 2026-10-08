@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { BRAND_NAME } from "@plane/constants";
+
 import { KeyRound, Mails } from "lucide-react";
 // types
 import type {
@@ -36,7 +38,7 @@ export const getCoreAuthenticationModesMap: (
   "unique-codes": {
     key: "unique-codes",
     name: "邮箱验证码",
-    description: "通过邮箱验证码登录或注册 Plane。使用此方式前，需要先配置 SMTP 邮件服务。",
+    description: `通过邮箱验证码登录或注册 ${BRAND_NAME}。使用此方式前，需要先配置 SMTP 邮件服务。`,
     icon: <Mails className="h-6 w-6 p-0.5 text-tertiary" />,
     config: <EmailCodesConfiguration disabled={disabled} updateConfig={updateConfig} />,
     enabledConfigKey: "ENABLE_MAGIC_LINK_LOGIN",
@@ -52,7 +54,7 @@ export const getCoreAuthenticationModesMap: (
   google: {
     key: "google",
     name: "Google",
-    description: "允许成员使用 Google 账号登录或注册 Plane。",
+    description: `允许成员使用 Google 账号登录或注册 ${BRAND_NAME}。`,
     icon: <img src={googleLogo} height={20} width={20} alt="Google 标志" />,
     config: <GoogleConfiguration disabled={disabled} updateConfig={updateConfig} />,
     enabledConfigKey: "IS_GOOGLE_ENABLED",
@@ -60,7 +62,7 @@ export const getCoreAuthenticationModesMap: (
   github: {
     key: "github",
     name: "GitHub",
-    description: "允许成员使用 GitHub 账号登录或注册 Plane。",
+    description: `允许成员使用 GitHub 账号登录或注册 ${BRAND_NAME}。`,
     icon: (
       <img
         src={resolvedTheme === "dark" ? githubDarkModeImage : githubLightModeImage}
@@ -75,7 +77,7 @@ export const getCoreAuthenticationModesMap: (
   gitlab: {
     key: "gitlab",
     name: "GitLab",
-    description: "允许成员使用 GitLab 账号登录或注册 Plane。",
+    description: `允许成员使用 GitLab 账号登录或注册 ${BRAND_NAME}。`,
     icon: <img src={gitlabLogo} height={20} width={20} alt="GitLab 标志" />,
     config: <GitlabConfiguration disabled={disabled} updateConfig={updateConfig} />,
     enabledConfigKey: "IS_GITLAB_ENABLED",
@@ -83,7 +85,7 @@ export const getCoreAuthenticationModesMap: (
   gitea: {
     key: "gitea",
     name: "Gitea",
-    description: "允许成员使用 Gitea 账号登录或注册 Plane。",
+    description: `允许成员使用 Gitea 账号登录或注册 ${BRAND_NAME}。`,
     icon: <img src={giteaLogo} height={20} width={20} alt="Gitea 标志" />,
     config: <GiteaConfiguration disabled={disabled} updateConfig={updateConfig} />,
     enabledConfigKey: "IS_GITEA_ENABLED",

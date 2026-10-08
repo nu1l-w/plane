@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { BRAND_NAME } from "@plane/constants";
+
 import { useState } from "react";
 import { isEmpty } from "lodash-es";
 import Link from "next/link";
@@ -126,7 +128,9 @@ export function InstanceGitlabConfigForm(props: Props) {
       url: `${originURL}/auth/gitlab/callback/`,
       description: (
         <>
-          此网址由 Plane 自动生成。请将其粘贴到 <CodeBlock darkerShade>Redirect URI</CodeBlock> 字段中：{" "}
+          {`
+          此网址由 ${BRAND_NAME} 自动生成。请将其粘贴到 `}
+          <CodeBlock darkerShade>Redirect URI</CodeBlock> 字段中：{" "}
           <a
             href="https://docs.gitlab.com/ee/integration/oauth_provider.html"
             target="_blank"
@@ -179,7 +183,7 @@ export function InstanceGitlabConfigForm(props: Props) {
       <div className="flex flex-col gap-8">
         <div className="grid w-full grid-cols-2 gap-x-12 gap-y-8">
           <div className="col-span-2 flex flex-col gap-y-4 pt-1 md:col-span-1">
-            <div className="pt-2.5 text-18 font-medium">GitLab 提供给 Plane 的信息</div>
+            <div className="pt-2.5 text-18 font-medium">{`GitLab 提供给 ${BRAND_NAME} 的信息`}</div>
             {GITLAB_FORM_FIELDS.map((field) => (
               <ControllerInput
                 key={field.key}
@@ -213,7 +217,7 @@ export function InstanceGitlabConfigForm(props: Props) {
           </div>
           <div className="col-span-2 md:col-span-1">
             <div className="flex flex-col gap-y-4 rounded-lg bg-layer-3 px-6 pt-1.5 pb-4">
-              <div className="pt-2 text-18 font-medium">Plane 提供给 GitLab 的信息</div>
+              <div className="pt-2 text-18 font-medium">{`${BRAND_NAME} 提供给 GitLab 的信息`}</div>
               {GITLAB_SERVICE_FIELD.map((field) => (
                 <CopyField key={field.key} label={field.label} url={field.url} description={field.description} />
               ))}

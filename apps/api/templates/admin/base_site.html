@@ -1,3 +1,4 @@
+{% load branding %}
 {% extends "admin/base.html" %}{% load i18n %}
 
 {% block title %}{{ title }} | {% trans  'plane Admin' %} {% endblock %}
@@ -17,7 +18,7 @@
     color: #FFFFFF;
 }
 </style>
-<h1 id="site-name">{% trans 'Plane Django Admin'  %} </h1>
+<h1 id="site-name">{% trans '{% brand_name %} Django Admin'  %} </h1>
 
 
 {% endblock %}{% block nav-global %}{% endblock %}

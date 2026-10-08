@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { BRAND_NAME } from "@plane/constants";
+
 import { useState } from "react";
 import { isEmpty } from "lodash-es";
 import Link from "next/link";
@@ -113,8 +115,9 @@ export function InstanceGoogleConfigForm(props: Props) {
       url: originURL,
       description: (
         <p>
-          此网址由 Plane 自动生成。请将其粘贴到 <CodeBlock darkerShade>Authorized JavaScript origins</CodeBlock>{" "}
-          字段中，然后打开此 OAuth 客户端的设置：{" "}
+          {`
+          此网址由 ${BRAND_NAME} 自动生成。请将其粘贴到 `}
+          <CodeBlock darkerShade>Authorized JavaScript origins</CodeBlock> 字段中，然后打开此 OAuth 客户端的设置：{" "}
           <a
             href="https://console.cloud.google.com/apis/credentials/oauthclient"
             target="_blank"
@@ -136,8 +139,9 @@ export function InstanceGoogleConfigForm(props: Props) {
       url: `${originURL}/auth/google/callback/`,
       description: (
         <p>
-          此网址由 Plane 自动生成。请将其粘贴到 <CodeBlock darkerShade>Authorized Redirect URI</CodeBlock>{" "}
-          字段中，然后打开此 OAuth 客户端的设置：{" "}
+          {`
+          此网址由 ${BRAND_NAME} 自动生成。请将其粘贴到 `}
+          <CodeBlock darkerShade>Authorized Redirect URI</CodeBlock> 字段中，然后打开此 OAuth 客户端的设置：{" "}
           <a
             href="https://console.cloud.google.com/apis/credentials/oauthclient"
             target="_blank"
@@ -189,7 +193,7 @@ export function InstanceGoogleConfigForm(props: Props) {
       <div className="flex flex-col gap-8">
         <div className="grid w-full grid-cols-2 gap-x-12 gap-y-8">
           <div className="col-span-2 flex flex-col gap-y-4 pt-1 md:col-span-1">
-            <div className="pt-2.5 text-18 font-medium">Google 提供给 Plane 的信息</div>
+            <div className="pt-2.5 text-18 font-medium">{`Google 提供给 ${BRAND_NAME} 的信息`}</div>
             {GOOGLE_FORM_FIELDS.map((field) => (
               <ControllerInput
                 key={field.key}
@@ -222,7 +226,7 @@ export function InstanceGoogleConfigForm(props: Props) {
             </div>
           </div>
           <div className="col-span-2 flex flex-col gap-y-6 md:col-span-1">
-            <div className="pt-2 text-18 font-medium">Plane 提供给 Google 的信息</div>
+            <div className="pt-2 text-18 font-medium">{`${BRAND_NAME} 提供给 Google 的信息`}</div>
 
             <div className="flex flex-col gap-y-4">
               {/* common service details */}

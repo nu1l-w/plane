@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { BRAND_NAME } from "@plane/constants";
+
 import { observer } from "mobx-react";
 // plane imports
 import { ChevronLeftIcon } from "@plane/propel/icons";
@@ -83,7 +85,7 @@ export const OnboardingHeader = observer(function OnboardingHeader(props: Onboar
               <ChevronLeftIcon className="size-6 text-placeholder" />
             </button>
           )}
-          <span className="text-18 font-semibold text-primary">星轴科技</span>
+          <span className="text-18 font-semibold text-primary">{BRAND_NAME}</span>
         </div>
         <SwitchAccountDropdown fullName={userName} />
       </div>

@@ -3,6 +3,8 @@
 # See the LICENSE file for details.
 
 # Python imports
+from plane.utils.branding import BRAND_NAME
+
 import logging
 
 # Third party imports
@@ -35,7 +37,7 @@ def forgot_password(first_name, email, uidb64, token, current_site):
             EMAIL_FROM,
         ) = get_email_configuration()
 
-        subject = "A new password to your Plane account has been requested"
+        subject = f"A new password to your {BRAND_NAME} account has been requested"
 
         context = {
             "first_name": first_name,

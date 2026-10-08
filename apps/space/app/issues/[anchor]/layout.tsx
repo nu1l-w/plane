@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { BRAND_NAME } from "@plane/constants";
+
 import { observer } from "mobx-react";
 import { Outlet } from "react-router";
 import type { ShouldRevalidateFunctionArgs } from "react-router";
@@ -19,8 +21,8 @@ import { usePublish, usePublishList } from "@/hooks/store/publish";
 import { useIssueFilter } from "@/hooks/store/use-issue-filter";
 import type { Route } from "./+types/layout";
 
-const DEFAULT_TITLE = "Plane";
-const DEFAULT_DESCRIPTION = "Made with Plane, an AI-powered work management platform with publishing capabilities.";
+const DEFAULT_TITLE = BRAND_NAME;
+const DEFAULT_DESCRIPTION = `Made with ${BRAND_NAME}, an AI-powered work management platform with publishing capabilities.`;
 
 interface IssueMetadata {
   name?: string;

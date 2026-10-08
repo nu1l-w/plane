@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { BRAND_NAME } from "@plane/constants";
+
 import { GOD_MODE_URL } from "@plane/constants";
 // assets
 import GradientLogo from "@/app/assets/auth/gradient-logo.webp?url";
@@ -31,13 +33,13 @@ export function InstanceNotReady() {
         {/* Main content */}
         <div className="flex h-full w-full flex-col items-center px-8 pt-6 pb-10">
           <div className="sticky top-0 flex w-full shrink-0 items-center justify-between gap-6">
-            <span className="text-18 font-semibold text-primary">星轴科技</span>
+            <span className="text-18 font-semibold text-primary">{BRAND_NAME}</span>
           </div>
           <div className="flex h-full w-full flex-col items-center justify-center gap-7">
             <div className="flex flex-col items-center gap-11">
               <img src={GradientLogo} className="h-24 w-40 object-contain" alt="" aria-hidden="true" />
               <div className="flex max-w-124 flex-col items-center gap-3">
-                <h1 className="text-h2-semibold text-primary">欢迎使用星轴科技研发管理平台</h1>
+                <h1 className="text-h2-semibold text-primary">{`欢迎使用${BRAND_NAME}研发管理平台`}</h1>
                 <p className="text-center text-body-md-regular text-secondary">
                   请先完成平台初始化并创建第一个工作区。
                 </p>

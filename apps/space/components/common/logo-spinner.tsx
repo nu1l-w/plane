@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { BRAND_NAME } from "@plane/constants";
+
 import { useTheme } from "next-themes";
 // assets
 import LogoSpinnerDark from "@/app/assets/images/logo-spinner-dark.gif?url";
@@ -18,7 +20,7 @@ export function LogoSpinner() {
     <div className="flex items-center justify-center">
       <div className="flex items-center gap-2">
         <img src={logoSrc} alt="" aria-hidden="true" className="h-6 w-auto sm:h-11" />
-        <span className="text-14 font-semibold text-primary sm:text-16">星轴科技</span>
+        <span className="text-14 font-semibold text-primary sm:text-16">{BRAND_NAME}</span>
       </div>
     </div>
   );

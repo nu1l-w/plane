@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { BRAND_NAME } from "@plane/constants";
+
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import Script from "next/script";
@@ -125,7 +127,7 @@ export const meta: Route.MetaFunction = () => [
   { name: "twitter:image", content: ogImage },
   { name: "twitter:image:width", content: "1200" },
   { name: "twitter:image:height", content: "630" },
-  { name: "twitter:image:alt", content: "Plane - Modern project management" },
+  { name: "twitter:image:alt", content: `${BRAND_NAME} - Modern project management` },
 ];
 
 export default function Root() {

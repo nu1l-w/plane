@@ -1,6 +1,6 @@
 {
-  "name": "星轴科技研发管理平台",
-  "short_name": "星轴科技",
+  "name": "联序 & 星轴研发管理平台",
+  "short_name": "联序 & 星轴",
   "icons": [
     {
       "src": "/icons/icon-192x192.png",
@@ -23,5 +23,6 @@
   "background_color": "#FFFFFF",
   "start_url": "/",
   "display": "standalone",
-  "orientation": "portrait"
+  "orientation": "portrait",
+  "description": "联序 & 星轴研发协作平台"
 }

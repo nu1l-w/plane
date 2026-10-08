@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { BRAND_NAME } from "@plane/constants";
+
 import { useEffect, useState } from "react";
 import { observer } from "mobx-react";
 import useSWR from "swr";
@@ -63,7 +65,9 @@ const InstanceEmailPage = observer(function InstanceEmailPage(_props: Route.Comp
         title: "配置实例邮件服务",
         description: (
           <>
-            Plane 可以通过此实例向你和其他用户发送邮件。
+            {`
+            ${BRAND_NAME} 可以通过此实例向你和其他用户发送邮件。
+            `}
             <div className="text-13 font-regular text-tertiary">
               请在下方配置并测试邮件设置后再保存。&nbsp;
               <span className="text-danger-primary">配置错误可能导致邮件退信或发送失败。</span>

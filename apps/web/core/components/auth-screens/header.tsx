@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { BRAND_NAME } from "@plane/constants";
+
 import React from "react";
 import { observer } from "mobx-react";
 import Link from "next/link";
@@ -69,10 +71,10 @@ export function AuthHeaderBase(props: TAuthHeaderBase) {
   const { pageTitle, additionalAction } = props;
   return (
     <>
-      <PageHead title={`${pageTitle} - 星轴科技研发管理平台`} />
+      <PageHead title={`${pageTitle} - ${BRAND_NAME}研发管理平台`} />
       <div className="sticky top-0 flex w-full flex-shrink-0 items-center justify-between gap-6">
         <Link href="/">
-          <span className="text-18 font-semibold text-primary">星轴科技</span>
+          <span className="text-18 font-semibold text-primary">{BRAND_NAME}</span>
         </Link>
         {additionalAction}
       </div>

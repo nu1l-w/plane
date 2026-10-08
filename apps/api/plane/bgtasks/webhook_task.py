@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 # See the LICENSE file for details.
 
+from plane.utils.branding import BRAND_NAME
+
 import hashlib
 import hmac
 import json
@@ -278,8 +280,8 @@ def webhook_send_task(
         headers = {
             "Content-Type": "application/json",
             "User-Agent": "Autopilot",
-            "X-Plane-Delivery": str(uuid.uuid4()),
-            "X-Plane-Event": event,
+            f"X-{BRAND_NAME}-Delivery": str(uuid.uuid4()),
+            f"X-{BRAND_NAME}-Event": event,
         }
 
         # # Your secret key
@@ -312,7 +314,7 @@ def webhook_send_task(
                 hashlib.sha256,
             )
             signature = hmac_signature.hexdigest()
-            headers["X-Plane-Signature"] = signature
+            headers[f"X-{BRAND_NAME}-Signature"] = signature
     except Exception as e:
         log_exception(e)
         logger.error(f"Failed to send webhook: {e}")

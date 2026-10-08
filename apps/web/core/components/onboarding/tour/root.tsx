@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { BRAND_NAME } from "@plane/constants";
+
 import { useState } from "react";
 import { observer } from "mobx-react";
 // plane imports
@@ -92,11 +94,13 @@ export const TourRoot = observer(function TourRoot(props: TOnboardingTourProps) 
         <div className="w-4/5 overflow-hidden rounded-[10px] bg-surface-1 md:w-1/2 lg:w-2/5">
           <div className="h-full overflow-hidden">
             <div className="grid h-64 place-items-center bg-accent-primary">
-              <span className="text-24 font-semibold text-on-color">星轴科技</span>
+              <span className="text-24 font-semibold text-on-color">{BRAND_NAME}</span>
             </div>
             <div className="flex flex-col overflow-y-auto p-6">
               <h3 className="font-semibold sm:text-18">
-                欢迎使用星轴科技研发管理平台，{currentUser?.first_name} {currentUser?.last_name}
+                {`
+                欢迎使用${BRAND_NAME}研发管理平台，`}
+                {currentUser?.first_name} {currentUser?.last_name}
               </h3>
               <p className="mt-3 text-13 text-secondary">
                 你可以在这里统一管理项目、工作项、周期和模块。先从创建一个项目开始。

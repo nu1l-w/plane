@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { BRAND_NAME } from "@plane/constants";
+
 import type { FC, ReactNode } from "react";
 import {
   RotateCcw,
@@ -113,7 +115,7 @@ export const messages = (activity: TProjectActivity): { message: string | ReactN
     case "archived_at":
       return {
         message: newValue === "restore" ? "已恢复项目" : "已归档项目",
-        customUserName: newValue === "archive" ? "星轴科技" : undefined,
+        customUserName: newValue === "archive" ? BRAND_NAME : undefined,
       };
     case "name":
       return {

@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { BRAND_NAME } from "@plane/constants";
+
 import { useState, useRef } from "react";
 import { observer } from "mobx-react";
 import { HelpCircle, MoveLeft } from "lucide-react";
@@ -77,7 +79,7 @@ export const AdminSidebarHelpSection = observer(function AdminSidebarHelpSection
             ref={helpOptionsRef}
           >
             <div className="space-y-1 pb-2">
-              <div className="px-2 py-1 text-11 text-secondary">星轴科技研发管理平台</div>
+              <div className="px-2 py-1 text-11 text-secondary">{`${BRAND_NAME}研发管理平台`}</div>
             </div>
             <div className="px-2 pt-2 pb-1 text-10">版本：v{instance?.current_version}</div>
           </div>

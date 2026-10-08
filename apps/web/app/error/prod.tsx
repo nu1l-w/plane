@@ -40,9 +40,9 @@ export function ProdErrorComponent({ onGoHome }: ProdErrorComponentProps) {
         <div className="relative mt-4 flex w-full flex-col gap-4">
           <div className="flex flex-col gap-2.5">
             <h1 className="text-left text-18 font-semibold text-primary">系统暂时遇到问题</h1>
-            <span className="text-left text-14 font-medium text-secondary">
-              我们正在处理这个问题。请稍后刷新页面重试；如果问题持续存在，请联系星轴科技内部系统管理员。
-            </span>
+            <span className="text-left text-14 font-medium text-secondary">{`
+              我们正在处理这个问题。请稍后刷新页面重试；如果问题持续存在，请联系本平台管理员。
+            `}</span>
           </div>
 
           <div className="flex items-center justify-start gap-6">

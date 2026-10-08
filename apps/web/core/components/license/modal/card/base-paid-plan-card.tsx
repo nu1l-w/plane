@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { BRAND_NAME } from "@plane/constants";
+
 import { useState } from "react";
 import { observer } from "mobx-react";
 import { CheckCircle } from "lucide-react";
@@ -67,7 +69,10 @@ export const BasePaidPlanCard = observer(function BasePaidPlanCard(props: TBaseP
           {prices.map((price: TSubscriptionPrice) => (
             <Tab.Panel key={price.key}>
               <div className="pt-6 text-center">
-                <div className="text-h4-medium">Plane {planeName}</div>
+                <div className="text-h4-medium">
+                  {`${BRAND_NAME} `}
+                  {planeName}
+                </div>
                 {renderActionButton(price)}
               </div>
               <div className="px-2 pt-6 pb-2">

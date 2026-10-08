@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { BRAND_NAME } from "@plane/constants";
+
 import { observer } from "mobx-react";
 // components
 import { LogoSpinner } from "@/components/common/logo-spinner";
@@ -45,6 +47,6 @@ function HomePage() {
 export default observer(HomePage);
 
 export const meta: Route.MetaFunction = () => [
-  { title: "星轴科技研发管理平台 - 管理后台登录" },
-  { name: "description", content: "配置星轴科技研发管理平台或登录管理后台。" },
+  { title: `${BRAND_NAME}研发管理平台 - 管理后台登录` },
+  { name: "description", content: `配置${BRAND_NAME}研发管理平台或登录管理后台。` },
 ];

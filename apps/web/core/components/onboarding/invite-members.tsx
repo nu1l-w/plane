@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { BRAND_NAME } from "@plane/constants";
+
 import React, { useEffect, useState } from "react";
 import { observer } from "mobx-react";
 import type {
@@ -176,10 +178,10 @@ const InviteMemberInput = observer(function InviteMemberInput(props: InviteMembe
             control={control}
             name={`emails.${index}.role`}
             rules={{ required: true }}
-            render={({ field: { value, onChange } }) => (
+            render={({ field: { value: roleValue, onChange } }) => (
               <Listbox
                 as="div"
-                value={value}
+                value={roleValue}
                 onChange={(val) => {
                   onChange(val);
                   setValue(`emails.${index}.role_active`, true);
@@ -196,7 +198,7 @@ const InviteMemberInput = observer(function InviteMemberInput(props: InviteMembe
                       !getValues(`emails.${index}.role_active`) ? "text-placeholder" : "text-primary"
                     } sm:text-13`}
                   >
-                    {ROLE[value]}
+                    {ROLE[roleValue]}
                   </span>
 
                   <ChevronDownIcon
@@ -290,28 +292,26 @@ export function InviteMembers(props: Props) {
     let payload = { ...formData };
     payload = { emails: payload.emails.filter((email) => email.email !== "") };
 
-    await workspaceService
-      .inviteWorkspace(workspace.slug, {
+    try {
+      await workspaceService.inviteWorkspace(workspace.slug, {
         emails: payload.emails.map((email) => ({
           email: email.email,
           role: email.role,
         })),
-      })
-      .then(async () => {
-        setToast({
-          type: TOAST_TYPE.SUCCESS,
-          title: "Success!",
-          message: "Invitations sent successfully.",
-        });
-        await nextStep();
-      })
-      .catch((err) => {
-        setToast({
-          type: TOAST_TYPE.ERROR,
-          title: "Error!",
-          message: err?.error,
-        });
       });
+      setToast({
+        type: TOAST_TYPE.SUCCESS,
+        title: "Success!",
+        message: "Invitations sent successfully.",
+      });
+      await nextStep();
+    } catch (err) {
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: "Error!",
+        message: err && typeof err === "object" && "error" in err ? String(err.error) : "Unable to send invitations.",
+      });
+    }
   };
 
   const appendField = () => {
@@ -339,9 +339,9 @@ export function InviteMembers(props: Props) {
         <div className="mx-auto mt-6 flex w-full flex-col items-center justify-center p-8 md:w-4/5">
           <div className="mx-auto w-4/5 space-y-1 py-4 text-center">
             <h3 className="text-24 font-bold text-primary">邀请团队成员</h3>
-            <p className="font-medium text-placeholder">
-              Work in plane happens best with your team. Invite them now to use Plane to its potential.
-            </p>
+            <p className="font-medium text-placeholder">{`
+              Work in ${BRAND_NAME} happens best with your team. Invite them now to use ${BRAND_NAME} to its potential.
+            `}</p>
           </div>
           <form
             className="mx-auto mt-2 w-full space-y-4"

@@ -11,8 +11,8 @@ interface TermsAndConditionsProps {
 }
 
 const MESSAGES = {
-  [EAuthModes.SIGN_UP]: "创建账号即表示你同意遵守星轴科技内部系统使用规范。",
-  [EAuthModes.SIGN_IN]: "登录即表示你同意遵守星轴科技内部系统使用规范。",
+  [EAuthModes.SIGN_UP]: `创建账号即表示你同意遵守本平台使用规范。`,
+  [EAuthModes.SIGN_IN]: `登录即表示你同意遵守本平台使用规范。`,
 } as const;
 
 export function TermsAndConditions({ authType = EAuthModes.SIGN_IN }: TermsAndConditionsProps) {

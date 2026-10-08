@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { BRAND_NAME } from "@plane/constants";
+
 // helpers
 import { EAuthModes } from "@/types/auth";
 
@@ -27,7 +29,7 @@ const Titles: TAuthHeaderDetails = {
   },
   [EAuthModes.SIGN_UP]: {
     header: "查看、评论和参与协作",
-    subHeader: "注册或登录星轴科技研发管理平台。",
+    subHeader: `注册或登录${BRAND_NAME}研发管理平台。`,
   },
 };
 

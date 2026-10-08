@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { BRAND_NAME } from "@plane/constants";
+
 import { useState } from "react";
 import { observer } from "mobx-react";
 import { useParams } from "next/navigation";
@@ -37,12 +39,12 @@ const integrationDetails: { [key: string]: any } = {
   github: {
     logo: GithubLogo,
     installed: "Activate GitHub on individual projects to sync with specific repositories.",
-    notInstalled: "Connect with GitHub with your Plane workspace to sync project work items.",
+    notInstalled: `Connect with GitHub with your ${BRAND_NAME} workspace to sync project work items.`,
   },
   slack: {
     logo: SlackLogo,
     installed: "Activate Slack on individual projects to sync with specific channels.",
-    notInstalled: "Connect with Slack with your Plane workspace to sync project work items.",
+    notInstalled: `Connect with Slack with your ${BRAND_NAME} workspace to sync project work items.`,
   },
 };
 
@@ -79,31 +81,29 @@ export const SingleIntegrationCard = observer(function SingleIntegrationCard({ i
 
     setDeletingIntegration(true);
 
-    await integrationService
-      .deleteWorkspaceIntegration(workspaceSlug, workspaceIntegrationId ?? "")
-      .then(() => {
-        mutate<IWorkspaceIntegration[]>(
-          WORKSPACE_INTEGRATIONS(workspaceSlug),
-          (prevData) => prevData?.filter((i) => i.id !== workspaceIntegrationId),
-          false
-        );
-        setDeletingIntegration(false);
+    try {
+      await integrationService.deleteWorkspaceIntegration(workspaceSlug, workspaceIntegrationId ?? "");
+      await mutate<IWorkspaceIntegration[]>(
+        WORKSPACE_INTEGRATIONS(workspaceSlug),
+        (prevData) => prevData?.filter((i) => i.id !== workspaceIntegrationId),
+        false
+      );
+      setDeletingIntegration(false);
 
-        setToast({
-          type: TOAST_TYPE.SUCCESS,
-          title: "Deleted successfully!",
-          message: `${integration.title} integration deleted successfully.`,
-        });
-      })
-      .catch(() => {
-        setDeletingIntegration(false);
-
-        setToast({
-          type: TOAST_TYPE.ERROR,
-          title: "Error!",
-          message: `${integration.title} integration could not be deleted. Please try again.`,
-        });
+      setToast({
+        type: TOAST_TYPE.SUCCESS,
+        title: "Deleted successfully!",
+        message: `${integration.title} integration deleted successfully.`,
       });
+    } catch {
+      setDeletingIntegration(false);
+
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: "Error!",
+        message: `${integration.title} integration could not be deleted. Please try again.`,
+      });
+    }
   };
 
   const isInstalled = Array.isArray(workspaceIntegrations)

@@ -4,9 +4,12 @@
  * See the LICENSE file for details.
  */
 
+import { BRAND_NAME } from "@plane/constants";
+
 import Script from "next/script";
 
 // styles
+// oxlint-disable-next-line import/no-unassigned-import
 import "@/styles/globals.css";
 
 import { SITE_DESCRIPTION, SITE_NAME } from "@plane/constants";
@@ -43,12 +46,12 @@ export const meta = () => [
   { property: "og:image", content: "/og-image.png" },
   { property: "og:image:width", content: "1200" },
   { property: "og:image:height", content: "630" },
-  { property: "og:image:alt", content: "星轴科技研发管理平台" },
+  { property: "og:image:alt", content: `${BRAND_NAME}研发管理平台` },
   { name: "twitter:card", content: "summary_large_image" },
   { name: "twitter:image", content: "/og-image.png" },
   { name: "twitter:image:width", content: "1200" },
   { name: "twitter:image:height", content: "630" },
-  { name: "twitter:image:alt", content: "星轴科技研发管理平台" },
+  { name: "twitter:image:alt", content: `${BRAND_NAME}研发管理平台` },
 ];
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

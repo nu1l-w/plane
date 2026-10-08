@@ -3,6 +3,8 @@
 # See the LICENSE file for details.
 
 # Python imports
+from plane.utils.branding import BRAND_NAME
+
 import logging
 
 # Third party imports
@@ -83,7 +85,7 @@ def send_email_update_confirmation(email):
         ) = get_email_configuration()
 
         # Send the confirmation email
-        subject = "Plane email address successfully updated"
+        subject = f"{BRAND_NAME} email address successfully updated"
         context = {"email": email}
 
         html_content = render_to_string("emails/user/email_updated.html", context)

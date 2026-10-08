@@ -13,7 +13,9 @@ export function TermsAndConditions(props: Props) {
   return (
     <span className="flex items-center justify-center py-6">
       <p className="text-center text-13 whitespace-pre-line text-secondary">
-        {isSignUp ? "创建账号" : "登录"}即表示你同意遵守星轴科技内部系统使用规范。
+        {isSignUp ? "创建账号" : "登录"}
+        {`即表示你同意遵守本平台使用规范。
+      `}
       </p>
     </span>
   );

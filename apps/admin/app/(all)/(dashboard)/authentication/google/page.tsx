@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { BRAND_NAME } from "@plane/constants";
+
 import { useState } from "react";
 import { observer } from "mobx-react";
 import useSWR from "swr";
@@ -67,7 +69,7 @@ const InstanceGoogleAuthenticationPage = observer(function InstanceGoogleAuthent
       customHeader={
         <AuthenticationMethodCard
           name="Google"
-          description="允许成员使用 Google 账号登录或注册 Plane。"
+          description={`允许成员使用 Google 账号登录或注册 ${BRAND_NAME}。`}
           icon={<img src={GoogleLogo} height={24} width={24} alt="Google 标志" />}
           config={
             <ToggleSwitch

@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { BRAND_NAME } from "@plane/constants";
+
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 // icons
@@ -153,7 +155,7 @@ export function InstanceSetupForm() {
       <AuthHeader />
       <div className="mt-10 flex w-full flex-grow flex-col items-center justify-center py-6">
         <div className="relative flex w-full max-w-[22.5rem] flex-col gap-6">
-          <FormHeader heading="初始化星轴科技研发管理平台" subHeading="完成后即可进入管理后台配置平台。" />
+          <FormHeader heading={`初始化${BRAND_NAME}研发管理平台`} subHeading="完成后即可进入管理后台配置平台。" />
           {errorData.type &&
             errorData?.message &&
             ![EErrorCodes.INVALID_EMAIL, EErrorCodes.INVALID_PASSWORD].includes(errorData.type) && (
@@ -247,7 +249,7 @@ export function InstanceSetupForm() {
                 name="company_name"
                 type="text"
                 inputSize="md"
-                placeholder="星轴科技"
+                placeholder={BRAND_NAME}
                 value={formData.company_name}
                 onChange={(e) => {
                   const validation = validateCompanyName(e.target.value, false);

@@ -508,7 +508,7 @@ const PiChatPage = observer(function PiChatPage() {
           <div className="flex w-full items-center justify-between gap-3 px-4">
             <div className="flex min-w-0 items-center gap-2 text-13 font-medium text-primary">
               <PiChatLogo className="size-4 shrink-0 text-accent-primary" />
-              <span className="truncate">星轴 AI（Beta）</span>
+              <span className="truncate">{"StarAxis AI（Beta）"}</span>
             </div>
             <div className="flex min-w-0 items-center gap-2">
               <label className="flex shrink-0 items-center gap-2 text-13 text-secondary">
@@ -576,7 +576,7 @@ const PiChatPage = observer(function PiChatPage() {
         }
       />
       <ContentWrapper className="!overflow-hidden">
-        <PageHead title="星轴 AI（Beta）" />
+        <PageHead title={"StarAxis AI（Beta）"} />
         <div className="mx-auto flex h-full w-full max-w-6xl flex-col overflow-hidden px-4">
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
             <div ref={chatScrollContainerRef} className="flex-1 overflow-y-auto py-5 sm:py-8">
@@ -617,7 +617,7 @@ const PiChatPage = observer(function PiChatPage() {
                       }`}
                     >
                       <div className="mb-2 text-11 font-medium tracking-wide text-tertiary uppercase">
-                        {message.role === "user" ? "你" : "星轴 AI（Beta）"}
+                        {message.role === "user" ? "你" : "StarAxis AI（Beta）"}
                       </div>
                       <div className={`text-14 leading-6 text-primary ${message.isLoading ? "animate-pulse" : ""}`}>
                         {message.role === "assistant" && !message.isLoading ? (

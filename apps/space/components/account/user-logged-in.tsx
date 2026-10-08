@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { BRAND_NAME } from "@plane/constants";
+
 import { observer } from "mobx-react";
 // assets
 import UserLoggedInImage from "@/app/assets/user-logged-in.svg?url";
@@ -22,7 +24,7 @@ export const UserLoggedIn = observer(function UserLoggedIn() {
   return (
     <div className="flex h-screen w-screen flex-col">
       <div className="relative flex w-full items-center justify-between gap-4 border-b border-subtle px-6 py-5">
-        <span className="text-18 font-semibold text-primary">星轴科技</span>
+        <span className="text-18 font-semibold text-primary">{BRAND_NAME}</span>
         <UserAvatar />
       </div>
 

@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { BRAND_NAME } from "@plane/constants";
+
 import { observer } from "mobx-react";
 import useSWR from "swr";
 import { useTranslation } from "@plane/i18n";
@@ -28,29 +30,29 @@ const Titles = {
   [EAuthModes.SIGN_IN]: {
     [EAuthSteps.EMAIL]: {
       header: "让研发工作井然有序",
-      subHeader: "欢迎回到星轴科技研发管理平台",
+      subHeader: `欢迎回到${BRAND_NAME}研发管理平台`,
     },
     [EAuthSteps.PASSWORD]: {
       header: "让研发工作井然有序",
-      subHeader: "欢迎回到星轴科技研发管理平台",
+      subHeader: `欢迎回到${BRAND_NAME}研发管理平台`,
     },
     [EAuthSteps.UNIQUE_CODE]: {
       header: "让研发工作井然有序",
-      subHeader: "欢迎回到星轴科技研发管理平台",
+      subHeader: `欢迎回到${BRAND_NAME}研发管理平台`,
     },
   },
   [EAuthModes.SIGN_UP]: {
     [EAuthSteps.EMAIL]: {
       header: "让研发工作井然有序",
-      subHeader: "创建星轴科技研发管理平台账号",
+      subHeader: `创建${BRAND_NAME}研发管理平台账号`,
     },
     [EAuthSteps.PASSWORD]: {
       header: "让研发工作井然有序",
-      subHeader: "创建星轴科技研发管理平台账号",
+      subHeader: `创建${BRAND_NAME}研发管理平台账号`,
     },
     [EAuthSteps.UNIQUE_CODE]: {
       header: "让研发工作井然有序",
-      subHeader: "创建星轴科技研发管理平台账号",
+      subHeader: `创建${BRAND_NAME}研发管理平台账号`,
     },
   },
 };
@@ -74,11 +76,11 @@ export const AuthHeader = observer(function AuthHeader(props: TAuthHeader) {
   const getHeaderSubHeader = (
     step: EAuthSteps,
     mode: EAuthModes,
-    invitation: IWorkspaceMemberInvitation | undefined,
+    workspaceInvitation: IWorkspaceMemberInvitation | undefined,
     email: string | undefined
   ) => {
-    if (invitation && email && invitation.email === email && invitation.workspace) {
-      const workspace = invitation.workspace;
+    if (workspaceInvitation && email && workspaceInvitation.email === email && workspaceInvitation.workspace) {
+      const workspace = workspaceInvitation.workspace;
       return {
         header: (
           <div className="relative inline-flex items-center gap-2">

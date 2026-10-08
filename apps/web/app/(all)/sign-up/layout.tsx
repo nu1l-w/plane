@@ -4,11 +4,13 @@
  * See the LICENSE file for details.
  */
 
+import { BRAND_NAME } from "@plane/constants";
+
 import { Outlet } from "react-router";
 import type { Route } from "./+types/layout";
 
 export const meta: Route.MetaFunction = () => [
-  { title: "Sign up - Plane" },
+  { title: `Sign up - ${BRAND_NAME}` },
   { name: "robots", content: "index, nofollow" },
 ];
 

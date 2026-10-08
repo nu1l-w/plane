@@ -3,6 +3,8 @@
 # See the LICENSE file for details.
 
 # Python imports
+from plane.utils.branding import BRAND_NAME
+
 import json
 
 
@@ -503,7 +505,7 @@ def track_archive_at(
             )
         else:
             if requested_data.get("automation"):
-                comment = "Plane has archived the issue"
+                comment = f"{BRAND_NAME} has archived the issue"
                 new_value = "archive"
             else:
                 comment = "Actor has archived the issue"
@@ -546,7 +548,7 @@ def track_closed_to(
                 field="state",
                 project_id=project_id,
                 workspace_id=workspace_id,
-                comment="Plane updated the state to ",
+                comment=f"{BRAND_NAME} updated the state to ",
                 old_identifier=None,
                 new_identifier=updated_state.id,
                 epoch=epoch,

@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { BRAND_NAME } from "@plane/constants";
+
 type TPoweredBy = {
   disabled?: boolean;
 };
@@ -14,5 +16,7 @@ export function PoweredBy(props: TPoweredBy) {
 
   if (disabled) return null;
 
-  return <div className="fixed right-5 bottom-2.5 !z-[999999] text-11 text-secondary">星轴科技研发管理平台</div>;
+  return (
+    <div className="fixed right-5 bottom-2.5 !z-[999999] text-11 text-secondary">{`${BRAND_NAME}研发管理平台`}</div>
+  );
 }

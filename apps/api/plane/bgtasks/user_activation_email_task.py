@@ -3,6 +3,8 @@
 # See the LICENSE file for details.
 
 # Python imports
+from plane.utils.branding import BRAND_NAME
+
 import logging
 
 # Django imports
@@ -24,7 +26,7 @@ def user_activation_email(current_site, user_id):
     try:
         # Send email to user when account is activated
         user = User.objects.get(id=user_id)
-        subject = f"{user.first_name or user.display_name or user.email} has been activated on Plane"
+        subject = f"{user.first_name or user.display_name or user.email} has been activated on {BRAND_NAME}"
 
         context = {"email": str(user.email), "profile_url": current_site + "/profile"}
 

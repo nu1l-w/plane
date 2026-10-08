@@ -4,6 +4,8 @@
  * See the LICENSE file for details.
  */
 
+import { BRAND_NAME } from "@plane/constants";
+
 import { CheckIcon } from "@plane/propel/icons";
 
 type Props = {
@@ -23,7 +25,7 @@ export function MarketingConsent({ isChecked, handleChange }: Props) {
       >
         {isChecked && <CheckIcon className="h-3 w-3 text-on-color" />}
       </button>
-      <span className="text-13 text-tertiary">I agree to Plane marketing communications</span>
+      <span className="text-13 text-tertiary">{`I agree to ${BRAND_NAME} marketing communications`}</span>
     </div>
   );
 }
