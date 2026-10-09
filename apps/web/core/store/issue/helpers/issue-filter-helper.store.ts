@@ -7,11 +7,7 @@
 import { isEmpty } from "lodash-es";
 // plane constants
 import type { EIssueFilterType } from "@plane/constants";
-import {
-  EIssueGroupByToServerOptions,
-  EServerGroupByToFilterOptions,
-  ENABLE_ISSUE_DEPENDENCIES,
-} from "@plane/constants";
+import { EIssueGroupByToServerOptions, EServerGroupByToFilterOptions } from "@plane/constants";
 import type {
   EIssuesStoreType,
   IIssueDisplayFilterOptions,
@@ -119,10 +115,8 @@ export class IssueFilterHelperStore implements IIssueFilterHelperStore {
 
     if (displayFilters?.layout) issueFiltersParams.layout = displayFilters?.layout;
 
-    if (
-      displayFilters?.layout === EIssueLayoutTypes.KANBAN ||
-      (ENABLE_ISSUE_DEPENDENCIES && displayFilters?.layout === EIssueLayoutTypes.GANTT)
-    )
+    // Every issue layout shows relation badges, so relations must be available on the initial page load.
+    if (displayFilters?.layout && Object.values(EIssueLayoutTypes).includes(displayFilters.layout))
       issueFiltersParams["expand"] = "issue_relation,issue_related";
 
     return issueFiltersParams;
