@@ -14,6 +14,7 @@ import { generateWorkItemLink } from "@plane/utils";
 // components
 import { SIDEBAR_WIDTH } from "@/components/gantt-chart/constants";
 import { IssueIdentifier } from "@/components/issues/issue-detail/issue-identifier";
+import { BlockedBadge } from "@/components/issues/issue-layouts/blocked-badge";
 import { WorkItemSummary } from "@/components/issues/issue-layouts/work-item-summary";
 // hooks
 import { useIssueDetail } from "@/hooks/store/use-issue-detail";
@@ -70,10 +71,11 @@ export const IssueGanttBlock = observer(function IssueGanttBlock(props: Props) {
           >
             <div className="absolute top-0 left-0 h-full w-full bg-surface-1/50" />
             <div
-              className="sticky w-auto flex-1 truncate overflow-hidden px-2.5 py-1 text-13 text-primary"
+              className="sticky flex w-auto flex-1 items-center gap-1 overflow-hidden px-2.5 py-1 text-13 text-primary"
               style={{ left: `${SIDEBAR_WIDTH}px` }}
             >
-              {issueDetails?.name}
+              <span className="truncate">{issueDetails?.name}</span>
+              {issueDetails && <BlockedBadge issue={issueDetails} isEpic={isEpic} variant="icon" />}
             </div>
           </div>
         }
@@ -153,6 +155,7 @@ export const IssueGanttSidebarBlock = observer(function IssueGanttSidebarBlock(p
         <Tooltip tooltipContent={issueDetails?.name} isMobile={isMobile}>
           <span className="flex-grow truncate text-13 font-medium">{issueDetails?.name}</span>
         </Tooltip>
+        {issueDetails && <BlockedBadge issue={issueDetails} isEpic={isEpic} variant="icon" />}
         {issueDetails && (
           <WorkItemSummary
             issue={issueDetails}

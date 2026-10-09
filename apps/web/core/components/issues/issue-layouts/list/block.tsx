@@ -21,6 +21,7 @@ import { Spinner, ControlLink, Row } from "@plane/ui";
 import { cn, generateWorkItemLink } from "@plane/utils";
 // components
 import { MultipleSelectEntityAction } from "@/components/core/multiple-select";
+import { BlockedBadge } from "@/components/issues/issue-layouts/blocked-badge";
 import { IssueProperties } from "@/components/issues/issue-layouts/properties";
 import { WorkItemSummary } from "@/components/issues/issue-layouts/work-item-summary";
 import { IssueIdentifier } from "@/components/issues/issue-detail/issue-identifier";
@@ -279,7 +280,10 @@ export const IssueBlock = observer(function IssueBlock(props: IssueBlockProps) {
               >
                 <p className="cursor-pointer truncate text-body-xs-medium text-primary">{issue.name}</p>
               </Tooltip>
-              <WorkItemSummary issue={issue} workspaceSlug={workspaceSlug} displayProperties={displayProperties} />
+              <div className="flex flex-wrap items-center gap-1">
+                <WorkItemSummary issue={issue} workspaceSlug={workspaceSlug} displayProperties={displayProperties} />
+                <BlockedBadge issue={issue} isEpic={isEpic} variant="compact" />
+              </div>
             </div>
           </div>
           {!issue?.tempId && (

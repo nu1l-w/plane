@@ -24,6 +24,7 @@ import useIssuePeekOverviewRedirection from "@/hooks/use-issue-peek-overview-red
 import { usePlatformOS } from "@/hooks/use-platform-os";
 // components
 import { IssueIdentifier } from "@/components/issues/issue-detail/issue-identifier";
+import { BlockedBadge } from "@/components/issues/issue-layouts/blocked-badge";
 import { WorkItemSummary } from "@/components/issues/issue-layouts/work-item-summary";
 // local components
 import { WorkItemPreviewCard } from "../../preview-card";
@@ -142,6 +143,7 @@ export const CalendarIssueBlock = observer(
                       />
                     )}
                     <div className="min-w-0 truncate text-13 font-medium md:text-11 md:font-regular">{issue.name}</div>
+                    <BlockedBadge issue={issue} isEpic={isEpic} variant="icon" />
                     <WorkItemSummary
                       issue={issue}
                       workspaceSlug={workspaceSlug?.toString()}

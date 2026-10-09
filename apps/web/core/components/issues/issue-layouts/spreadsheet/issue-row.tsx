@@ -24,6 +24,7 @@ import { cn, generateWorkItemLink } from "@plane/utils";
 import { MultipleSelectEntityAction } from "@/components/core/multiple-select";
 import RenderIfVisible from "@/components/core/render-if-visible-HOC";
 import { IssueIdentifier } from "@/components/issues/issue-detail/issue-identifier";
+import { BlockedBadge } from "@/components/issues/issue-layouts/blocked-badge";
 // hooks
 import { useIssueDetail } from "@/hooks/store/use-issue-detail";
 import { useIssues } from "@/hooks/store/use-issues";
@@ -214,6 +215,7 @@ const IssueRowDetails = observer(function IssueRowDetails(props: IssueRowDetails
 
   const customActionButton = (
     <div
+      role="presentation"
       ref={menuActionRef}
       className={`flex h-full w-full cursor-pointer items-center rounded-sm p-1 text-placeholder hover:bg-layer-1 ${
         isMenuActive ? "bg-layer-1 text-primary" : "text-secondary"
@@ -356,7 +358,7 @@ const IssueRowDetails = observer(function IssueRowDetails(props: IssueRowDetails
               </div>
 
               <div className="my-auto flex h-full w-full items-center justify-between gap-2 truncate">
-                <div className="line-clamp-1 w-full text-14 text-primary">
+                <div className="line-clamp-1 min-w-0 flex-1 text-14 text-primary">
                   <div className="w-full overflow-hidden">
                     <Tooltip tooltipContent={issueDetail.name} isMobile={isMobile}>
                       <div
@@ -368,7 +370,9 @@ const IssueRowDetails = observer(function IssueRowDetails(props: IssueRowDetails
                     </Tooltip>
                   </div>
                 </div>
+                <BlockedBadge issue={issueDetail} isEpic={isEpic} variant="compact" />
                 <div
+                  role="presentation"
                   className={`opacity-0 transition-opacity group-hover:opacity-100 ${isMenuActive ? "!opacity-100" : ""}`}
                   onClick={(e) => e.stopPropagation()}
                 >

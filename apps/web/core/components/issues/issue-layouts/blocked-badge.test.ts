@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { TIssue, TStateGroups } from "@plane/types";
-import { KanbanBlockedBadge } from "./blocked-badge";
+import { BlockedBadge } from "./blocked-badge";
 
 const data = vi.hoisted(() => ({
   blockerIds: [] as string[],
@@ -38,7 +38,8 @@ const issue = {
     { id: "blocker", project_id: "project", sequence_id: 6, name: "Firmware", relation_type: "blocked_by" },
   ],
 } as TIssue;
-const render = (value = issue) => renderToStaticMarkup(createElement(KanbanBlockedBadge, { issue: value }));
+const render = (value = issue, variant: "badge" | "compact" | "icon" = "badge") =>
+  renderToStaticMarkup(createElement(BlockedBadge, { issue: value, variant }));
 
 describe("kanban blocked badge", () => {
   beforeEach(() => {
@@ -58,6 +59,20 @@ describe("kanban blocked badge", () => {
     expect(html).toContain("IKFPC-6: Firmware");
     expect(html).toContain('tabindex="0"');
     expect(html).toContain("bg-danger-subtle");
+  });
+
+  it("uses a compact label while keeping the full accessible description", () => {
+    data.blockerIds = ["blocker"];
+    const html = render(issue, "compact");
+    expect(html).toContain('aria-label="Blocked · 1: IKFPC-6: Firmware"');
+    expect(html).toContain("Blocked · 1</span>");
+  });
+
+  it("uses an icon in narrow layouts while keeping the full accessible label", () => {
+    data.blockerIds = ["blocker"];
+    const html = render(issue, "icon");
+    expect(html).toContain('aria-label="Blocked · 1: IKFPC-6: Firmware"');
+    expect(html).not.toContain("Blocked · 1</span>");
   });
 
   it("reads blocker details from reverse relations too", () => {

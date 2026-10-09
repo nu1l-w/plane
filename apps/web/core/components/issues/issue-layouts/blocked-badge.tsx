@@ -18,9 +18,10 @@ import { usePlatformOS } from "@/hooks/use-platform-os";
 type Props = {
   issue: TIssue;
   isEpic?: boolean;
+  variant?: "badge" | "compact" | "icon";
 };
 
-export const KanbanBlockedBadge = observer(function KanbanBlockedBadge({ issue, isEpic = false }: Props) {
+export const BlockedBadge = observer(function BlockedBadge({ issue, isEpic = false, variant = "badge" }: Props) {
   const { t } = useTranslation();
   const { isMobile } = usePlatformOS();
   const { getProjectIdentifierById } = useProject();
@@ -66,10 +67,10 @@ export const KanbanBlockedBadge = observer(function KanbanBlockedBadge({ issue, 
       <span
         tabIndex={0}
         aria-label={`${label}: ${blockers.map((blocker) => blocker.label).join("; ")}`}
-        className="inline-flex w-fit items-center gap-1 rounded-sm bg-danger-subtle px-1.5 py-0.5 text-caption-sm-medium text-danger-primary"
+        className={`inline-flex w-fit shrink-0 items-center gap-1 rounded-sm bg-danger-subtle text-caption-sm-medium text-danger-primary ${variant === "badge" ? "px-1.5 py-0.5" : "px-1 py-0.5"}`}
       >
         <CircleSlash className="size-3.5 shrink-0" aria-hidden="true" />
-        {label}
+        {variant !== "icon" && label}
       </span>
     </Tooltip>
   );
