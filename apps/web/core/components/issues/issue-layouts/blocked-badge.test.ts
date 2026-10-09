@@ -7,12 +7,20 @@ import { BlockedBadge } from "./blocked-badge";
 
 const data = vi.hoisted(() => ({
   blockerIds: [] as string[],
+  blockedIds: [] as string[],
   issues: {} as Record<string, Partial<TIssue>>,
   states: {} as Record<string, { group: TStateGroups }>,
 }));
 
 vi.mock("@plane/i18n", () => ({
-  useTranslation: () => ({ t: (key: string) => (key === "issue.relation.blocked" ? "Blocked" : "Blocked by") }),
+  useTranslation: () => ({
+    t: (key: string) =>
+      ({
+        "issue.relation.blocked": "Blocked",
+        "issue.relation.blocked_by": "Blocked by",
+        "issue.relation.blocking": "Blocking",
+      })[key] ?? key,
+  }),
 }));
 vi.mock("@plane/propel/tooltip", () => ({
   Tooltip: ({ children, tooltipContent }: { children: ReactNode; tooltipContent: ReactNode }) =>
@@ -27,7 +35,10 @@ vi.mock("@/hooks/store/use-project-state", () => ({
 vi.mock("@/hooks/use-platform-os", () => ({ usePlatformOS: () => ({ isMobile: false }) }));
 vi.mock("@/hooks/store/use-issue-detail", () => ({
   useIssueDetail: () => ({
-    relation: { getRelationByIssueIdRelationType: () => data.blockerIds },
+    relation: {
+      getRelationByIssueIdRelationType: (_id: string, type: string) =>
+        type === "blocked_by" ? data.blockerIds : data.blockedIds,
+    },
     issue: { getIssueById: (id: string) => data.issues[id] },
   }),
 }));
@@ -44,6 +55,7 @@ const render = (value = issue, variant: "badge" | "compact" | "icon" = "badge") 
 describe("kanban blocked badge", () => {
   beforeEach(() => {
     data.blockerIds = [];
+    data.blockedIds = [];
     data.issues = {};
     data.states = {};
   });
@@ -59,6 +71,30 @@ describe("kanban blocked badge", () => {
     expect(html).toContain("IKFPC-6: Firmware");
     expect(html).toContain('tabindex="0"');
     expect(html).toContain("bg-danger-subtle");
+  });
+
+  it("shows affected work items with a neutral blocking badge", () => {
+    data.blockedIds = ["blocker"];
+    const html = render();
+    expect(html).toContain("Blocking · 1");
+    expect(html).toContain("IKFPC-6: Firmware");
+    expect(html).toContain("bg-surface-2");
+    expect(html).not.toContain("bg-danger-subtle");
+  });
+
+  it("shows blocked by before blocking when both exist", () => {
+    data.blockerIds = ["blocker"];
+    data.blockedIds = ["another"];
+    data.issues.another = { project_id: "project", sequence_id: 7, name: "Hardware" };
+    const html = render();
+    expect(html.indexOf("Blocked · 1")).toBeLessThan(html.indexOf("Blocking · 1"));
+    expect(html).toContain("IKFPC-7: Hardware");
+  });
+
+  it("hides completed affected work items", () => {
+    data.blockedIds = ["blocker"];
+    data.issues.blocker = { ...issue.issue_relation![0], state__group: "completed" };
+    expect(render()).toBe("");
   });
 
   it("uses a compact label while keeping the full accessible description", () => {
