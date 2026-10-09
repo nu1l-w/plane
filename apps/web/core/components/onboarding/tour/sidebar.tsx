@@ -5,6 +5,7 @@
  */
 
 import { BRAND_NAME } from "@plane/constants";
+import { useTranslation } from "@plane/i18n";
 
 // plane imports
 import { CycleIcon, ModuleIcon, PageIcon, ViewsIcon, WorkItemsIcon } from "@plane/propel/icons";
@@ -14,32 +15,26 @@ import type { TTourSteps } from "./root";
 
 const sidebarOptions: {
   key: TTourSteps;
-  label: string;
   Icon: React.FC<ISvgIcons>;
 }[] = [
   {
     key: "work-items",
-    label: "Work items",
     Icon: WorkItemsIcon,
   },
   {
     key: "cycles",
-    label: "Cycles",
     Icon: CycleIcon,
   },
   {
     key: "modules",
-    label: "Modules",
     Icon: ModuleIcon,
   },
   {
     key: "views",
-    label: "Views",
     Icon: ViewsIcon,
   },
   {
     key: "pages",
-    label: "Pages",
     Icon: PageIcon,
   },
 ];
@@ -50,14 +45,13 @@ type Props = {
 };
 
 export function TourSidebar({ step, setStep }: Props) {
+  const { t } = useTranslation();
   return (
     <div className="col-span-3 hidden bg-surface-2 p-8 lg:block">
       <h3 className="text-16 font-medium">
-        Let{"'"}s get started!
+        {t("tour.intro.sidebar_heading")}
         <br />
-        {`
-        Get more out of ${BRAND_NAME}.
-      `}
+        {t("tour.intro.sidebar_subheading", { brand: BRAND_NAME })}
       </h3>
       <div className="mt-8 space-y-5">
         {sidebarOptions.map((option) => (
@@ -72,7 +66,7 @@ export function TourSidebar({ step, setStep }: Props) {
             role="button"
           >
             <option.Icon className="h-4 w-4" aria-hidden="true" />
-            {option.label}
+            {t(`tour.intro.steps.${option.key}.label`)}
           </h5>
         ))}
       </div>

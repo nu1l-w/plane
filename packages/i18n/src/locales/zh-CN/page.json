@@ -1,4 +1,13 @@
 {
+  "page_delete": {
+    "title": "删除页面",
+    "confirm_before_name": "确定要删除页面“",
+    "confirm_after_name": "”吗？页面将被永久删除，此操作无法撤销。",
+    "toasts": {
+      "success": { "title": "成功！", "message": "页面已成功删除。" },
+      "error": { "title": "错误！", "message": "无法删除页面，请重试。" }
+    }
+  },
   "page_navigation_pane": {
     "tabs": {
       "outline": {

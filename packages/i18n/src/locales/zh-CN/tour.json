@@ -1,4 +1,43 @@
 {
+  "tour": {
+    "intro": {
+      "welcome": "欢迎使用{brand}研发管理平台，",
+      "description": "你可以在这里统一管理项目、工作项、周期和模块。先从创建一个项目开始。",
+      "take_tour": "查看产品导览",
+      "skip_tour": "不用了，我自己探索",
+      "sidebar_heading": "开始使用！",
+      "sidebar_subheading": "了解如何更好地使用{brand}。",
+      "create_project": "创建第一个项目",
+      "steps": {
+        "work-items": {
+          "label": "工作项",
+          "title": "使用工作项进行规划",
+          "description": "工作项是研发管理的基本单元，需求、任务和缺陷都可以通过工作项及其属性进行管理。"
+        },
+        "cycles": {
+          "label": "周期",
+          "title": "使用周期推进工作",
+          "description": "周期类似敏捷开发中的迭代，可帮助团队聚焦阶段目标并持续推进。"
+        },
+        "modules": {
+          "label": "模块",
+          "title": "使用模块拆分范围",
+          "description": "模块可将大型项目按产品能力或功能范围拆分，便于组织和跟踪。"
+        },
+        "views": {
+          "label": "视图",
+          "title": "视图",
+          "description": "通过自定义筛选只显示关注的工作项，并可保存和共享筛选条件。"
+        },
+        "pages": {
+          "label": "页面",
+          "title": "使用页面记录内容",
+          "description": "使用页面记录会议内容、研发计划和日常事项。"
+        }
+      }
+    },
+    "actions": { "back": "返回", "next": "下一步" }
+  },
   "product_tour": {
     "workitems": {
       "step_zero": {

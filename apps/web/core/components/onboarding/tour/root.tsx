@@ -5,6 +5,7 @@
  */
 
 import { BRAND_NAME } from "@plane/constants";
+import { useTranslation } from "@plane/i18n";
 
 import { useState } from "react";
 import { observer } from "mobx-react";
@@ -31,47 +32,35 @@ export type TTourSteps = "welcome" | "work-items" | "cycles" | "modules" | "view
 
 const TOUR_STEPS: {
   key: TTourSteps;
-  title: string;
-  description: string;
   image: string;
   prevStep?: TTourSteps;
   nextStep?: TTourSteps;
 }[] = [
   {
     key: "work-items",
-    title: "使用工作项进行规划",
-    description: "工作项是研发管理的基本单元，需求、任务和缺陷都可以通过工作项及其属性进行管理。",
     image: IssuesTour,
     nextStep: "cycles",
   },
   {
     key: "cycles",
-    title: "使用周期推进工作",
-    description: "周期类似敏捷开发中的迭代，可帮助团队聚焦阶段目标并持续推进。",
     image: CyclesTour,
     prevStep: "work-items",
     nextStep: "modules",
   },
   {
     key: "modules",
-    title: "使用模块拆分范围",
-    description: "模块可将大型项目按产品能力或功能范围拆分，便于组织和跟踪。",
     image: ModulesTour,
     prevStep: "cycles",
     nextStep: "views",
   },
   {
     key: "views",
-    title: "视图",
-    description: "通过自定义筛选只显示关注的工作项，并可保存和共享筛选条件。",
     image: ViewsTour,
     prevStep: "modules",
     nextStep: "pages",
   },
   {
     key: "pages",
-    title: "使用页面记录内容",
-    description: "使用页面记录会议内容、研发计划和日常事项。",
     image: PagesTour,
     prevStep: "views",
   },
@@ -79,6 +68,7 @@ const TOUR_STEPS: {
 
 export const TourRoot = observer(function TourRoot(props: TOnboardingTourProps) {
   const { onComplete } = props;
+  const { t } = useTranslation();
   // states
   const [step, setStep] = useState<TTourSteps>("welcome");
   // store hooks
@@ -98,13 +88,9 @@ export const TourRoot = observer(function TourRoot(props: TOnboardingTourProps) 
             </div>
             <div className="flex flex-col overflow-y-auto p-6">
               <h3 className="font-semibold sm:text-18">
-                {`
-                欢迎使用${BRAND_NAME}研发管理平台，`}
-                {currentUser?.first_name} {currentUser?.last_name}
+                {t("tour.intro.welcome", { brand: BRAND_NAME })} {currentUser?.first_name} {currentUser?.last_name}
               </h3>
-              <p className="mt-3 text-13 text-secondary">
-                你可以在这里统一管理项目、工作项、周期和模块。先从创建一个项目开始。
-              </p>
+              <p className="mt-3 text-13 text-secondary">{t("tour.intro.description")}</p>
               <div className="flex h-full items-end">
                 <div className="mt-12 flex items-center gap-6">
                   <Button
@@ -113,7 +99,7 @@ export const TourRoot = observer(function TourRoot(props: TOnboardingTourProps) 
                       setStep("work-items");
                     }}
                   >
-                    Take a Product Tour
+                    {t("tour.intro.take_tour")}
                   </Button>
                   <button
                     type="button"
@@ -122,7 +108,7 @@ export const TourRoot = observer(function TourRoot(props: TOnboardingTourProps) 
                       onComplete();
                     }}
                   >
-                    No thanks, I will explore it myself
+                    {t("tour.intro.skip_tour")}
                   </button>
                 </div>
               </div>
@@ -145,21 +131,25 @@ export const TourRoot = observer(function TourRoot(props: TOnboardingTourProps) 
                 currentStepIndex % 2 === 0 ? "justify-end" : "justify-start"
               }`}
             >
-              <img src={currentStep?.image} className="h-full w-full object-cover" alt={currentStep?.title} />
+              <img
+                src={currentStep?.image}
+                className="h-full w-full object-cover"
+                alt={t(`tour.intro.steps.${currentStep?.key}.title`)}
+              />
             </div>
             <div className="flex h-1/2 flex-col overflow-y-auto p-4 sm:h-2/5">
-              <h3 className="font-semibold sm:text-18">{currentStep?.title}</h3>
-              <p className="mt-3 text-13 text-secondary">{currentStep?.description}</p>
+              <h3 className="font-semibold sm:text-18">{t(`tour.intro.steps.${currentStep?.key}.title`)}</h3>
+              <p className="mt-3 text-13 text-secondary">{t(`tour.intro.steps.${currentStep?.key}.description`)}</p>
               <div className="mt-3 flex h-full items-end justify-between gap-4">
                 <div className="flex items-center gap-4">
                   {currentStep?.prevStep && (
                     <Button variant="secondary" onClick={() => setStep(currentStep.prevStep ?? "welcome")}>
-                      Back
+                      {t("tour.actions.back")}
                     </Button>
                   )}
                   {currentStep?.nextStep && (
                     <Button variant="primary" onClick={() => setStep(currentStep.nextStep ?? "work-items")}>
-                      Next
+                      {t("tour.actions.next")}
                     </Button>
                   )}
                 </div>
@@ -171,7 +161,7 @@ export const TourRoot = observer(function TourRoot(props: TOnboardingTourProps) 
                       toggleCreateProjectModal(true);
                     }}
                   >
-                    Create your first project
+                    {t("tour.intro.create_project")}
                   </Button>
                 )}
               </div>

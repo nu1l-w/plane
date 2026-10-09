@@ -1,4 +1,13 @@
 {
+  "page_delete": {
+    "title": "Delete page",
+    "confirm_before_name": "Are you sure you want to delete page ",
+    "confirm_after_name": "? The page will be deleted permanently. This action cannot be undone.",
+    "toasts": {
+      "success": { "title": "Success!", "message": "Page deleted successfully." },
+      "error": { "title": "Error!", "message": "Page could not be deleted. Please try again." }
+    }
+  },
   "page_navigation_pane": {
     "tabs": {
       "outline": {

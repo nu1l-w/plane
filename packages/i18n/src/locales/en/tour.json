@@ -1,4 +1,43 @@
 {
+  "tour": {
+    "intro": {
+      "welcome": "Welcome to {brand},",
+      "description": "Manage projects, work items, cycles, and modules in one place. Start by creating a project.",
+      "take_tour": "Take a Product Tour",
+      "skip_tour": "No thanks, I will explore it myself",
+      "sidebar_heading": "Let's get started!",
+      "sidebar_subheading": "Get more out of {brand}.",
+      "create_project": "Create your first project",
+      "steps": {
+        "work-items": {
+          "label": "Work items",
+          "title": "Plan with work items",
+          "description": "Work items are the building blocks of project management. Track requirements, tasks, and bugs with their properties."
+        },
+        "cycles": {
+          "label": "Cycles",
+          "title": "Make progress with cycles",
+          "description": "Cycles help your team focus on a stage of work and keep moving forward."
+        },
+        "modules": {
+          "label": "Modules",
+          "title": "Organize work with modules",
+          "description": "Break large projects into features or areas to organize and track them."
+        },
+        "views": {
+          "label": "Views",
+          "title": "Views",
+          "description": "Filter work items to focus on what matters, then save and share your views."
+        },
+        "pages": {
+          "label": "Pages",
+          "title": "Document with pages",
+          "description": "Use pages to capture meeting notes, plans, and everyday information."
+        }
+      }
+    },
+    "actions": { "back": "Back", "next": "Next" }
+  },
   "product_tour": {
     "workitems": {
       "step_zero": {

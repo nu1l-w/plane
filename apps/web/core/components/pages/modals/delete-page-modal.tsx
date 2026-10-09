@@ -6,6 +6,7 @@
 
 import { useState } from "react";
 import { observer } from "mobx-react";
+import { useTranslation } from "@plane/i18n";
 // ui
 import { useParams } from "next/navigation";
 import { TOAST_TYPE, setToast } from "@plane/propel/toast";
@@ -28,6 +29,7 @@ type TConfirmPageDeletionProps = {
 
 export const DeletePageModal = observer(function DeletePageModal(props: TConfirmPageDeletionProps) {
   const { isOpen, onClose, page, storeType } = props;
+  const { t } = useTranslation();
   // states
   const [isDeleting, setIsDeleting] = useState(false);
   // store hooks
@@ -52,8 +54,8 @@ export const DeletePageModal = observer(function DeletePageModal(props: TConfirm
       handleClose();
       setToast({
         type: TOAST_TYPE.SUCCESS,
-        title: "Success!",
-        message: "Page deleted successfully.",
+        title: t("page_delete.toasts.success.title"),
+        message: t("page_delete.toasts.success.message"),
       });
 
       if (routePageId) {
@@ -62,8 +64,8 @@ export const DeletePageModal = observer(function DeletePageModal(props: TConfirm
     } catch {
       setToast({
         type: TOAST_TYPE.ERROR,
-        title: "Error!",
-        message: "Page could not be deleted. Please try again.",
+        title: t("page_delete.toasts.error.title"),
+        message: t("page_delete.toasts.error.message"),
       });
     } finally {
       setIsDeleting(false);
@@ -78,12 +80,14 @@ export const DeletePageModal = observer(function DeletePageModal(props: TConfirm
       handleSubmit={handleDelete}
       isSubmitting={isDeleting}
       isOpen={isOpen}
-      title="Delete page"
+      title={t("page_delete.title")}
+      primaryButtonText={{ default: t("common.delete"), loading: t("common.deleting") }}
+      secondaryButtonText={t("common.cancel")}
       content={
         <>
-          Are you sure you want to delete page-{" "}
-          <span className="font-medium break-words break-all text-primary">{getPageName(name)}</span> ? The Page will be
-          deleted permanently. This action cannot be undone.
+          {t("page_delete.confirm_before_name")}
+          <span className="font-medium break-words break-all text-primary">{getPageName(name)}</span>
+          {t("page_delete.confirm_after_name")}
         </>
       }
     />
