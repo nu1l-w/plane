@@ -22,6 +22,8 @@ import { PageHead } from "@/components/core/page-title";
 import { BreadcrumbLink } from "@/components/common/breadcrumb-link";
 import { PageListBlock } from "@/components/pages/list/block";
 import { PageTabNavigation } from "@/components/pages/list/tab-navigation";
+import { PageSearchInput } from "@/components/pages/list/search-input";
+import { PageOrderByDropdown } from "@/components/pages/list/order-by";
 import { EPageStoreType, usePageStore } from "@/hooks/store";
 import { useUserPermissions } from "@/hooks/store/user";
 import { useAppRouter } from "@/hooks/use-app-router";
@@ -39,7 +41,9 @@ function WorkspacePagesPage() {
   const pageType = getPageType(searchParams.get("type"));
   const router = useAppRouter();
   const { t } = useTranslation();
-  const { fetchWorkspacePages, createWorkspacePage, getWorkspacePageIdsByTab } = usePageStore(EPageStoreType.PROJECT);
+  const { fetchWorkspacePages, createWorkspacePage, getWorkspacePageIdsByTab, filters, updateFilters } = usePageStore(
+    EPageStoreType.PROJECT
+  );
   const { allowPermissions } = useUserPermissions();
   const pageIds = getWorkspacePageIdsByTab(slug, pageType);
   const canCreatePage = allowPermissions(
@@ -85,12 +89,32 @@ function WorkspacePagesPage() {
       <ContentWrapper>
         <PageHead title={t("sidebar.pages")} />
         <div className="flex h-full w-full flex-col overflow-hidden">
-          <div className="h-12 flex-shrink-0 border-b border-subtle px-4">
+          <div className="flex h-12 flex-shrink-0 items-center justify-between border-b border-subtle px-4">
             <PageTabNavigation workspaceSlug={slug} pageType={pageType} />
+            <div className="flex items-center gap-2">
+              <PageSearchInput
+                searchQuery={filters.searchQuery}
+                updateSearchQuery={(value) => updateFilters("searchQuery", value)}
+              />
+              <PageOrderByDropdown
+                sortBy={filters.sortBy}
+                sortKey={filters.sortKey}
+                onChange={(value) => {
+                  if (value.key) updateFilters("sortKey", value.key);
+                  if (value.order) updateFilters("sortBy", value.order);
+                }}
+              />
+            </div>
           </div>
           <div className="h-full w-full overflow-hidden">
             {isLoading ? (
               <div className="py-8 text-center text-secondary">{t("common.loading")}</div>
+            ) : pageIds.length === 0 && filters.searchQuery ? (
+              <EmptyStateDetailed
+                assetKey="search"
+                title={t("common_empty_state.search.title")}
+                description={t("common_empty_state.search.description")}
+              />
             ) : pageIds.length === 0 ? (
               <EmptyStateDetailed
                 assetKey="page"

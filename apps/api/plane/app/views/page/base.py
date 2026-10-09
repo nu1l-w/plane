@@ -623,6 +623,48 @@ class WorkspacePageViewSet(BaseViewSet):
         page.save(update_fields=["archived_at", "updated_at"])
         return Response({"archived_at": str(archived_at)}, status=status.HTTP_200_OK)
 
+    def lock(self, request, slug, page_id):
+        page = self.get_object()
+        page.is_locked = True
+        page.save(update_fields=["is_locked", "updated_at"])
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def unlock(self, request, slug, page_id):
+        page = self.get_object()
+        page.is_locked = False
+        page.save(update_fields=["is_locked", "updated_at"])
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def duplicate(self, request, slug, page_id):
+        original = self.get_object()
+        if original.archived_at:
+            return Response({"error": "Archived pages cannot be duplicated."}, status=status.HTTP_400_BAD_REQUEST)
+
+        original.pk = None
+        original.name = f"{original.name} (Copy)"
+        original.description_binary = None
+        original.is_locked = False
+        original.archived_at = None
+        original.owned_by = request.user
+        original.created_by = request.user
+        original.updated_by = request.user
+        original.save()
+
+        page_transaction.delay(
+            new_description_html=original.description_html,
+            old_description_html=None,
+            page_id=original.id,
+        )
+        copy_s3_objects_of_description_and_assets.delay(
+            entity_name="PAGE",
+            entity_identifier=original.id,
+            project_id=None,
+            slug=slug,
+            user_id=request.user.id,
+        )
+        page = self.get_queryset().get(pk=original.id)
+        return Response(PageDetailSerializer(page).data, status=status.HTTP_201_CREATED)
+
     def unarchive(self, request, slug, page_id):
         page = self.get_object()
         page.archived_at = None

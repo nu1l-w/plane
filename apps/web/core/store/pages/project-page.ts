@@ -48,12 +48,18 @@ export class ProjectPage extends BasePage implements TProjectPage {
         await projectPageService.updateAccess(workspaceSlug, projectId!, page.id, payload);
       },
       lock: async () => {
-        if (isWorkspacePage) throw new Error("Locking workspace pages is not available yet.");
+        if (isWorkspacePage) {
+          if (!workspaceSlug || !page.id) throw new Error("Missing required fields.");
+          return await workspacePageService.lock(workspaceSlug, page.id);
+        }
         if (!workspaceSlug || !projectId || !page.id) throw new Error("Missing required fields.");
         await projectPageService.lock(workspaceSlug, projectId, page.id);
       },
       unlock: async () => {
-        if (isWorkspacePage) throw new Error("Locking workspace pages is not available yet.");
+        if (isWorkspacePage) {
+          if (!workspaceSlug || !page.id) throw new Error("Missing required fields.");
+          return await workspacePageService.unlock(workspaceSlug, page.id);
+        }
         if (!workspaceSlug || !projectId || !page.id) throw new Error("Missing required fields.");
         await projectPageService.unlock(workspaceSlug, projectId, page.id);
       },
@@ -68,7 +74,12 @@ export class ProjectPage extends BasePage implements TProjectPage {
         await projectPageService.restore(workspaceSlug, projectId!, page.id);
       },
       duplicate: async () => {
-        if (isWorkspacePage) throw new Error("Duplicating workspace pages is not available yet.");
+        if (isWorkspacePage) {
+          if (!workspaceSlug || !page.id) throw new Error("Missing required fields.");
+          const duplicatedPage = await workspacePageService.duplicate(workspaceSlug, page.id);
+          await store.projectPages.fetchWorkspacePages(workspaceSlug);
+          return duplicatedPage;
+        }
         if (!workspaceSlug || !projectId || !page.id) throw new Error("Missing required fields.");
         return await projectPageService.duplicate(workspaceSlug, projectId, page.id);
       },
@@ -139,7 +150,7 @@ export class ProjectPage extends BasePage implements TProjectPage {
    * @description returns true if the current logged in user can create a duplicate the page
    */
   get canCurrentUserDuplicatePage() {
-    if (this.is_global) return false;
+    if (this.is_global) return this.isWorkspacePageOwnerOrAdmin;
     const highestRole = this.getHighestRoleAcrossProjects();
     return !!highestRole && highestRole >= EUserPermissions.MEMBER;
   }
@@ -148,7 +159,7 @@ export class ProjectPage extends BasePage implements TProjectPage {
    * @description returns true if the current logged in user can lock the page
    */
   get canCurrentUserLockPage() {
-    if (this.is_global) return false;
+    if (this.is_global) return this.isWorkspacePageOwnerOrAdmin;
     const highestRole = this.getHighestRoleAcrossProjects();
     return this.isCurrentUserOwner || highestRole === EUserPermissions.ADMIN;
   }
@@ -184,7 +195,13 @@ export class ProjectPage extends BasePage implements TProjectPage {
    * @description returns true if the current logged in user can favorite the page
    */
   get canCurrentUserFavoritePage() {
-    if (this.is_global) return false;
+    if (this.is_global) {
+      const { workspaceSlug } = this.rootStore.router;
+      const workspaceRole = workspaceSlug
+        ? this.rootStore.user.permission.getWorkspaceRoleByWorkspaceSlug(workspaceSlug.toString())
+        : undefined;
+      return this.canCurrentUserAccessPage && !!workspaceRole && workspaceRole >= EUserPermissions.MEMBER;
+    }
     const highestRole = this.getHighestRoleAcrossProjects();
     return !!highestRole && highestRole >= EUserPermissions.MEMBER;
   }

@@ -63,6 +63,30 @@ export class WorkspacePageService extends APIService {
       });
   }
 
+  async lock(workspaceSlug: string, pageId: string): Promise<void> {
+    return this.post(`/api/workspaces/${workspaceSlug}/pages/${pageId}/lock/`)
+      .then(() => undefined)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  async unlock(workspaceSlug: string, pageId: string): Promise<void> {
+    return this.delete(`/api/workspaces/${workspaceSlug}/pages/${pageId}/lock/`)
+      .then(() => undefined)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
+  async duplicate(workspaceSlug: string, pageId: string): Promise<TPage> {
+    return this.post(`/api/workspaces/${workspaceSlug}/pages/${pageId}/duplicate/`)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data;
+      });
+  }
+
   async remove(workspaceSlug: string, pageId: string): Promise<void> {
     return this.delete(`/api/workspaces/${workspaceSlug}/pages/${pageId}/`)
       .then((response) => response?.data)

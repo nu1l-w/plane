@@ -32,6 +32,14 @@ def _page_archive_url(slug, page_id):
     return f"{_page_url(slug, page_id)}archive/"
 
 
+def _page_lock_url(slug, page_id):
+    return f"{_page_url(slug, page_id)}lock/"
+
+
+def _page_duplicate_url(slug, page_id):
+    return f"{_page_url(slug, page_id)}duplicate/"
+
+
 def _make_project(workspace, identifier):
     return Project.objects.create(name=f"Project {identifier}", identifier=identifier, workspace=workspace)
 
@@ -48,6 +56,72 @@ def _make_page(workspace, owner, name, access=Page.PUBLIC_ACCESS):
 
 @pytest.mark.contract
 class TestWorkspacePageAccess:
+    @pytest.mark.django_db
+    def test_workspace_page_favorite_appears_in_favorites(self, api_client, workspace):
+        owner = User.objects.create(email="favorite-owner@plane.so", username="favorite_owner")
+        WorkspaceMember.objects.create(workspace=workspace, member=owner, role=15, is_active=True)
+        page = _make_page(workspace, owner, "Favorite")
+        api_client.force_authenticate(user=owner)
+
+        create_response = api_client.post(
+            f"/api/workspaces/{workspace.slug}/user-favorites/",
+            {"entity_type": "page", "entity_identifier": str(page.id), "project_id": None},
+            format="json",
+        )
+        response = api_client.get(f"/api/workspaces/{workspace.slug}/user-favorites/")
+
+        assert create_response.status_code == status.HTTP_200_OK
+        assert response.status_code == status.HTTP_200_OK
+        assert any(item["entity_identifier"] == str(page.id) for item in response.json())
+
+    @pytest.mark.django_db
+    def test_owner_can_lock_and_unlock_workspace_page(self, api_client, workspace):
+        owner = User.objects.create(email="lock-owner@plane.so", username="lock_owner")
+        WorkspaceMember.objects.create(workspace=workspace, member=owner, role=15, is_active=True)
+        page = _make_page(workspace, owner, "Lockable")
+        api_client.force_authenticate(user=owner)
+
+        assert api_client.post(_page_lock_url(workspace.slug, page.id)).status_code == status.HTTP_204_NO_CONTENT
+        page.refresh_from_db()
+        assert page.is_locked is True
+        assert api_client.patch(_page_url(workspace.slug, page.id), {"name": "Changed"}).status_code == status.HTTP_400_BAD_REQUEST
+        assert api_client.delete(_page_lock_url(workspace.slug, page.id)).status_code == status.HTTP_204_NO_CONTENT
+        page.refresh_from_db()
+        assert page.is_locked is False
+
+    @pytest.mark.django_db
+    def test_member_cannot_lock_or_duplicate_another_owners_page(self, api_client, workspace):
+        owner = User.objects.create(email="copy-owner@plane.so", username="copy_owner")
+        member = User.objects.create(email="copy-member@plane.so", username="copy_member")
+        WorkspaceMember.objects.create(workspace=workspace, member=owner, role=15, is_active=True)
+        WorkspaceMember.objects.create(workspace=workspace, member=member, role=15, is_active=True)
+        page = _make_page(workspace, owner, "Shared")
+        api_client.force_authenticate(user=member)
+
+        assert api_client.post(_page_lock_url(workspace.slug, page.id)).status_code == status.HTTP_403_FORBIDDEN
+        assert api_client.post(_page_duplicate_url(workspace.slug, page.id)).status_code == status.HTTP_403_FORBIDDEN
+
+    @pytest.mark.django_db
+    def test_owner_can_duplicate_workspace_page(self, api_client, workspace, monkeypatch):
+        owner = User.objects.create(email="duplicate-owner@plane.so", username="duplicate_owner")
+        WorkspaceMember.objects.create(workspace=workspace, member=owner, role=15, is_active=True)
+        page = _make_page(workspace, owner, "Source")
+        monkeypatch.setattr("plane.app.views.page.base.page_transaction.delay", lambda **kwargs: None)
+        monkeypatch.setattr(
+            "plane.app.views.page.base.copy_s3_objects_of_description_and_assets.delay", lambda **kwargs: None
+        )
+        api_client.force_authenticate(user=owner)
+
+        response = api_client.post(_page_duplicate_url(workspace.slug, page.id))
+
+        assert response.status_code == status.HTTP_201_CREATED
+        copy = Page.objects.get(pk=response.json()["id"])
+        assert copy.id != page.id
+        assert copy.name == "Source (Copy)"
+        assert copy.is_global is True
+        assert copy.owned_by_id == owner.id
+        assert not copy.project_pages.exists()
+
     @pytest.mark.django_db
     def test_member_can_create_workspace_page(self, api_client, workspace):
         member = User.objects.create(email="wiki-member@plane.so", username="wiki_member")

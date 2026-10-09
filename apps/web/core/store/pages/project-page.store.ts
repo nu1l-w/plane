@@ -164,7 +164,10 @@ export class ProjectPageStore implements IProjectPageStore {
   getWorkspacePageIdsByTab = computedFn((workspaceSlug: string, pageType: TPageNavigationTabs) => {
     const workspaceId = this.rootStore.workspaceRoot.getWorkspaceBySlug(workspaceSlug)?.id;
     const pages = filterPagesByPageType(pageType, Object.values(this.data)).filter(
-      (page) => page.is_global && page.workspace === workspaceId
+      (page) =>
+        page.is_global &&
+        page.workspace === workspaceId &&
+        getPageName(page.name).toLowerCase().includes(this.filters.searchQuery.toLowerCase())
     );
     return orderPages(pages, this.filters.sortKey, this.filters.sortBy).map((page) => page.id) as string[];
   });

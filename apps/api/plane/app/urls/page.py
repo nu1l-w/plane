@@ -33,6 +33,16 @@ urlpatterns = [
         name="workspace-page-archive-unarchive",
     ),
     path(
+        "workspaces/<str:slug>/pages/<uuid:page_id>/lock/",
+        WorkspacePageViewSet.as_view({"post": "lock", "delete": "unlock"}),
+        name="workspace-page-lock-unlock",
+    ),
+    path(
+        "workspaces/<str:slug>/pages/<uuid:page_id>/duplicate/",
+        WorkspacePageViewSet.as_view({"post": "duplicate"}),
+        name="workspace-page-duplicate",
+    ),
+    path(
         "workspaces/<str:slug>/pages/<uuid:page_id>/move/",
         WorkspacePageViewSet.as_view({"post": "move"}),
         name="workspace-page-move",
