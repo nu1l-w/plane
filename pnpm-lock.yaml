@@ -1506,6 +1506,9 @@ importers:
 
   packages/i18n:
     dependencies:
+      '@plane/constants':
+        specifier: workspace:*
+        version: link:../constants
       i18next:
         specifier: 'catalog:'
         version: 25.10.9(typescript@5.8.3)

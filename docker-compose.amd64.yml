@@ -1,0 +1,37 @@
+services:
+  web:
+    image: plane-custom/web:ubuntu
+    platform: linux/amd64
+  admin:
+    image: plane-custom/admin:ubuntu
+    platform: linux/amd64
+  space:
+    image: plane-custom/space:ubuntu
+    platform: linux/amd64
+  api:
+    image: plane-custom/api:ubuntu
+    platform: linux/amd64
+  worker:
+    image: plane-custom/api:ubuntu
+    platform: linux/amd64
+  beat-worker:
+    image: plane-custom/api:ubuntu
+    platform: linux/amd64
+  migrator:
+    image: plane-custom/api:ubuntu
+    platform: linux/amd64
+  live:
+    image: plane-custom/live:ubuntu
+    platform: linux/amd64
+  proxy:
+    image: plane-custom/proxy:ubuntu
+    platform: linux/amd64
+  plane-db:
+    platform: linux/amd64
+  plane-redis:
+    platform: linux/amd64
+  plane-mq:
+    platform: linux/amd64
+  plane-minio:
+    image: pgsty/minio:RELEASE.2026-08-04T00-00-00Z
+    platform: linux/amd64
