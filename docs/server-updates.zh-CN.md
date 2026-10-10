@@ -1,5 +1,28 @@
 # Ubuntu 服务器代码更新指南
 
+## 当前推荐：服务器直接构建与更新
+
+服务器已验证能通过 `docker.m.daocloud.io` 下载构建镜像。使用 [更新脚本](../scripts/update-ubuntu.sh) 可以避免 Mac 构建和大镜像包上传。下面的手动镜像上传流程作为备用方案保留。
+
+一次性通过 Termius SFTP 将 `scripts/update-ubuntu.sh` 上传为 `/root/update-plane.sh`，在服务器执行：
+
+```bash
+chmod 700 /root/update-plane.sh
+bash /root/update-plane.sh
+```
+
+前提：源码已克隆到 `/root/plane-source`，分支是 `26.10`，远程名为 `origin`；生产 Compose 和环境配置仍在 `/root/plane-src`。脚本在源码目录内生成专用 Dockerfile，使用已验证的镜像入口和 Go 下载代理，不修改原始 Dockerfile。可用 `PLANE_BRANCH` 等脚本顶部环境变量调整部署路径或分支。
+
+以后 Mac 只需将经过检查的代码提交并推送到 GitHub 的 `26.10` 分支，再在 Termius 执行 `bash /root/update-plane.sh`。未提交或未推送的修改不会部署。GitHub 推送使用本地远程名 `plane`：`git push plane HEAD:26.10`。
+
+脚本先拉取并构建全部候选镜像，成功后保存运行中的旧镜像标签和配置，再停止写入，备份数据库及 MinIO `/export` 附件数据，运行迁移并替换应用容器。备份保存在 `/root/plane-backups/`，不会自动删除旧镜像或备份。首次构建耗时较长，后续复用缓存；构建会使用服务器 CPU 和内存。
+
+构建失败时不会停止旧应用。停写后的备份、迁移或部署失败时，脚本停止并输出提示，不自动回退数据库；根据日志处理，不要反复运行或盲目恢复旧代码。前面发现的模型与迁移差异仍需单独核对，脚本不会生成迁移文件。执行后检查服务状态并验证功能。建议从云服务器控制台保留可恢复快照，并将备份复制到服务器以外。
+
+脚本已做本地 Bash 语法检查，完整的远程更新流程仍需在目标服务器实际验证。执行时保持终端连接；可使用服务器上的终端会话管理工具防止断线中断构建。
+
+## 备用：Mac 构建与镜像上传
+
 适用于已经部署成功的实例：在 Mac Docker Desktop 上构建 `linux/amd64` 镜像，通过 Termius SFTP 上传到 Ubuntu，再导入并重建应用容器。服务器独立运行，本地电脑和 Termius 关闭后网站仍可使用。
 
 ## 部署文件与操作位置
